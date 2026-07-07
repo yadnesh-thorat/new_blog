@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/src/app/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Meta details -->
+    <title>Aether | Premium Tech & Design Journal</title>
+    <meta name="description" content="Exploring next-generation technologies, interactive interfaces, serverless systems, and the design languages of tomorrow." />
+    
+    <!-- Font Preconnect & Stylesheets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    
+    <style>
+      :root {
+        --font-geist-sans: 'Geist', 'Outfit', 'Noto Sans Devanagari', sans-serif;
+        --font-geist-mono: 'Geist Mono', monospace;
+      }
+      body {
+        font-family: var(--font-geist-sans);
+      }
+    </style>
+  </head>
+  <body class="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
+    <div id="root" class="flex-1 flex flex-col"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
