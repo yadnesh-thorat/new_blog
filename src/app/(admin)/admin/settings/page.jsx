@@ -9,14 +9,30 @@ import {
   Info,
   Users,
   Globe,
+  Palette,
 } from "lucide-react";
 import { dbService } from "@/lib/db";
 import confetti from "canvas-confetti";
 
 export default function SettingsManagerPage() {
   const [settings, setSettings] = useState(null);
-  // Tab control
   const [activeTab, setActiveTab] = useState("general");
+  const [previewText, setPreviewText] = useState("नमस्कार, हे एथर जर्नल आहे. नवीन तंत्रज्ञान आणि सुंदर डिझाईन.");
+
+  const FONT_FAMILIES = {
+    "Noto Sans Devanagari": "'Noto Sans Devanagari', sans-serif",
+    "Poppins": "'Poppins', sans-serif",
+    "Mukta": "'Mukta', sans-serif",
+    "Yatra One": "'Yatra One', sans-serif",
+    "Rozha One": "'Rozha One', sans-serif",
+    "Martel": "'Martel', serif",
+    "Rajdhani": "'Rajdhani', sans-serif",
+    "Khand": "'Khand', sans-serif",
+    "Teko": "'Teko', sans-serif",
+    "Baloo 2": "'Baloo 2', sans-serif",
+    "Rasa": "'Rasa', serif",
+    "Anek Devanagari": "'Anek Devanagari', sans-serif",
+  };
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -147,6 +163,22 @@ export default function SettingsManagerPage() {
     });
   };
 
+  const updateThemeSetting = (field, value) => {
+    if (!settings) return;
+    setSettings({
+      ...settings,
+      theme: {
+        ...(settings.theme || {
+          primaryColorLight: "#4f46e5",
+          primaryColorDark: "#818cf8",
+          footerBgColorLight: "#f4f4f5",
+          footerBgColorDark: "#101014",
+        }),
+        [field]: value,
+      },
+    });
+  };
+
   if (loading || !settings) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -160,6 +192,7 @@ export default function SettingsManagerPage() {
     { id: "about", name: "About Details", icon: Users },
     { id: "contact", name: "Contact & Info", icon: Info },
     { id: "seo", name: "Default SEO", icon: Globe },
+    { id: "theme", name: "Theme Colors", icon: Palette },
   ];
 
   return (
@@ -755,14 +788,284 @@ export default function SettingsManagerPage() {
                   onChange={(e) => updateSEOSetting("ogImage", e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
+              </div>
 
-                {settings.seoDefaults.ogImage && (
-                  <img
-                    src={settings.seoDefaults.ogImage}
-                    alt="Social Preview OG Card"
-                    className="mt-2 h-40 w-full object-cover rounded-xl border border-border"
-                  />
-                )}
+              {/* Google Snippet & Social Share Preview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/20">
+                {/* Google Search Preview */}
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Google Search Preview</h4>
+                  <div className="rounded-xl border border-border/30 bg-white p-4 font-sans text-left space-y-1.5 shadow-sm">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">https://aether-blog.com</span>
+                      <span>›</span>
+                    </div>
+                    <a href="#" className="text-lg font-medium text-[#1a0dab] hover:underline block leading-tight">
+                      {settings.seoDefaults.title || "Aether | The Modern Tech & Design Journal"}
+                    </a>
+                    <p className="text-xs sm:text-sm text-[#4d5156] leading-relaxed line-clamp-2">
+                      {settings.seoDefaults.description || "Website description will go here when configured."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Social Card Preview */}
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Social Share Card (Facebook / X)</h4>
+                  <div className="rounded-xl border border-border/30 overflow-hidden bg-white text-slate-800 text-left shadow-sm">
+                    {settings.seoDefaults.ogImage ? (
+                      <img
+                        src={settings.seoDefaults.ogImage}
+                        alt="Social Preview OG Card"
+                        className="h-32 w-full object-cover border-b border-border/30"
+                      />
+                    ) : (
+                      <div className="h-32 w-full bg-slate-100 flex items-center justify-center text-xs text-slate-400 font-mono">
+                        No image specified
+                      </div>
+                    )}
+                    <div className="p-3.5 space-y-1">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">aether-blog.com</span>
+                      <h5 className="text-sm font-bold text-slate-900 line-clamp-1">
+                        {settings.seoDefaults.title || "Aether | The Modern Tech & Design Journal"}
+                      </h5>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {settings.seoDefaults.description || "Website description will go here when configured."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "theme" && (
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="text-lg font-bold font-geist-sans text-foreground">Theme Color Customization</h3>
+                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                  Configure website-wide brand colors, accent themes, and footer background graphics.
+                </p>
+              </div>
+
+              {/* Font Customization Card */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">Devanagari / Marathi Font Styles</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Customize the typeface of headers and body text for Devanagari script.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Heading Font Select */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Heading Font Style</label>
+                    <select
+                      value={settings.theme?.headingFont || "Noto Sans Devanagari"}
+                      onChange={(e) => updateThemeSetting("headingFont", e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                    >
+                      <option value="Noto Sans Devanagari">Noto Sans Devanagari (Clean Modern)</option>
+                      <option value="Poppins">Poppins (Geometric Modern)</option>
+                      <option value="Mukta">Mukta (Clean Standard)</option>
+                      <option value="Yatra One">Yatra One (Artistic Traditional)</option>
+                      <option value="Rozha One">Rozha One (Bold Serif)</option>
+                      <option value="Martel">Martel (Elegant Serif)</option>
+                      <option value="Rajdhani">Rajdhani (Technical Square-ish)</option>
+                      <option value="Khand">Khand (Compact Headline)</option>
+                      <option value="Teko">Teko (Narrow & Tall)</option>
+                      <option value="Baloo 2">Baloo 2 (Rounded Friendly)</option>
+                      <option value="Rasa">Rasa (Traditional Serif)</option>
+                      <option value="Anek Devanagari">Anek Devanagari (Sleek Variable)</option>
+                    </select>
+                  </div>
+
+                  {/* Body Font Select */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Body Font Style</label>
+                    <select
+                      value={settings.theme?.bodyFont || "Noto Sans Devanagari"}
+                      onChange={(e) => updateThemeSetting("bodyFont", e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                    >
+                      <option value="Noto Sans Devanagari">Noto Sans Devanagari (Clean Modern)</option>
+                      <option value="Poppins">Poppins (Geometric Modern)</option>
+                      <option value="Mukta">Mukta (Clean Standard)</option>
+                      <option value="Martel">Martel (Elegant Serif)</option>
+                      <option value="Rajdhani">Rajdhani (Technical Square-ish)</option>
+                      <option value="Khand">Khand (Compact Headline)</option>
+                      <option value="Baloo 2">Baloo 2 (Rounded Friendly)</option>
+                      <option value="Rasa">Rasa (Traditional Serif)</option>
+                      <option value="Anek Devanagari">Anek Devanagari (Sleek Variable)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Live Font Sandbox / Previewer */}
+                <div className="pt-4 border-t border-border/20 space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Live Font Sandbox (Type anything to test)</label>
+                    <input
+                      type="text"
+                      value={previewText}
+                      onChange={(e) => setPreviewText(e.target.value)}
+                      placeholder="मराठीत काहीतरी टाईप करा..."
+                      className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Heading Font Sample */}
+                    <div className="p-4 rounded-xl border border-border/30 bg-muted/10 space-y-1">
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Heading Font Preview ({settings.theme?.headingFont || "Noto Sans Devanagari"})</span>
+                      <p 
+                        className="text-lg font-bold text-foreground leading-snug break-words" 
+                        style={{ fontFamily: FONT_FAMILIES[settings.theme?.headingFont || "Noto Sans Devanagari"] }}
+                      >
+                        {previewText || "नमस्कार"}
+                      </p>
+                    </div>
+
+                    {/* Body Font Sample */}
+                    <div className="p-4 rounded-xl border border-border/30 bg-muted/10 space-y-1">
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Body Font Preview ({settings.theme?.bodyFont || "Noto Sans Devanagari"})</span>
+                      <p 
+                        className="text-sm text-foreground leading-relaxed break-words" 
+                        style={{ fontFamily: FONT_FAMILIES[settings.theme?.bodyFont || "Noto Sans Devanagari"] }}
+                      >
+                        {previewText || "नमस्कार"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Primary Colors Card */}
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                  <h4 className="text-sm font-bold text-foreground">Primary Accent Color</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Adjust the brand action, links, badges, and button highlights.</p>
+                  
+                  <div className="space-y-3.5">
+                    {/* Light Mode Accent */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Light Mode Accent</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={settings.theme?.primaryColorLight || "#4f46e5"}
+                          onChange={(e) => updateThemeSetting("primaryColorLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                        />
+                        <input
+                          type="color"
+                          value={settings.theme?.primaryColorLight || "#4f46e5"}
+                          onChange={(e) => updateThemeSetting("primaryColorLight", e.target.value)}
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dark Mode Accent */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Dark Mode Accent</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={settings.theme?.primaryColorDark || "#818cf8"}
+                          onChange={(e) => updateThemeSetting("primaryColorDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                        />
+                        <input
+                          type="color"
+                          value={settings.theme?.primaryColorDark || "#818cf8"}
+                          onChange={(e) => updateThemeSetting("primaryColorDark", e.target.value)}
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Colors Card */}
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                  <h4 className="text-sm font-bold text-foreground">Footer Background Color</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Give the footer a distinct background color separate from the page.</p>
+
+                  <div className="space-y-3.5">
+                    {/* Light Mode Footer */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Light Mode Footer Background</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={settings.theme?.footerBgColorLight || "#f4f4f5"}
+                          onChange={(e) => updateThemeSetting("footerBgColorLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                        />
+                        <input
+                          type="color"
+                          value={settings.theme?.footerBgColorLight || "#f4f4f5"}
+                          onChange={(e) => updateThemeSetting("footerBgColorLight", e.target.value)}
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dark Mode Footer */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Dark Mode Footer Background</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={settings.theme?.footerBgColorDark || "#101014"}
+                          onChange={(e) => updateThemeSetting("footerBgColorDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                        />
+                        <input
+                          type="color"
+                          value={settings.theme?.footerBgColorDark || "#101014"}
+                          onChange={(e) => updateThemeSetting("footerBgColorDark", e.target.value)}
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Color Presets Selector */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <h4 className="text-sm font-bold text-foreground">Premium Preset Palettes</h4>
+                <p className="text-xs text-muted-foreground font-medium">Choose from our curated professional branding setups.</p>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { name: "Default Indigo", light: "#4f46e5", dark: "#818cf8", footerL: "#f4f4f5", footerD: "#101014" },
+                    { name: "Emerald Forest", light: "#059669", dark: "#34d399", footerL: "#f0fdf4", footerD: "#061f14" },
+                    { name: "Rose Crimson", light: "#e11d48", dark: "#fb7185", footerL: "#fff1f2", footerD: "#24070e" },
+                    { name: "Ocean Breeze", light: "#0284c7", dark: "#38bdf8", footerL: "#f0f9ff", footerD: "#081d2c" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => {
+                        updateThemeSetting("primaryColorLight", preset.light);
+                        updateThemeSetting("primaryColorDark", preset.dark);
+                        updateThemeSetting("footerBgColorLight", preset.footerL);
+                        updateThemeSetting("footerBgColorDark", preset.footerD);
+                      }}
+                      className="flex flex-col items-start gap-1 p-3.5 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
+                    >
+                      <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">{preset.name}</span>
+                      <div className="flex gap-1.5 mt-1">
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.light }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.dark }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.footerL }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.footerD }} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

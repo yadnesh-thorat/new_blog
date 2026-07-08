@@ -60,6 +60,27 @@ export default function ContactsManagerPage() {
         <div className="lg:col-span-7 space-y-3.5">
           {messages.length > 0 ? (
             <div className="space-y-2">
+              <div className="flex justify-between items-center mb-2 px-1">
+                <span className="text-xs font-bold text-muted-foreground">{messages.length} messages received</span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!confirm("Are you sure you want to delete all messages in your inbox? This cannot be undone.")) return;
+                    try {
+                      for (const msg of messages) {
+                        await dbService.deleteContact(msg.id);
+                      }
+                      setSelectedMessage(null);
+                      await loadMessages();
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" /> Clear Inbox
+                </button>
+              </div>
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -103,7 +124,24 @@ export default function ContactsManagerPage() {
                       {msg.message}
                     </p>
                   </div>
-                  <ChevronRight className="h-4.5 w-4.5 shrink-0 opacity-70" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(msg.id);
+                      }}
+                      className={`p-1.5 rounded-lg transition-all hover:bg-red-500/15 hover:text-red-600 ${
+                        selectedMessage?.id === msg.id
+                          ? "text-primary-foreground/70 hover:bg-white/15 hover:text-white"
+                          : "text-muted-foreground"
+                      }`}
+                      title="Delete message"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                    <ChevronRight className="h-4 w-4 shrink-0 opacity-70" />
+                  </div>
                 </div>
               ))}
             </div>

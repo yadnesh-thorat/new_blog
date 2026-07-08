@@ -38,25 +38,11 @@ export default function AboutPage() {
 
       <main className="flex-grow transition-colors duration-300">
 
-        {/* Hero Banner */}
-        <section className="relative overflow-hidden py-24 lg:py-32">
-          {/* Ambient orbs */}
-          <div className="absolute top-[-80px] left-[5%] w-[450px] h-[450px] bg-primary/8 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slow" />
-          <div className="absolute bottom-[-60px] right-[5%] w-[400px] h-[400px] bg-indigo-500/8 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slower" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-gradient-to-tr from-violet-500/5 to-primary/5 rounded-full blur-[100px] pointer-events-none -z-10" />
-
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-7 animate-entrance">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary shadow-[0_0_12px_rgba(99,102,241,0.15)]">
-              <Sparkles className="h-3 w-3 animate-pulse" />
-              Who We Are
-            </span>
-            <h1 className="text-5xl font-black font-geist-sans tracking-tight sm:text-6xl lg:text-7xl leading-[1.05] text-foreground">
-              <span className="text-gradient">{aboutContent.title.split(" ").slice(0, 2).join(" ")}</span>
-              {aboutContent.title.split(" ").length > 2 && (
-                <span className="block text-foreground">{aboutContent.title.split(" ").slice(2).join(" ")}</span>
-              )}
-            </h1>
-            <p className="text-lg sm:text-xl leading-relaxed text-muted-foreground max-w-2xl mx-auto font-medium">
+        {/* Header section matching homepage */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-20 pb-8 animate-entrance">
+          <div className="border-b border-border/40 pb-5 mb-8">
+            <h3 className="font-geist-sans text-2xl font-bold">{aboutContent.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               {aboutContent.text}
             </p>
           </div>

@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   Home,
+  ShieldCheck,
 } from "lucide-react";
 import { dbService } from "@/lib/db";
 
@@ -75,6 +76,7 @@ export default function AdminLayout() {
     { name: "Newsletter", href: "/admin/newsletter", icon: Users },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon },
     { name: "Settings", href: "/admin/settings", icon: SettingsIcon },
+    { name: "Admins", href: "/admin/admins", icon: ShieldCheck },
   ];
 
   if (loading) {
@@ -106,15 +108,15 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300">
-      {/* Desktop Sidebar (Left - Col Width) */}
-      <aside className="hidden lg:flex flex-col w-64 border-r border-border/40 bg-card/60 backdrop-blur-md p-5 shrink-0 justify-between shadow-sm relative overflow-hidden">
+      {/* Permanent Full Sidebar (Left - Col Width) */}
+      <aside className="sticky top-0 h-screen flex flex-col w-56 sm:w-64 border-r border-border/40 bg-card/60 backdrop-blur-md p-4 sm:p-5 shrink-0 justify-between shadow-sm overflow-y-auto overflow-x-hidden transition-all duration-300">
         {/* Subtle decorative glow dot in background of sidebar */}
         <div className="absolute -top-10 -left-10 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="space-y-6 relative z-10">
           {/* Sidebar Top Logo */}
           <div className="flex items-center justify-between border-b border-border/30 pb-4">
-            <span className="font-geist-sans text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5 group">
+            <span className="font-geist-sans text-base lg:text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5 group w-full">
               {settings?.logoImage ? (
                 <img
                   src={settings.logoImage}
@@ -123,8 +125,8 @@ export default function AdminLayout() {
                 />
               ) : (
                 <>
-                  <span className="text-primary font-black transition-transform group-hover:rotate-12 duration-300">✦</span>
-                  {(settings?.logo || "AETHER") + " ADMIN"}
+                  <span className="text-primary font-black transition-transform group-hover:rotate-12 duration-300 text-lg sm:text-xl">✦</span>
+                  <span>{(settings?.logo || "AETHER") + " ADMIN"}</span>
                 </>
               )}
             </span>
@@ -139,7 +141,7 @@ export default function AdminLayout() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center justify-between px-3 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                  className={`flex items-center justify-between px-3 py-2 text-sm font-semibold rounded-xl transition-all duration-300 relative group ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-[0_4px_16px_rgba(99,102,241,0.25)] dark:shadow-[0_4px_20px_rgba(99,102,241,0.4)] scale-[1.01]"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/70 hover:translate-x-0.5"
@@ -151,7 +153,7 @@ export default function AdminLayout() {
                   </div>
                   {item.badge !== undefined && (
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm ${
                         isActive
                           ? "bg-white text-primary"
                           : "bg-primary text-white"
@@ -168,13 +170,33 @@ export default function AdminLayout() {
 
         {/* Sidebar Bottom Controls */}
         <div className="space-y-3 pt-6 border-t border-border/30 relative z-10">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-xs text-muted-foreground font-semibold truncate max-w-[120px]" title={user.email}>
-              {user.email}
-            </span>
+          <div className="flex items-center justify-between gap-1.5">
+            <Link
+              to="/admin/profile"
+              className="flex-1 flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 transition-all group min-w-0"
+              title="View Profile Settings"
+            >
+              <div className="h-8 w-8 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.displayName} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    {(user.displayName || user.email || "A").substring(0, 2)}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                  {user.displayName || "Admin User"}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate font-semibold">
+                  {user.email}
+                </p>
+              </div>
+            </Link>
             <button
               onClick={toggleTheme}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 shrink-0"
               aria-label="Toggle Theme"
             >
               {theme === "light" ? (
@@ -187,7 +209,7 @@ export default function AdminLayout() {
 
           <Link
             to="/"
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-xl transition-all hover:translate-x-0.5"
+            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-xl transition-all hover:translate-x-0.5"
           >
             <Home className="h-4.5 w-4.5" />
             <span>Visitor Portal</span>
@@ -195,7 +217,7 @@ export default function AdminLayout() {
 
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:translate-x-0.5"
+            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:translate-x-0.5 cursor-pointer"
           >
             <LogOut className="h-4.5 w-4.5" />
             <span>Sign Out</span>
@@ -205,106 +227,6 @@ export default function AdminLayout() {
 
       {/* Main Panel Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        {/* Header bar on Mobile / Tablet */}
-        <header className="lg:hidden flex items-center justify-between h-16 border-b border-border/40 bg-card px-4 shrink-0 z-30 sticky top-0">
-          <span className="font-geist-sans text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
-            {settings?.logoImage ? (
-              <img
-                src={settings.logoImage}
-                alt={settings.websiteName || "Aether"}
-                className="h-7 w-auto object-contain max-h-7"
-              />
-            ) : (
-              <>
-                <span className="text-primary font-black">✦</span>
-                {(settings?.logo || "AETHER") + " ADMIN"}
-              </>
-            )}
-          </span>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Toggle Theme"
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </header>
-
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-card border-b border-border/40 px-4 py-4 space-y-3 z-20 sticky top-16 shadow-lg animate-slide-up">
-            <nav className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-3 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="h-5 w-5" />
-                      <span>{item.name}</span>
-                    </div>
-                    {item.badge !== undefined && (
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          isActive
-                            ? "bg-white text-primary"
-                            : "bg-primary text-white"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-            <hr className="border-border/40 my-2" />
-            <div className="flex flex-col gap-2">
-              <Link
-                to="/"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
-              >
-                <Home className="h-5 w-5" />
-                <span>Visitor Website</span>
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 text-left"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Core Administrative Page Views wrapper */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           <Outlet />

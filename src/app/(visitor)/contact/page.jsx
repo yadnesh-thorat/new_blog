@@ -79,20 +79,11 @@ export default function ContactPage() {
 
       <main className="flex-grow transition-colors duration-300">
 
-        {/* Page Hero */}
-        <section className="relative overflow-hidden py-20 lg:py-28 border-b border-border/30">
-          <div className="absolute top-[-100px] right-[10%] w-[400px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slower" />
-          <div className="absolute bottom-[-80px] left-[8%] w-[300px] h-[300px] bg-indigo-500/6 rounded-full blur-[100px] pointer-events-none -z-10 animate-float-slow" />
-
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center space-y-6 animate-entrance">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary shadow-[0_0_12px_rgba(99,102,241,0.15)]">
-              <MessageSquare className="h-3 w-3" />
-              Get In Touch
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-geist-sans tracking-tight text-foreground leading-[1.08]">
-              Contact <span className="text-gradient">Aether</span>
-            </h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+        {/* Header section matching homepage */}
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-20 pb-8 animate-entrance">
+          <div className="border-b border-border/40 pb-5 mb-8">
+            <h3 className="font-geist-sans text-2xl font-bold">Contact Aether</h3>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               Have questions, editorial pitches, or sponsorship proposals? Fill out the form or reach us via our direct channels.
             </p>
           </div>

@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { Lock, Mail, AlertCircle, ArrowLeft } from "lucide-react";
+import { Lock, Mail, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const { user, login, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -70,10 +71,10 @@ export default function AdminLoginPage() {
         <ArrowLeft className="h-4 w-4" /> Back to Visitor Website
       </Link>
 
-      <div className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl border border-border/40 bg-card/60 backdrop-blur-md shadow-lg space-y-6 animate-entrance">
-        <div className="text-center space-y-2">
+      <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-border/40 bg-card/75 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-6 animate-entrance">
+        <div className="text-center space-y-2.5">
           <span className="font-geist-sans text-xl font-bold tracking-tight text-foreground flex items-center justify-center gap-1.5 select-none">
-            <span className="text-primary font-black">✦</span> AETHER CONSOLE
+            <span className="text-primary font-black animate-spin-slow">✦</span> AETHER CONSOLE
           </span>
           <p className="text-xs text-muted-foreground font-medium">
             Enter administrative credentials to access console.
@@ -87,7 +88,7 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label
               htmlFor="admin-email-input"
@@ -120,20 +121,32 @@ export default function AdminLoginPage() {
               <Lock className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
               <input
                 id="admin-password-input"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-10 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 p-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full flex items-center justify-center rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground hover:opacity-95 shadow-[0_4px_16px_rgba(99,102,241,0.2)] dark:shadow-[0_4px_20px_rgba(99,102,241,0.35)] transition-all duration-300 active:scale-95 disabled:opacity-50 font-geist-sans cursor-pointer"
+            className="btn-shimmer w-full flex items-center justify-center rounded-xl bg-primary py-3 text-sm font-bold text-white hover:opacity-95 shadow-[0_4px_16px_rgba(99,102,241,0.2)] dark:shadow-[0_4px_20px_rgba(99,102,241,0.35)] transition-all duration-300 active:scale-95 disabled:opacity-50 font-geist-sans cursor-pointer"
           >
             {submitting ? "Securing channel..." : "Verify Identity"}
           </button>

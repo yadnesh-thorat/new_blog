@@ -8,6 +8,7 @@ import {
   Clock,
   Search,
   ChevronRight,
+  ChevronLeft,
   Layers,
   TrendingUp,
   Mail,
@@ -29,6 +30,12 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -92,8 +99,6 @@ export default function HomePage() {
     );
   }
 
-  const featuredBlog = blogs.find((b) => b.status === "published");
-  const trendingBlogs = blogs.slice(0, 3).sort((a, b) => b.views - a.views);
   const filteredBlogs = blogs.filter((blog) => {
     const matchesCategory = selectedCategory === "all" || blog.category === selectedCategory;
     const matchesSearch =
@@ -103,6 +108,16 @@ export default function HomePage() {
     return matchesCategory && matchesSearch;
   });
 
+  const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
+  const paginatedBlogs = filteredBlogs.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+  const hasNewsLayout = currentPage === 1 && paginatedBlogs.length > 1;
+  const mainArticle = hasNewsLayout ? paginatedBlogs[0] : null;
+  const subArticle = hasNewsLayout && paginatedBlogs.length > 2 ? paginatedBlogs[1] : null;
+  const sidebarArticles = hasNewsLayout
+    ? (paginatedBlogs.length === 2 ? [paginatedBlogs[1]] : paginatedBlogs.slice(2))
+    : [];
+
   return (
     <>
       {/* Scroll Progress Indicator */}
@@ -110,241 +125,8 @@ export default function HomePage() {
 
       <VisitorNavbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 lg:py-36 transition-colors duration-300">
-        {/* Ambient background orbs */}
-        <div className="absolute top-[-150px] left-[10%] w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slow" />
-        <div className="absolute top-[100px] right-[10%] w-[300px] sm:w-[480px] h-[300px] sm:h-[480px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slower" />
-        <div className="absolute top-[-50px] left-1/2 -translate-x-1/2 w-[700px] sm:w-[950px] h-[380px] bg-gradient-to-tr from-rose-500/5 to-primary/5 rounded-full blur-[140px] pointer-events-none -z-10" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mx-auto max-w-3xl space-y-7 animate-entrance">
-            {/* Badge */}
-            <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold bg-muted/70 text-muted-foreground border border-border/50 shadow-sm backdrop-blur-sm">
-              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse shrink-0" />
-              Aether Tech &amp; Design Journal — v2.0
-            </span>
-
-            {/* Heading */}
-            <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-6xl lg:text-7xl font-geist-sans leading-[1.08] animate-slide-up">
-              {settings.hero.title.split(" ").length > 3 ? (
-                <>
-                  <span className="text-gradient">
-                    {settings.hero.title.split(" ").slice(0, 3).join(" ")}
-                  </span>
-                  <br />
-                  <span className="text-foreground">
-                    {settings.hero.title.split(" ").slice(3).join(" ")}
-                  </span>
-                </>
-              ) : (
-                <span className="text-gradient">{settings.hero.title}</span>
-              )}
-            </h1>
-
-            <p className="text-lg sm:text-xl leading-relaxed text-muted-foreground max-w-2xl mx-auto font-medium">
-              {settings.hero.subtitle}
-            </p>
-
-            {/* Search Input */}
-            <div className="mx-auto max-w-lg mt-8 flex items-center rounded-2xl glass p-1 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/20 dark:border-white/5 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary/30 transition-all duration-300">
-              <div className="flex items-center px-3.5 text-muted-foreground">
-                <Search className="h-5 w-5" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search latest articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent px-3 py-2.5 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/60"
-              />
-              {searchQuery ? (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="px-3.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
-                >
-                  Clear
-                </button>
-              ) : (
-                <span className="hidden sm:inline-flex items-center gap-0.5 text-[9px] font-extrabold bg-muted px-2 py-1 rounded-xl border border-border/60 text-muted-foreground/80 mr-2.5 shrink-0 select-none">
-                  <span>⌘</span>K
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Blog Banner */}
-      {featuredBlog && (
-        <section id="featured" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-border/30 bg-card/50 backdrop-blur-md shadow-md lg:grid lg:grid-cols-12 lg:gap-0 group hover-lift hover-glow duration-300 hover:border-primary/25 hover:shadow-[0_16px_48px_rgba(99,102,241,0.07)] dark:hover:shadow-[0_16px_48px_rgba(99,102,241,0.14)] animate-entrance">
-            {/* Cover Image */}
-            <div className="relative h-64 sm:h-80 lg:h-full lg:col-span-6 overflow-hidden rounded-tl-[2.5rem] rounded-bl-[2.5rem] max-lg:rounded-bl-none max-lg:rounded-tr-[2.5rem]">
-              <img
-                src={featuredBlog.coverImage}
-                alt={featuredBlog.title}
-                className="absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.04]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-card/20" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:hidden" />
-            </div>
-
-            {/* Content Details */}
-            <div className="flex flex-col justify-center p-8 sm:p-10 lg:col-span-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex self-start rounded-xl bg-primary/12 border border-primary/25 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary dark:text-primary-foreground dark:bg-primary/80 shadow-sm">
-                  {categories.find((c) => c.slug === featuredBlog.category)?.name || featuredBlog.category}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Featured</span>
-              </div>
-
-              <Link
-                to={`/blogs/${featuredBlog.slug}`}
-                className="block group-hover:text-primary transition-colors duration-300"
-              >
-                <h2 className="text-2xl font-black sm:text-3xl text-foreground font-geist-sans leading-tight hover:text-primary transition-colors">
-                  {featuredBlog.title}
-                </h2>
-              </Link>
-
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 font-medium">
-                {featuredBlog.excerpt}
-              </p>
-
-              {/* Author & Meta */}
-              <div className="flex items-center gap-4 pt-4 border-t border-border/30">
-                <img
-                  src={featuredBlog.author.avatar}
-                  alt={featuredBlog.author.name}
-                  className="h-10 w-10 rounded-full object-cover border-2 border-border/60 shadow-sm"
-                />
-                <div>
-                  <p className="text-sm font-bold text-foreground">{featuredBlog.author.name}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 font-medium">
-                    <span>
-                      {new Date(featuredBlog.createdAt).toLocaleDateString("en-US", {
-                        month: "short", day: "numeric", year: "numeric",
-                      })}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 font-semibold text-primary">
-                      <Clock className="h-3 w-3" /> {featuredBlog.readingTime} min read
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                to={`/blogs/${featuredBlog.slug}`}
-                className="btn-shimmer inline-flex items-center gap-2 self-start rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-[0_4px_16px_rgba(99,102,241,0.3)] hover:opacity-92 hover:scale-[1.02] active:scale-95 transition-all duration-200"
-              >
-                Read Article <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Trending & Categories Grid */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Categories Section (Left col) */}
-        <div className="lg:col-span-4 space-y-5">
-          <div className="flex items-center gap-2 border-b border-border/40 pb-3">
-            <Layers className="h-5 w-5 text-muted-foreground" />
-            <h3 className="font-geist-sans text-lg font-bold">Categories</h3>
-          </div>
-          <div className="grid grid-cols-1 gap-2.5">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left text-sm font-semibold ${
-                selectedCategory === "all"
-                  ? "bg-primary border-primary text-primary-foreground shadow-[0_4px_14px_rgba(99,102,241,0.25)]"
-                  : "bg-card border-border/40 text-foreground hover:bg-muted/50 hover:border-foreground/20"
-              }`}
-            >
-              <span>All Categories</span>
-              <span className={`text-xs px-2 py-0.5 rounded-lg font-bold ${
-                selectedCategory === "all" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
-              }`}>
-                {blogs.length}
-              </span>
-            </button>
-            {categories.map((cat) => {
-              const blogCount = blogs.filter((b) => b.category === cat.slug).length;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left text-sm font-semibold ${
-                    selectedCategory === cat.slug
-                      ? "bg-primary border-primary text-primary-foreground shadow-[0_4px_14px_rgba(99,102,241,0.25)]"
-                      : "bg-card border-border/40 text-foreground hover:bg-muted/50 hover:border-foreground/20"
-                  }`}
-                >
-                  <span className="truncate">{cat.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-lg font-bold shrink-0 ml-2 ${
-                    selectedCategory === cat.slug ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {blogCount}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Trending Section (Right col) */}
-        <div className="lg:col-span-8 space-y-5">
-          <div className="flex items-center gap-2 border-b border-border/40 pb-3">
-            <Flame className="h-5 w-5 text-orange-500" />
-            <h3 className="font-geist-sans text-lg font-bold">Trending Articles</h3>
-          </div>
-          <div className="space-y-3">
-            {trendingBlogs.map((blog, idx) => (
-              <div
-                key={blog.id}
-                className="relative flex gap-4 p-5 rounded-2xl border border-border/25 bg-card/40 hover:bg-card hover:border-primary/20 transition-all duration-300 items-center group hover:shadow-md animate-entrance"
-                style={{ animationDelay: `${idx * 0.07}s` }}
-              >
-                {/* Rank number */}
-                <div className={`text-3xl font-black font-geist-sans w-9 shrink-0 text-center leading-none ${
-                  idx === 0 ? "text-gradient" : "text-muted-foreground/25"
-                }`}>
-                  0{idx + 1}
-                </div>
-                <div className="flex-1 space-y-1 min-w-0">
-                  <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                    {categories.find((c) => c.slug === blog.category)?.name || blog.category}
-                  </span>
-                  <Link
-                    to={`/blogs/${blog.slug}`}
-                    className="block hover:text-primary transition-colors"
-                  >
-                    <p className="text-base font-semibold leading-snug text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                      {blog.title}
-                    </p>
-                  </Link>
-                  <div className="flex gap-4 items-center text-xs text-muted-foreground">
-                    <span className="font-semibold">{blog.views} views</span>
-                    <span>•</span>
-                    <span>{blog.readingTime} min read</span>
-                  </div>
-                </div>
-                <Link
-                  to={`/blogs/${blog.slug}`}
-                  className="p-2 rounded-full hover:bg-primary hover:text-primary-foreground text-muted-foreground transition-all duration-200 shrink-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Latest Blogs Listing */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-12">
         <div className="border-b border-border/40 pb-5 mb-8 flex justify-between items-end">
           <div>
             <h3 className="font-geist-sans text-2xl font-bold">Latest Publications</h3>
@@ -363,153 +145,228 @@ export default function HomePage() {
         </div>
 
         {filteredBlogs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBlogs.map((blog, idx) => (
-              <article
-                key={blog.id}
-                className="flex flex-col overflow-hidden rounded-[2rem] border border-border/30 bg-card/50 backdrop-blur-sm hover-lift hover-glow gradient-border transition-all duration-300 group animate-entrance"
-                style={{ animationDelay: `${idx * 0.04}s` }}
-              >
-                {/* Image */}
-                <div className="relative h-52 overflow-hidden">
-                  <img
-                    src={blog.coverImage}
-                    alt={blog.title}
-                    className="h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.07]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                  <span className="absolute top-3 left-3 rounded-xl bg-background/85 backdrop-blur-md px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
-                    {categories.find((c) => c.slug === blog.category)?.name || blog.category}
-                  </span>
+          <div className="space-y-12">
+            {hasNewsLayout ? (
+              /* News Portal Grid Layout */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 border-b border-border/30">
+                {/* Left Section (Main + Sub Horizontal) */}
+                <div className="lg:col-span-8 space-y-8">
+                  {/* Main Article (Left Top) */}
+                  {mainArticle && (
+                    <article className="space-y-4 group">
+                      <Link to={`/blogs/${mainArticle.slug}`} className="block hover:text-primary transition-colors">
+                        <h2 className="text-2xl sm:text-3.5xl font-black text-foreground font-geist-sans leading-tight tracking-tight">
+                          {mainArticle.title}
+                        </h2>
+                      </Link>
+
+                      {mainArticle.coverImage && (
+                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[2rem] border border-border/30 shadow-md">
+                          <img
+                            src={mainArticle.coverImage}
+                            alt={mainArticle.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                          />
+                        </div>
+                      )}
+
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                        {mainArticle.excerpt}
+                      </p>
+                      
+                      <div>
+                        <Link to={`/blogs/${mainArticle.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 font-bold text-sm">
+                          Read More <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </article>
+                  )}
+
+                  {/* Sub Article (Left Bottom) */}
+                  {subArticle && (
+                    <article className="border-t border-border/20 pt-8 flex flex-col sm:flex-row gap-6 items-start group">
+                      <div className="flex-1 space-y-2">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400 block">
+                          {categories.find((c) => c.slug === subArticle.category)?.name || subArticle.category}
+                        </span>
+                        <Link to={`/blogs/${subArticle.slug}`} className="block hover:text-primary transition-colors">
+                          <h3 className="text-lg sm:text-xl font-bold text-foreground font-geist-sans leading-snug">
+                            {subArticle.title}
+                          </h3>
+                        </Link>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {subArticle.excerpt}
+                        </p>
+                        <div className="pt-1">
+                          <Link to={`/blogs/${subArticle.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 font-bold text-xs">
+                            Read More <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      </div>
+                      {subArticle.coverImage && (
+                        <div className="w-full sm:w-48 h-28 shrink-0 overflow-hidden rounded-2xl border border-border/30 relative">
+                          <img
+                            src={subArticle.coverImage}
+                            alt={subArticle.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                      )}
+                    </article>
+                  )}
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 flex flex-col p-6 space-y-3 justify-between">
-                  <div className="space-y-2">
-                    <Link
-                      to={`/blogs/${blog.slug}`}
-                      className="block hover:text-primary transition-colors duration-200"
-                    >
-                      <h4 className="text-lg font-bold leading-snug line-clamp-2 text-foreground font-geist-sans">
-                        {blog.title}
-                      </h4>
-                    </Link>
-                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed font-medium">
-                      {blog.excerpt}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-border/20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={blog.author.avatar}
-                        alt={blog.author.name}
-                        className="h-7 w-7 rounded-full object-cover border border-border/50 shadow-sm"
-                      />
-                      <span className="text-xs font-bold text-foreground truncate max-w-[100px]">
-                        {blog.author.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold">
-                      <span>
-                        {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                          month: "short", day: "numeric",
-                        })}
-                      </span>
-                      <span>•</span>
-                      <span>{blog.readingTime} min</span>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 border border-dashed border-border/40 rounded-2xl bg-muted/10">
-            <Search className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-foreground">No publications matched your filter</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Try resetting the search terms or choosing a different category.
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* Previous Publication Spotlight Section */}
-      {blogs[1] && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 text-primary-foreground px-6 py-14 sm:px-14 sm:py-18 shadow-2xl border border-white/8 group">
-            {/* Ambient Glowing mesh background */}
-            <div className="absolute -top-[15%] -left-[10%] w-[55%] h-[55%] bg-primary/25 rounded-full blur-[120px] pointer-events-none animate-float-slow" />
-            <div className="absolute -bottom-[15%] -right-[10%] w-[55%] h-[55%] bg-violet-500/20 rounded-full blur-[120px] pointer-events-none animate-float-slower" />
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-              {/* Left text section (Col 7) */}
-              <div className="lg:col-span-7 space-y-6 text-left">
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex rounded-xl bg-white/10 border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                    {categories.find((c) => c.slug === blogs[1].category)?.name || blogs[1].category}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Previous Publication</span>
-                </div>
-
-                <Link
-                  to={`/blogs/${blogs[1].slug}`}
-                  className="block group-hover:text-primary transition-colors duration-300"
-                >
-                  <h3 className="text-3xl font-black sm:text-4xl text-white font-geist-sans leading-tight hover:text-indigo-200 transition-colors">
-                    {blogs[1].title}
+                {/* Right Section (Sidebar Stack) */}
+                <div className="lg:col-span-4 lg:border-l lg:border-border/30 lg:pl-8 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary animate-pulse" /> Trending Topics
                   </h3>
-                </Link>
-
-                <p className="text-sm text-white/70 leading-relaxed line-clamp-3 font-medium">
-                  {blogs[1].excerpt}
-                </p>
-
-                {/* Author Info */}
-                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
-                  <img
-                    src={blogs[1].author.avatar}
-                    alt={blogs[1].author.name}
-                    className="h-10 w-10 rounded-full object-cover border-2 border-white/20 shadow-sm"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-white">{blogs[1].author.name}</p>
-                    <div className="flex items-center gap-2 text-xs text-white/50 mt-0.5 font-medium">
-                      <span>
-                        {new Date(blogs[1].createdAt).toLocaleDateString("en-US", {
-                          month: "short", day: "numeric", year: "numeric",
-                        })}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1 font-semibold text-indigo-300">
-                        <Clock className="h-3 w-3" /> {blogs[1].readingTime} min read
-                      </span>
-                    </div>
+                  <div className="space-y-4">
+                    {sidebarArticles.map((blog) => (
+                      <article
+                        key={blog.id}
+                        className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card/60 p-4.5 shadow-sm hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300 backdrop-blur-sm"
+                      >
+                        <div className="space-y-2.5">
+                          <span className="inline-block rounded-lg bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-primary border border-primary/15">
+                            {categories.find((c) => c.slug === blog.category)?.name || blog.category}
+                          </span>
+                          <Link to={`/blogs/${blog.slug}`} className="block hover:text-primary transition-colors duration-200">
+                            <h4 className="text-sm sm:text-base font-bold text-foreground font-geist-sans leading-snug line-clamp-2">
+                              {blog.title}
+                            </h4>
+                          </Link>
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold pt-1">
+                            <span>
+                              {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                            <Link to={`/blogs/${blog.slug}`} className="text-primary hover:underline flex items-center gap-0.5 font-bold transition-all text-[10px]">
+                              Read More <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
                   </div>
                 </div>
+              </div>
+            ) : (
+              /* Single Article fallback or Standard Grid when only 1 is present */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedBlogs.map((blog, idx) => (
+                  <article
+                    key={blog.id}
+                    className="flex flex-col overflow-hidden rounded-[2rem] border border-border/30 bg-card/50 backdrop-blur-sm hover-lift hover-glow gradient-border transition-all duration-300 group animate-entrance"
+                    style={{ animationDelay: `${idx * 0.04}s` }}
+                  >
+                    {/* Image */}
+                    <div className="relative h-52 overflow-hidden">
+                      <img
+                        src={blog.coverImage}
+                        alt={blog.title}
+                        className="h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.07]"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                      <span className="absolute top-3 left-3 rounded-xl bg-background/85 backdrop-blur-md px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
+                        {categories.find((c) => c.slug === blog.category)?.name || blog.category}
+                      </span>
+                    </div>
 
-                <Link
-                  to={`/blogs/${blogs[1].slug}`}
-                  className="btn-shimmer inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-indigo-950 shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200"
+                    {/* Content */}
+                    <div className="flex-1 flex flex-col p-6 space-y-3 justify-between">
+                      <div className="space-y-2">
+                        <Link
+                          to={`/blogs/${blog.slug}`}
+                          className="block hover:text-primary transition-colors duration-200"
+                        >
+                          <h4 className="text-lg font-bold leading-snug line-clamp-2 text-foreground font-geist-sans">
+                            {blog.title}
+                          </h4>
+                        </Link>
+                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed font-medium">
+                          {blog.excerpt}
+                        </p>
+                        <div className="pt-1">
+                          <Link to={`/blogs/${blog.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 text-xs font-bold transition-all">
+                            Read More <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-border/20 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {blog.author?.avatar ? (
+                            <img
+                              src={blog.author.avatar}
+                              alt={blog.author.name}
+                              className="h-7 w-7 rounded-full object-cover border border-border/50 shadow-sm"
+                            />
+                          ) : (
+                            <div className="h-7 w-7 rounded-full border border-border/50 shadow-sm bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                              {blog.author?.name?.charAt(0)?.toUpperCase() || "?"}
+                            </div>
+                          )}
+                          <span className="text-xs font-bold text-foreground truncate max-w-[100px]">
+                            {blog.author?.name || "Aether Writer"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold">
+                          <span>
+                            {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                          <span>•</span>
+                          <span>{blog.readingTime} min</span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-12 flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="p-2.5 rounded-xl border border-border bg-card/60 text-foreground hover:bg-muted/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+                  title="Previous Page"
                 >
-                  Read Previous Article <ArrowRight className="h-4 w-4" />
-                </Link>
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`h-10 w-10 rounded-xl border text-sm font-bold transition-all duration-200 ${
+                      currentPage === pageNumber
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "border-border bg-card/60 text-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="p-2.5 rounded-xl border border-border bg-card/60 text-foreground hover:bg-muted/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+                  title="Next Page"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
-
-              {/* Right image section (Col 5) */}
-              <div className="lg:col-span-5 h-64 sm:h-80 w-full overflow-hidden rounded-3xl border border-white/10 relative">
-                <img
-                  src={blogs[1].coverImage}
-                  alt={blogs[1].title}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-750 group-hover:scale-[1.04]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/40 via-transparent to-transparent" />
-              </div>
-            </div>
+            )}
           </div>
-        </section>
-      )}
+        ) : null}
+      </section>
 
       <VisitorFooter />
 

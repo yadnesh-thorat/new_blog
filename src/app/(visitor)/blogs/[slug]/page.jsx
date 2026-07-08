@@ -45,26 +45,12 @@ export default function BlogDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeHeader, setActiveHeader] = useState("");
 
-  const [comments, setComments] = useState([
-    {
-      id: "c-1",
-      name: "Marcus Aurelius",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=60",
-      content: "This is a masterpiece of a breakdown. The section about Partial Prerendering helped clarify the streaming boundaries. Thanks!",
-      createdAt: "2026-07-02T14:23:00Z",
-    },
-    {
-      id: "c-2",
-      name: "Elsa Frost",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=60",
-      content: "Aria, the easing functions in CSS transitions are indeed critical for UI speed perception. Ease-out-expo feels extremely responsive.",
-      createdAt: "2026-07-04T08:12:00Z",
-    },
-  ]);
+  const [comments, setComments] = useState([]);
   const [newCommentName, setNewCommentName] = useState("");
   const [newCommentText, setNewCommentText] = useState("");
   const [commentSuccess, setCommentSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [adminUsers, setAdminUsers] = useState([]);
 
   useEffect(() => {
     async function loadBlogData() {
@@ -73,9 +59,17 @@ export default function BlogDetailPage() {
       const activeBlog = await dbService.getBlogBySlug(slug);
       const allBlogs = await dbService.getBlogs(false);
       const cats = await dbService.getCategories();
+      const allAdmins = await dbService.getAdmins();
+      
+      if (activeBlog) {
+        const blogComments = await dbService.getComments(activeBlog.id);
+        setComments(blogComments);
+      }
+      
       setBlog(activeBlog);
       setBlogs(allBlogs);
       setCategories(cats);
+      setAdminUsers(allAdmins);
       setLoading(false);
     }
     loadBlogData();
@@ -96,6 +90,50 @@ export default function BlogDetailPage() {
     headers.forEach((h) => observer.observe(h));
     return () => observer.disconnect();
   }, [blog]);
+
+  const getAuthorDetails = () => {
+    if (!blog) return { name: "Author", avatar: "", role: "Writer", bio: "" };
+    
+    // If blog.author is already a structured object (old mock posts or resolved by dbService)
+    if (blog.author && typeof blog.author === "object") {
+      return {
+        name: blog.author.name || "Aether Writer",
+        avatar: blog.author.avatar || "",
+        role: blog.author.role || "Writer",
+        bio: blog.author.bio || ""
+      };
+    }
+
+    // If blog.author is a string (new dynamically created posts, which contain name or email)
+    if (blog.author && typeof blog.author === "string") {
+      const matched = adminUsers.find(
+        (a) =>
+          a.displayName?.toLowerCase() === blog.author.toLowerCase() ||
+          a.email?.toLowerCase() === blog.author.toLowerCase()
+      );
+      if (matched) {
+        return {
+          name: matched.displayName || matched.email,
+          avatar: matched.avatarUrl || "",
+          role: matched.role || "Administrator",
+          bio: matched.bio || ""
+        };
+      }
+      return {
+        name: blog.author,
+        avatar: "",
+        role: "Administrator",
+        bio: ""
+      };
+    }
+
+    return {
+      name: "Aether Writer",
+      avatar: "",
+      role: "Writer",
+      bio: ""
+    };
+  };
 
   if (loading) {
     return (
@@ -183,7 +221,8 @@ export default function BlogDetailPage() {
   };
 
   const renderRichText = (text) => {
-    const blocks = text.split("\n\n");
+    const normalized = (text || "").replace(/^(#{2,3}\s[^\n]+)\n(?![#\n])/gm, "$1\n\n");
+    const blocks = normalized.split("\n\n");
     return blocks.map((block, idx) => {
       if (block.startsWith("```")) {
         const match = block.match(/```(\w*)\n([\s\S]*?)```/);
@@ -277,24 +316,35 @@ export default function BlogDetailPage() {
             </p>
 
             {/* Author / Date Meta Bar */}
-            <div className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2 text-xs sm:text-sm text-muted-foreground">
-              <div className="flex items-center gap-2.5">
-                <img
-                  src={blog.author.avatar}
-                  alt={blog.author.name}
-                  className="h-9 w-9 rounded-full object-cover border-2 border-border/60 shadow-sm"
-                />
-                <span className="font-bold text-foreground">{blog.author.name}</span>
-              </div>
-              <span className="hidden sm:inline text-border">|</span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
-                {new Date(blog.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5" /> {blog.readingTime} min read
-              </span>
-            </div>
+            {(() => {
+              const authorDetails = getAuthorDetails();
+              return (
+                <div className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2 text-xs sm:text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2.5">
+                    {authorDetails.avatar ? (
+                      <img
+                        src={authorDetails.avatar}
+                        alt={authorDetails.name}
+                        className="h-9 w-9 rounded-full object-cover border-2 border-border/60 shadow-sm"
+                      />
+                    ) : (
+                      <div className="h-9 w-9 rounded-full border-2 border-border/60 shadow-sm bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                        {authorDetails.name?.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                    <span className="font-bold text-foreground">{authorDetails.name}</span>
+                  </div>
+                  <span className="hidden sm:inline text-border">|</span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(blog.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" /> {blog.readingTime} min read
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Featured Cover Image */}
@@ -351,22 +401,37 @@ export default function BlogDetailPage() {
               </div>
 
               {/* Author Card */}
-              <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-6 flex flex-col sm:flex-row items-center gap-5 mt-12 gradient-border group hover:shadow-md transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent pointer-events-none" />
-                <div className="relative shrink-0">
-                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-80 transition-opacity duration-500 scale-110" />
-                  <img
-                    src={blog.author.avatar}
-                    alt={blog.author.name}
-                    className="h-16 w-16 rounded-full object-cover border-2 border-border/60 relative z-10 group-hover:border-primary/40 transition-all duration-300"
-                  />
-                </div>
-                <div className="space-y-1.5 text-center sm:text-left relative z-10">
-                  <h4 className="text-base font-bold font-geist-sans text-foreground">Written by {blog.author.name}</h4>
-                  <p className="text-xs uppercase font-bold text-primary tracking-wider">{blog.author.role}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{blog.author.bio}</p>
-                </div>
-              </div>
+              {(() => {
+                const authorDetails = getAuthorDetails();
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-6 flex flex-col sm:flex-row items-center gap-5 mt-12 gradient-border group hover:shadow-md transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent pointer-events-none" />
+                    <div className="relative shrink-0">
+                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-80 transition-opacity duration-500 scale-110" />
+                      {authorDetails.avatar ? (
+                        <img
+                          src={authorDetails.avatar}
+                          alt={authorDetails.name}
+                          className="h-16 w-16 rounded-full object-cover border-2 border-border/60 relative z-10 group-hover:border-primary/40 transition-all duration-300"
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-full border-2 border-border/60 bg-muted relative z-10 flex items-center justify-center text-xl font-bold text-muted-foreground group-hover:border-primary/40 transition-all duration-300">
+                          {authorDetails.name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1.5 text-center sm:text-left relative z-10">
+                      <h4 className="text-base font-bold font-geist-sans text-foreground">Written by {authorDetails.name}</h4>
+                      {authorDetails.role && (
+                        <p className="text-xs uppercase font-bold text-primary tracking-wider">{authorDetails.role}</p>
+                      )}
+                      {authorDetails.bio && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">{authorDetails.bio}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Prev / Next navigation */}
               <div className="grid grid-cols-2 gap-4 border-t border-b border-border/30 py-6">

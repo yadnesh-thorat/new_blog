@@ -3,11 +3,11 @@
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  --color-ring: var(--primary-color);
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
-  --color-primary: hsl(var(--primary));
+  --color-primary: var(--primary-color);
   --color-primary-foreground: hsl(var(--primary-foreground));
 
   --color-secondary: hsl(var(--secondary));
@@ -76,6 +76,8 @@
   --input: 240 5.9% 90%;
   --ring: 250 84% 54%;
   --radius: 0.75rem;
+  --primary-color: hsl(250 84% 54%);
+  --footer-bg: hsl(240 4.8% 95.9% / 0.85);
 }
 
 .dark {
@@ -98,6 +100,8 @@
   --border: 240 15% 15%;
   --input: 240 15% 15%;
   --ring: 250 89% 65%;
+  --primary-color: hsl(250 89% 65%);
+  --footer-bg: hsl(240 15% 7.5%);
 }
 
 * {
@@ -430,15 +434,19 @@ body {
   line-height: 1.75;
 }
 
-/* Elements that may contain Marathi: ensure Noto Sans Devanagari is in the stack */
+/* Elements that may contain Marathi: ensure fonts are resolved from variables */
 p, h1, h2, h3, h4, h5, h6, li, blockquote, td, th, label, span, a {
-  font-family: 'Geist', 'Outfit', 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--font-marathi-body, 'Geist', 'Outfit', 'Noto Sans Devanagari', sans-serif);
   word-break: break-word;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-marathi-heading, 'Geist', 'Outfit', 'Noto Sans Devanagari', sans-serif);
 }
 
 /* Target elements explicitly marked as Marathi language */
 :lang(mr), [lang="mr"] {
-  font-family: 'Noto Sans Devanagari', 'Geist', sans-serif;
+  font-family: var(--font-marathi-body, 'Noto Sans Devanagari', 'Geist', sans-serif);
   line-height: 2;
   letter-spacing: 0.01em;
 }

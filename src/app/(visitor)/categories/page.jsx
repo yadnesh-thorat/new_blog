@@ -48,49 +48,38 @@ function CategoriesContent() {
   const activeCategoryDetail = categories.find((c) => c.slug === activeFilter);
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-28 border-b border-border/30">
-        <div className="absolute top-[-80px] left-[8%] w-[400px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none -z-10 animate-float-slow" />
-        <div className="absolute bottom-[-60px] right-[8%] w-[350px] h-[350px] bg-indigo-500/6 rounded-full blur-[100px] pointer-events-none -z-10 animate-float-slower" />
-
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-6 animate-entrance">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary shadow-[0_0_12px_rgba(99,102,241,0.15)]">
-            <Layers className="h-3 w-3" />
-            Expert Columns
-          </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-geist-sans tracking-tight leading-[1.08]">
-            Browse by <span className="text-gradient">Category</span>
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+      {/* Header section matching homepage */}
+      <div className="border-b border-border/40 pb-5 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h3 className="font-geist-sans text-2xl font-bold">Browse by Category</h3>
+          <p className="text-sm text-muted-foreground mt-1">
             Specialized columns authored by our design architects, code creators, and database experts.
           </p>
-
-          {/* Search bar */}
-          <div className="mx-auto max-w-md">
-            <div className="flex items-center rounded-2xl glass border border-white/20 dark:border-white/5 px-4 py-3 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 transition-all duration-300">
-              <Search className="h-4 w-4 text-muted-foreground mr-3 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-sm w-full focus:outline-none placeholder:text-muted-foreground/60 text-foreground"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors ml-2 shrink-0"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
         </div>
-      </section>
+        {activeFilter === "all" && (
+          <div className="flex items-center rounded-xl border border-border/30 bg-muted/20 px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all duration-300 w-full sm:w-72 shrink-0">
+            <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-xs w-full focus:outline-none placeholder:text-muted-foreground/50 text-foreground"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors ml-1 shrink-0"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+      <div className="space-y-10">
         {activeFilter === "all" ? (
           <>
             {/* Category count header */}
@@ -112,10 +101,13 @@ function CategoriesContent() {
                     style={{ animationDelay: `${idx * 0.05}s` }}
                   >
                     <div>
-                      <div className="relative h-44 overflow-hidden">
+                      <div className="relative h-44 overflow-hidden bg-muted flex items-center justify-center">
                         <img
-                          src={cat.image}
+                          src={cat.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60"}
                           alt={cat.name}
+                          onError={(e) => {
+                            e.target.src = "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60";
+                          }}
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.07]"
                         />
                         {/* Overlay gradient */}
@@ -152,9 +144,12 @@ function CategoriesContent() {
               <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-center shadow-sm animate-entrance">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent pointer-events-none" />
                 <img
-                  src={activeCategoryDetail.image}
+                  src={activeCategoryDetail.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60"}
                   alt={activeCategoryDetail.name}
-                  className="w-full sm:w-52 h-36 rounded-2xl object-cover border border-border/40 shrink-0"
+                  onError={(e) => {
+                    e.target.src = "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60";
+                  }}
+                  className="w-full sm:w-52 h-36 rounded-2xl object-cover border border-border/40 shrink-0 bg-muted"
                 />
 
                 <div className="space-y-3 text-center sm:text-left flex-1 relative z-10">
@@ -219,13 +214,19 @@ function CategoriesContent() {
                         </div>
                         <div className="pt-3 border-t border-border/20 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <img
-                              src={blog.author.avatar}
-                              alt={blog.author.name}
-                              className="h-6 w-6 rounded-full object-cover border border-border/50"
-                            />
+                            {blog.author?.avatar ? (
+                              <img
+                                src={blog.author.avatar}
+                                alt={blog.author.name}
+                                className="h-6 w-6 rounded-full object-cover border border-border/50"
+                              />
+                            ) : (
+                              <div className="h-6 w-6 rounded-full border border-border/50 bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                {blog.author?.name?.charAt(0)?.toUpperCase() || "?"}
+                              </div>
+                            )}
                             <span className="text-xs font-semibold text-foreground truncate max-w-[90px]">
-                              {blog.author.name}
+                              {blog.author?.name || "Aether Writer"}
                             </span>
                           </div>
                           <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-semibold">

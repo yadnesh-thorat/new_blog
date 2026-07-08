@@ -23,10 +23,12 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
 } from "lucide-react";
-import { dbService } from "@/lib/db";
+import { dbService, MOCK_BLOGS } from "@/lib/db";
+import { useAuth } from "@/lib/auth";
 import confetti from "canvas-confetti";
 
 function BlogsManagerContent() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialAction = searchParams.get("action");
@@ -60,6 +62,8 @@ function BlogsManagerContent() {
 
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [author, setAuthor] = useState("");
   // List settings
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -76,6 +80,7 @@ function BlogsManagerContent() {
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [status, setStatus] = useState("draft");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -105,12 +110,47 @@ function BlogsManagerContent() {
     }
   };
 
+  const handleSeedMarathiArticles = async () => {
+    if (submitting) return;
+    if (!confirm("Are you sure you want to seed 10 Marathi articles directly into the database?")) return;
+    
+    setSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("Seeding started... please wait.");
+    
+    try {
+      let count = 0;
+      for (const blog of MOCK_BLOGS) {
+        await dbService.saveBlog({
+          ...blog,
+          status: "published",
+          createdAt: new Date(Date.now() - count * 3600000 * 24).toISOString()
+        });
+        count++;
+      }
+      setSuccessMsg("Successfully seeded 10 Marathi articles directly into the database!");
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.8 },
+      });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err?.message || "Failed to seed articles.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Load Data
   const loadData = async () => {
     const allBlogs = await dbService.getBlogs(true); // Include drafts
     const allCats = await dbService.getCategories();
+    const allAdmins = await dbService.getAdmins();
     setBlogs(allBlogs);
     setCategories(allCats);
+    setAdminUsers(allAdmins);
   };
 
   useEffect(() => {
@@ -148,8 +188,10 @@ function BlogsManagerContent() {
     setCoverImage(
       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
     );
-    setCategory(categories[0]?.slug || "web-dev");
+    setCategory(categories[0]?.slug || "__custom__");
+    setCustomCategory("");
     setTagsInput("");
+    setAuthor(user?.displayName || user?.email || "");
     setStatus("draft");
     setScheduledAt("");
     setSeoTitle("");
@@ -168,8 +210,21 @@ function BlogsManagerContent() {
     setExcerpt(blog.excerpt);
     setContent(blog.content);
     setCoverImage(blog.coverImage);
-    setCategory(blog.category);
+    
+    // Check if the blog's category exists in standard categories
+    const categoryExists = categories.some((c) => c.slug === blog.category);
+    if (categoryExists) {
+      setCategory(blog.category);
+      setCustomCategory("");
+    } else {
+      setCategory("__custom__");
+      setCustomCategory(blog.category);
+    }
+    
     setTagsInput(blog.tags.join(", "));
+    // Extract string author name (blog.author may already be a resolved object from getBlogs)
+    const rawAuthor = typeof blog.author === "object" ? (blog.author?.name || blog.author?.email || "") : (blog.author || "");
+    setAuthor(rawAuthor);
     setStatus(blog.status);
     setScheduledAt(blog.scheduledAt || "");
     setSeoTitle(blog.seo?.title || "");
@@ -200,14 +255,48 @@ function BlogsManagerContent() {
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
+    let finalCategory = category;
+    if (category === "__custom__") {
+      const customName = customCategory.trim();
+      if (!customName) {
+        setErrorMsg("Please enter a custom category name.");
+        setSubmitting(false);
+        return;
+      }
+      
+      // Generate slug from the custom name
+      const customSlug = customName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+      finalCategory = customSlug;
+
+      // If the category doesn't exist, auto-create it
+      const categoryExists = categories.some((c) => c.slug === customSlug);
+      if (!categoryExists) {
+        try {
+          await dbService.saveCategory({
+            name: customName,
+            slug: customSlug,
+            description: `Auto-generated category for ${customName}`,
+            image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60",
+          });
+        } catch (err) {
+          console.error("Failed to auto-create category:", err);
+        }
+      }
+    }
+
     const blogData = {
       title,
       slug,
       excerpt,
       content,
       coverImage,
-      category,
+      category: finalCategory,
       tags,
+      author: typeof author === "object" ? (author?.name || author?.email || "") : author,
       status,
       scheduledAt: scheduledAt || null,
       seo: {
@@ -223,7 +312,6 @@ function BlogsManagerContent() {
       if (existing) {
         blogData.createdAt = existing.createdAt;
         blogData.views = existing.views;
-        blogData.author = existing.author;
       }
     }
 
@@ -276,7 +364,8 @@ function BlogsManagerContent() {
   });
 
   const renderRichText = (text) => {
-    const blocks = text.split("\n\n");
+    const normalized = (text || "").replace(/^(#{2,3}\s[^\n]+)\n(?![#\n])/gm, "$1\n\n");
+    const blocks = normalized.split("\n\n");
     return blocks.map((block, idx) => {
       if (block.startsWith("```")) {
         const match = block.match(/```(\w*)\n([\s\S]*?)```/);
@@ -464,7 +553,7 @@ function BlogsManagerContent() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label
                       htmlFor="blog-slug"
@@ -495,17 +584,47 @@ function BlogsManagerContent() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 cursor-pointer"
                     >
-                      {categories.length === 0 ? (
-                        <option value="" disabled className="bg-card text-foreground">
-                          No categories available
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.slug} className="bg-card text-foreground">
+                          {c.name}
                         </option>
-                      ) : (
-                        categories.map((c) => (
-                          <option key={c.id} value={c.slug} className="bg-card text-foreground">
-                            {c.name}
-                          </option>
-                        ))
-                      )}
+                      ))}
+                      <option value="__custom__" className="bg-card text-primary font-bold">
+                        -- Create Custom Category (Type manually) --
+                      </option>
+                    </select>
+                    {category === "__custom__" && (
+                      <input
+                        type="text"
+                        required
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="Enter custom category name (e.g. AI Tools)"
+                        className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50 mt-2 animate-entrance"
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="blog-author"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    >
+                      Author / Writer
+                    </label>
+                    <select
+                      id="blog-author"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="" className="bg-card text-muted-foreground">
+                        -- Select Author --
+                      </option>
+                      {adminUsers.map((admin) => (
+                        <option key={admin.id} value={admin.displayName || admin.email} className="bg-card text-foreground">
+                          {admin.displayName ? `${admin.displayName} (${admin.email})` : admin.email}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -944,14 +1063,15 @@ function BlogsManagerContent() {
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             {b.status === "published" && (
-                              <Link
-                                href={`/blogs/${b.slug}`}
+                              <a
+                                href={`/blogs/${(b.slug || "").replace(/^\/+/, "")}`}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
                                 title="View in visitor page"
                               >
                                 <ExternalLink className="h-4 w-4" />
-                              </Link>
+                              </a>
                             )}
                             <button
                               onClick={() => handleOpenEdit(b)}

@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured, storage } from "./firebase";
 
-const FIREBASE_TIMEOUT_MS = 1200;
+const FIREBASE_TIMEOUT_MS = 8000;
 let firebaseUnavailable = typeof window !== "undefined" && sessionStorage.getItem("aether_firebase_unavailable") === "true";
 
 function canUseFirebase() {
@@ -37,27 +37,16 @@ function handleFirebaseFailure(operation, error) {
 // Define Interfaces
 
 const MOCK_CATEGORIES = [
-  {
-    id: "cat-1",
-    name: "Web Development",
-    slug: "web-dev",
-    description: "Modern frontend techniques, Next.js, React, CSS, and serverless engineering.",
-    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60"
-  },
-  {
-    id: "cat-2",
-    name: "Design Systems",
-    slug: "design-systems",
-    description: "Typography, fluid grids, tokenization, animations, and premium visual components.",
-    image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60"
-  },
-  {
-    id: "cat-3",
-    name: "AI Engineering",
-    slug: "ai-engineering",
-    description: "Generative AI, Large Language Model orchestration, prompt engineering, and agent systems.",
-    image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800&auto=format&fit=crop&q=60"
-  }
+  { id: "cat-web-dev", name: "वेब डेव्हलपमेंट", slug: "web-dev", description: "Modern frontend techniques, Next.js, React, CSS, and serverless engineering.", image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-design-systems", name: "डिझाईन सिस्टम", slug: "design-systems", description: "Typography, fluid grids, tokenization, animations, and premium visual components.", image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-ai-engineering", name: "कृत्रिम बुद्धिमत्ता", slug: "ai-engineering", description: "Generative AI, Large Language Model orchestration, prompt engineering, and agent systems.", image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-cyber-security", name: "सायबर सुरक्षा", slug: "cyber-security", description: "Learn cyber security, social media account defense, bank account protection, and digital self-defense.", image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-data-science", name: "डेटा सायन्स", slug: "data-science", description: "Explore python data analysis, SQL databases, metrics, statistics, and trends forecasting.", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-cloud-computing", name: "क्लाउड कम्प्युटिंग", slug: "cloud-computing", description: "Master AWS, Google Cloud, Azure server operations, networks, and cloud architecture.", image: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-mobile-dev", name: "मोबाईल ॲप्स", slug: "mobile-dev", description: "Building Android and iOS applications with React Native, Flutter, Swift, and Kotlin.", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-database", name: "डेटाबेस मॅनेजमेंट", slug: "database", description: "Relational and NoSQL database administration, Postgres, Firebase Firestore, and Redis caches.", image: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-ui-ux", name: "यूआय/यूएक्स डिझाईन", slug: "ui-ux", description: "User interface and user experience design patterns, Figma prototyping, typography, and wireframes.", image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&auto=format&fit=crop&q=60" },
+  { id: "cat-devops", name: "डेव्हऑप्स इंजिनिअरिंग", slug: "devops", description: "CI/CD pipelines, Docker containers, Kubernetes clusters, automation scripts, and server performance.", image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60" }
 ];
 
 const MOCK_SETTINGS = {
@@ -70,6 +59,12 @@ const MOCK_SETTINGS = {
       "Exploring next-generation technologies, interactive interfaces, serverless systems, and the design languages of tomorrow.",
     ctaText: "Explore Blogs",
     ctaLink: "#featured",
+  },
+  theme: {
+    primaryColorLight: "#4f46e5",
+    primaryColorDark: "#818cf8",
+    footerBgColorLight: "#f4f4f5",
+    footerBgColorDark: "#101014",
   },
   aboutContent: {
     title: "Crafting Premium Digital Experiences",
@@ -142,11 +137,246 @@ const MOCK_SETTINGS = {
   },
 };
 
-const MOCK_BLOGS = [];
+export const MOCK_BLOGS = [
+  {
+    id: "mock-blog-1",
+    title: "कृत्रिम बुद्धिमत्ता (AI) आणि मानवी जीवन: एक नवी दिशा",
+    slug: "ai-and-human-life-new-direction",
+    excerpt: "कृत्रिम बुद्धिमत्ता (AI) आपल्या दैनंदिन जीवनाचा एक महत्त्वाचा भाग बनत चालली आहे. या लेखात आपण त्याचे मानवी जीवनावरील सकारात्मक आणि नकारात्मक परिणाम पाहणार आहोत.",
+    content: "## कृत्रिम बुद्धिमत्ता (AI) म्हणजे काय?\n\nकृत्रिम बुद्धिमत्ता ही संगणक विज्ञानाची एक शाखा आहे जी मानवी बुद्धिमत्तेचे अनुकरण करू शकणारे स्मार्ट मशीन तयार करण्याशी संबंधित आहे. आजच्या काळात AI चा वापर आरोग्य, शिक्षण, वाहतूक आणि मनोरंजन अशा सर्वच क्षेत्रांमध्ये वेगाने होत आहे.\n\n### मानवी जीवनावरील प्रभाव\n\nAI मुळे मानवी कामे अधिक सुलभ आणि कार्यक्षम झाली आहेत. परंतु, यामुळे नोकऱ्यांवर होणारा परिणाम आणि डेटा सुरक्षितता याविषयी चिंता देखील वाढत आहे.",
+    coverImage: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=1200&auto=format&fit=crop&q=80",
+    category: "ai-engineering",
+    tags: ["AI", "Technology", "Future"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    views: 1250,
+    readingTime: 5,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect & Editor",
+      bio: "Yadnesh is a full stack specialist who spends his time designing systems with Next.js, Firebase, and real-time data sync."
+    }
+  },
+  {
+    id: "mock-blog-2",
+    title: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
+    slug: "modern-trends-in-web-design-2026",
+    excerpt: "वेब डिझाइन जग सतत बदलत असते. या वर्षात लोकप्रिय ठरणारे ग्लासमॉर्फिझम, थ्रीडी एलिमेंट्स आणि डार्क मोड डिझाइन्स याविषयी सविस्तर माहिती घ्या.",
+    content: "## वेब डिझाइनचे नवीन पर्व\n\n२०२६ मध्ये वेब डिझाइनिंग केवळ सुंदर दिसण्यापुरते मर्यादित राहिलेले नाही, तर ते अधिक परस्परसंवादी (interactive) आणि वापरण्यास सोपे (user-friendly) बनले आहे. या वर्षात ग्लासमॉर्फिझम (Glassmorphism) आणि निओमॉर्फिझम (Neomorphism) हे ट्रेंड्स अधिक लोकप्रिय ठरत आहेत.\n\n### महत्त्वाचे ट्रेंड्स\n1. **डार्क मोड** - डोळ्यांना त्रास न होण्यासाठी डार्क मोड आता अनिवार्य झाला आहे.\n2. **थ्रीडी ग्राफिक्स** - अधिक आकर्षक अनुभव देण्यासाठी थ्रीडी इमेजेसचा वापर वाढला आहे.",
+    coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80",
+    category: "design-systems",
+    tags: ["Web Design", "UI/UX", "Trends"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+    views: 980,
+    readingTime: 4,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-3",
+    title: "रिएक्ट १९ मधील नवीन फीचर्स आणि त्यांचे फायदे",
+    slug: "react-19-new-features-and-benefits",
+    excerpt: "रिएक्ट १९ चे नवीन कॉम्पायलर आणि रिॲक्ट सर्वर कॉम्पोनंट्स (RSC) डिझाइनिंगला आणि परफॉर्मन्सला कशी नवी गती देणार आहेत ते समजून घ्या.",
+    content: "## रिएक्ट १९ चे आगमन\n\nरिएक्ट १९ मध्ये अनेक महत्त्वपूर्ण बदल करण्यात आले आहेत. सर्वात मोठा बदल म्हणजे 'React Compiler' चा समावेश, जो न वापरलेला कोड आणि मेमोआयझेशन (memoization) स्वयंचलितपणे हाताळतो, ज्यामुळे डेव्हलपर्सचा वेळ वाचतो.",
+    coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&auto=format&fit=crop&q=80",
+    category: "web-dev",
+    tags: ["React", "JavaScript", "Frontend"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    views: 2400,
+    readingTime: 6,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-4",
+    title: "सायबर सुरक्षा: तुमचे डिजिटल अस्तित्व कसे सुरक्षित ठेवावे?",
+    slug: "cyber-security-protect-digital-presence",
+    excerpt: "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. या लेखात आपण आपले सोशल मीडिया खाती, बँक खाती आणि वैयक्तिक डेटा सुरक्षित ठेवण्यासाठी काही टिप्स जाणून घेणार आहोत.",
+    content: "## सायबर सुरक्षेचे महत्त्व\n\nइंटरनेटचा वापर वाढल्याने सायबर हल्ल्यांचा धोकाही वाढला आहे. फिशिंग, मालवेअर आणि रॅन्समवेअर यांसारख्या धोक्यांपासून स्वतःचा बचाव करणे आवश्यक आहे.",
+    coverImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&auto=format&fit=crop&q=80",
+    category: "web-dev",
+    tags: ["Security", "Cyber", "Tips"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+    views: 1850,
+    readingTime: 5,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-5",
+    title: "युझर इंटरफेस (UI) डिझाइनचे ५ महत्त्वाचे नियम",
+    slug: "5-important-rules-of-ui-design",
+    excerpt: "एक उत्तम युझर इंटरफेस कसा डिझाइन करावा? या लेखात आपण UI डिझाइनचे ५ सोपे पण अत्यंत प्रभावी नियम अभ्यासणार आहोत जे प्रत्येक डिझायनरला माहित असावेत.",
+    content: "## UI डिझाइनचे नियम\n\nउत्कृष्ट UI मुळे युझरचा अनुभव सुधारतो. नियम १: सुसंगतता (Consistency), नियम २: स्पष्टता (Clarity), नियम ३: फीडबॅक (Feedback), नियम ४: नियंत्रण (User Control), नियम ५: साधेपणा (Simplicity).",
+    coverImage: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=1200&auto=format&fit=crop&q=80",
+    category: "design-systems",
+    tags: ["UI", "UX", "Design"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+    views: 1420,
+    readingTime: 4,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-6",
+    title: "डेटा सायन्समध्ये करिअर कसे करावे?",
+    slug: "how-to-make-career-in-data-science",
+    excerpt: "डेटा सायन्स हे सध्याच्या काळातील सर्वात जास्त मागणी असलेले क्षेत्र आहे. या क्षेत्रात करिअर करण्यासाठी कोणती कौशल्ये आवश्यक आहेत आणि सुरुवात कशी करावी याबद्दल मार्गदर्शन.",
+    content: "## डेटा सायन्स आणि करिअर\n\nडेटा सायन्स म्हणजे डेटाच्या मदतीने महत्त्वाचे निष्कर्ष काढणे. यासाठी पायथन (Python), एसक्यूएल (SQL), आणि स्टॅटिस्टिक्स (Statistics) यांचे ज्ञान असणे आवश्यक आहे.",
+    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80",
+    category: "ai-engineering",
+    tags: ["Data Science", "Career", "Python"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
+    views: 3100,
+    readingTime: 7,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-7",
+    title: "क्लाउड कम्प्युटिंग: भविष्यातील तंत्रज्ञानाचा पाया",
+    slug: "cloud-computing-foundation-of-future-tech",
+    excerpt: "AWS, Google Cloud आणि Azure यांसारख्या क्लाउड प्लॅटफॉर्म्सचे महत्त्व आणि ते आजच्या व्यवसायांचे संचालन कसे बदलत आहेत, याबद्दल सविस्तर माहिती.",
+    content: "## क्लाउड कम्प्युटिंगचे महत्त्व\n\nक्लाउड कम्प्युटिंगमुळे कंपन्यांना स्वतःचे फिजिकल सर्व्हर्स ठेवण्याची गरज भासत नाही. ते सर्व्हिस मॉडेलवर स्पेस आणि कम्प्युटिंग पॉवर भाड्याने घेऊ शकतात, ज्याने खर्च कमी होतो.",
+    coverImage: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80",
+    category: "web-dev",
+    tags: ["Cloud", "AWS", "DevOps"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
+    views: 1150,
+    readingTime: 5,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-8",
+    title: "स्मार्टफोन्सचे भविष्य आणि फोल्डेबल तंत्रज्ञान",
+    slug: "future-of-smartphones-and-foldable-tech",
+    excerpt: "फोल्डेबल आणि फ्लेक्सिबल स्क्रीन्सच्या आगमनामुळे स्मार्टफोन डिझाइनमध्ये क्रांती झाली आहे. पुढील ५ वर्षांत स्मार्टफोन कसे असतील याचा आढावा.",
+    content: "## स्मार्टफोनचे बदलते स्वरूप\n\nसध्या सॅमसंग, वनप्लस आणि गुगल या कंपन्यांचे फोल्डेबल फोन्स बाजारात उपलब्ध आहेत. भविष्यात स्क्रोल करण्यायोग्य (rollable) डिस्प्ले देखील पाहायला मिळू शकतात.",
+    coverImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&auto=format&fit=crop&q=80",
+    category: "design-systems",
+    tags: ["Mobile", "Foldable", "Gadgets"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 144).toISOString(),
+    views: 2040,
+    readingTime: 4,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-9",
+    title: "मशीन लर्निंग आणि त्याचा उद्योगांवर होणारा परिणाम",
+    slug: "machine-learning-impact-on-industries",
+    excerpt: "मशीन लर्निंग (ML) मॉडेल्सचा वापर करून विविध क्षेत्रे आपले काम कसे स्वयंचलित करत आहेत, आणि यामुळे व्यवसायांमध्ये कशी वाढ होत आहे ते जाणून घ्या.",
+    content: "## मशीन लर्निंगचे औद्योगिक महत्त्व\n\nमशीन लर्निंगमुळे फायनान्स, हेल्थकेअर, आणि ई-कॉमर्समध्ये मोठे बदल झाले आहेत. उदा. खरेदीदार काय खरेदी करू शकतात याचा अंदाज लावणे.",
+    coverImage: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=1200&auto=format&fit=crop&q=80",
+    category: "ai-engineering",
+    tags: ["ML", "Data science", "AI"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 168).toISOString(),
+    views: 1950,
+    readingTime: 5,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  },
+  {
+    id: "mock-blog-10",
+    title: "सर्व्हरलेस तंत्रज्ञान म्हणजे काय? सोप्या भाषेत",
+    slug: "what-is-serverless-technology-in-simple-words",
+    excerpt: "डेव्हलपर्ससाठी सर्व्हरलेस आर्किटेक्चरचे महत्त्व, त्याचे फायदे (उदा. ऑटो-स्केलिंग, पे-पर-युज) आणि या तंत्रज्ञानाच्या मर्यादा यावर एक सखोल नजर.",
+    content: "## सर्व्हरलेस आर्किटेक्चर म्हणजे काय?\n\nसर्व्हरलेस म्हणजे सर्व्हर नसणे नव्हे, तर त्याचा अर्थ असा की डेव्हलपर्सना सर्व्हर मॅनेज करण्याची गरज नसते. ही जबाबदारी क्लाउड प्रोव्हाइ़डरवर असते. त्यामुळे डेव्हलपर्स केवळ कोड लिहिण्यावर लक्ष केंद्रित करू शकतात.",
+    coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
+    category: "web-dev",
+    tags: ["Serverless", "Backend", "Functions"],
+    status: "published",
+    createdAt: new Date(Date.now() - 3600000 * 192).toISOString(),
+    views: 1670,
+    readingTime: 5,
+    author: {
+      name: "Yadnesh Thorat",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      role: "Chief Architect",
+      bio: "Specialist in Next.js and Firebase."
+    }
+  }
+];
 
 const MOCK_CONTACTS = [];
 
 const MOCK_SUBSCRIBERS = [];
+
+const MOCK_ADMINS = [
+  {
+    id: "admin-primary",
+    email: "admin@aether-blog.com",
+    password: "admin123",
+    displayName: "Primary Admin",
+    role: "Administrator",
+    createdAt: new Date("2026-07-01").toISOString()
+  }
+];
+
+const MOCK_COMMENTS = [
+  {
+    id: "c-mock-1",
+    blogId: "blog-1",
+    blogSlug: "modern-trends-in-web-design-2026",
+    blogTitle: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
+    name: "Marcus Aurelius",
+    content: "This is a masterpiece of a breakdown. The section about Partial Prerendering helped clarify the streaming boundaries. Thanks!",
+    createdAt: "2026-07-02T14:23:00Z",
+    approved: true
+  },
+  {
+    id: "c-mock-2",
+    blogId: "blog-1",
+    blogSlug: "modern-trends-in-web-design-2026",
+    blogTitle: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
+    name: "Elsa Frost",
+    content: "Aria, the easing functions in CSS transitions are indeed critical for UI speed perception. Ease-out-expo feels extremely responsive.",
+    createdAt: "2026-07-04T08:12:00Z",
+    approved: true
+  }
+];
 
 const MOCK_ANALYTICS = {
   totalVisitors: 84320,
@@ -218,7 +448,104 @@ function withTimeout(promise, timeoutMs = FIREBASE_TIMEOUT_MS) {
 // HIGH LEVEL DATABASE SERVICE
 export const dbService = {
   // --- BLOGS ---
+  // Helper to map blog authors to a proper object
+  _resolveAuthor(blog, admins) {
+    if (!blog) return blog;
+
+    // Extract a lookup key from the author field (whether string or object)
+    let lookupName = null;
+    let lookupEmail = null;
+    if (blog.author && typeof blog.author === "string") {
+      // Could be email or display name
+      if (blog.author.includes("@")) {
+        lookupEmail = blog.author.toLowerCase();
+      } else {
+        lookupName = blog.author.toLowerCase();
+      }
+    } else if (blog.author && typeof blog.author === "object") {
+      lookupName = blog.author.name?.toLowerCase();
+    }
+
+    // Always try to find a real admin profile match first
+    if (admins && admins.length > 0 && (lookupName || lookupEmail)) {
+      const matched = admins.find((a) => {
+        const adminName = a.displayName?.toLowerCase();
+        const adminEmail = a.email?.toLowerCase();
+        return (
+          (lookupEmail && adminEmail === lookupEmail) ||
+          (lookupName && adminName === lookupName)
+        );
+      });
+
+      if (matched) {
+        return {
+          ...blog,
+          author: {
+            name: matched.displayName || matched.email,
+            avatar: matched.avatarUrl || null,
+            role: matched.role || "Administrator",
+            bio: matched.bio || "Aether blog administrator and tech enthusiast."
+          }
+        };
+      }
+    }
+
+    // If author is a structured object with data, use it as-is (or try to upgrade with first admin)
+    const GENERIC_NAMES = ["admin user", "primary admin", "aether writer", "writer", "administrator"];
+    const isGeneric = GENERIC_NAMES.includes((lookupName || "").toLowerCase());
+
+    if (blog.author && typeof blog.author === "object") {
+      // If the stored name is generic and we have admins, use the first/primary admin
+      if (isGeneric && admins && admins.length > 0) {
+        const primaryAdmin = admins[0];
+        return {
+          ...blog,
+          author: {
+            name: primaryAdmin.displayName || primaryAdmin.email,
+            avatar: primaryAdmin.avatarUrl || null,
+            role: primaryAdmin.role || "Administrator",
+            bio: primaryAdmin.bio || "Aether blog administrator and tech enthusiast."
+          }
+        };
+      }
+      return {
+        ...blog,
+        author: {
+          name: blog.author.name || "Aether Writer",
+          avatar: null,  // Don't use hardcoded mock avatars — only real uploaded profile photos
+          role: blog.author.role || "Writer",
+          bio: blog.author.bio || null
+        }
+      };
+    }
+
+    // Default fallback — use primary admin if available
+    if (admins && admins.length > 0) {
+      const primaryAdmin = admins[0];
+      return {
+        ...blog,
+        author: {
+          name: primaryAdmin.displayName || primaryAdmin.email || "Aether Writer",
+          avatar: primaryAdmin.avatarUrl || null,
+          role: primaryAdmin.role || "Administrator",
+          bio: primaryAdmin.bio || "Aether blog administrator and tech enthusiast."
+        }
+      };
+    }
+
+    return {
+      ...blog,
+      author: {
+        name: (typeof blog.author === "string" ? blog.author : null) || "Aether Writer",
+        avatar: null,
+        role: "Writer",
+        bio: "Aether blog administrator and tech enthusiast."
+      }
+    };
+  },
+
   async getBlogs(includeDrafts = false) {
+    let rawList = [];
     if (canUseFirebase()) {
       try {
         const blogsRef = collection(db, "aether_blogs_v2");
@@ -233,45 +560,92 @@ export const dbService = {
           );
         }
         const snapshot = await withTimeout(getDocs(q));
-        const list = [];
         snapshot.forEach((d) => {
-          list.push({ id: d.id, ...d.data() });
+          rawList.push({ id: d.id, ...d.data() });
         });
-        return list;
       } catch (err) {
         handleFirebaseFailure("getBlogs", err);
       }
+    } else {
+      // Fallback
+      let blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+      if (blogs.length <= 1) {
+        setLocalData("aether_blogs_v2", MOCK_BLOGS);
+        blogs = MOCK_BLOGS;
+      }
+      let filtered = blogs;
+      if (!includeDrafts) {
+        filtered = blogs.filter((b) => b.status === "published");
+      }
+      rawList = filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
     }
-    // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
-    let filtered = blogs;
-    if (!includeDrafts) {
-      filtered = blogs.filter((b) => b.status === "published");
-    }
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+
+    // Map authors dynamically
+    const admins = await this.getAdmins();
+    return rawList.map((b) => this._resolveAuthor(b, admins));
   },
 
   async getBlogBySlug(slug) {
+    if (!slug) return null;
+    const normalizedSlug = slug.replace(/^\/+/, "");
+    console.log("[Aether Debug] getBlogBySlug called with slug:", slug);
+    console.log("[Aether Debug] normalizedSlug:", normalizedSlug);
+
+    let rawBlog = null;
+
     if (canUseFirebase()) {
       try {
         const blogsRef = collection(db, "aether_blogs_v2");
-        const q = query(blogsRef, where("slug", "==", slug), limit(1));
+        
+        // Print all database slugs to debug what is actually stored
+        try {
+          const debugSnap = await getDocs(blogsRef);
+          console.log("[Aether Debug] Current blogs in Firestore database:");
+          debugSnap.forEach(d => {
+            console.log(` - ID: "${d.id}", Title: "${d.data().title}", Slug: "${d.data().slug}"`);
+          });
+        } catch (dbgErr) {
+          console.warn("[Aether Debug] Failed to fetch debug slugs:", dbgErr);
+        }
+
+        // Match either "slug" or "/slug" to be completely safe against formatting discrepancies
+        const q = query(
+          blogsRef, 
+          where("slug", "in", [normalizedSlug, `/${normalizedSlug}`]), 
+          limit(1)
+        );
         const snapshot = await withTimeout(getDocs(q));
         if (!snapshot.empty) {
           const docSnap = snapshot.docs[0];
-          return { id: docSnap.id, ...docSnap.data() };
+          rawBlog = { id: docSnap.id, ...docSnap.data() };
+          console.log("[Aether Debug] Match found in Firestore:", rawBlog.title);
+        } else {
+          console.warn("[Aether Debug] No match found in Firestore for slug:", normalizedSlug);
         }
-        return null;
       } catch (err) {
         handleFirebaseFailure("getBlogBySlug", err);
+        // Fall back immediately to local data during this call
+        const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+        rawBlog = blogs.find((b) => {
+          const blogSlugNorm = (b.slug || "").replace(/^\/+/, "");
+          return blogSlugNorm === normalizedSlug;
+        }) || null;
       }
+    } else {
+      // Fallback
+      const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+      rawBlog = blogs.find((b) => {
+        const blogSlugNorm = (b.slug || "").replace(/^\/+/, "");
+        return blogSlugNorm === normalizedSlug;
+      }) || null;
     }
-    // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
-    return blogs.find((b) => b.slug === slug) || null;
+
+    if (!rawBlog) return null;
+    const admins = await this.getAdmins();
+    return this._resolveAuthor(rawBlog, admins);
   },
 
   async saveBlog(blog) {
@@ -385,12 +759,24 @@ export const dbService = {
           list.push({ id: d.id, ...d.data() });
         });
         if (list.length > 0) return list;
+
+        // Auto-seed default categories if database is empty
+        for (const cat of MOCK_CATEGORIES) {
+          await setDoc(doc(db, "aether_categories_v2", cat.id), cat);
+          list.push(cat);
+        }
+        return list;
       } catch (err) {
         handleFirebaseFailure("getCategories", err);
       }
     }
     // Fallback
-    return getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+    let cats = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+    if (cats.length < 10) {
+      setLocalData("aether_categories_v2", MOCK_CATEGORIES);
+      cats = MOCK_CATEGORIES;
+    }
+    return cats;
   },
 
   async saveCategory(cat) {
@@ -521,12 +907,12 @@ if (canUseFirebase()) {
   },
 
   async markContactAsRead(id) {
-    if (isFirebaseConfigured) {
+    if (canUseFirebase()) {
       try {
-        await updateDoc(doc(db, "aether_contacts_v2", id), { read: true });
+        await withTimeout(updateDoc(doc(db, "aether_contacts_v2", id), { read: true }));
         return;
       } catch (err) {
-        console.error("Firebase markContactAsRead error:", err);
+        handleFirebaseFailure("markContactAsRead", err);
       }
     }
     // Fallback
@@ -539,13 +925,12 @@ if (canUseFirebase()) {
   },
 
   async deleteContact(id) {
-    if (isFirebaseConfigured) {
+    if (canUseFirebase()) {
       try {
-        await deleteDoc(doc(db, "aether_contacts_v2", id));
+        await withTimeout(deleteDoc(doc(db, "aether_contacts_v2", id)));
         return true;
       } catch (err) {
-        console.error("Firebase deleteContact error:", err);
-        return false;
+        handleFirebaseFailure("deleteContact", err);
       }
     }
     // Fallback
@@ -557,18 +942,18 @@ if (canUseFirebase()) {
 
   // --- NEWSLETTER ---
   async getNewsletterSubscribers() {
-    if (isFirebaseConfigured) {
+    if (canUseFirebase()) {
       try {
-        const snapshot = await getDocs(
+        const snapshot = await withTimeout(getDocs(
           query(collection(db, "aether_newsletter_v2"), orderBy("subscribedAt", "desc")),
-        );
+        ));
         const list = [];
         snapshot.forEach((d) => {
           list.push({ id: d.id, ...d.data() });
         });
         return list;
       } catch (err) {
-        console.error("Firebase getNewsletterSubscribers error:", err);
+        handleFirebaseFailure("getNewsletterSubscribers", err);
       }
     }
     // Fallback
@@ -582,7 +967,7 @@ if (canUseFirebase()) {
       subscribedAt: new Date().toISOString(),
     };
 
-    if (isFirebaseConfigured) {
+    if (canUseFirebase()) {
       try {
         const newsletterRef = collection(db, "aether_newsletter_v2");
         const q = query(
@@ -590,15 +975,14 @@ if (canUseFirebase()) {
           where("email", "==", subscriber.email),
           limit(1),
         );
-        const snapshot = await getDocs(q);
+        const snapshot = await withTimeout(getDocs(q));
         if (!snapshot.empty) {
           return { success: true, isNew: false };
         }
-        await setDoc(doc(db, "aether_newsletter_v2", subscriber.id), subscriber);
+        await withTimeout(setDoc(doc(db, "aether_newsletter_v2", subscriber.id), subscriber));
         return { success: true, isNew: true };
       } catch (err) {
-        console.error("Firebase subscribeNewsletter error:", err);
-        return { success: false, isNew: false };
+        handleFirebaseFailure("subscribeNewsletter", err);
       }
     }
 
@@ -614,13 +998,12 @@ if (canUseFirebase()) {
   },
 
   async deleteSubscriber(id) {
-    if (isFirebaseConfigured) {
+    if (canUseFirebase()) {
       try {
-        await deleteDoc(doc(db, "aether_newsletter_v2", id));
+        await withTimeout(deleteDoc(doc(db, "aether_newsletter_v2", id)));
         return true;
       } catch (err) {
-        console.error("Firebase deleteSubscriber error:", err);
-        return false;
+        handleFirebaseFailure("deleteSubscriber", err);
       }
     }
     // Fallback
@@ -632,51 +1015,67 @@ if (canUseFirebase()) {
 
   // --- ANALYTICS ---
   async getAnalyticsData() {
-    if (isFirebaseConfigured) {
+    let blogs = [];
+    let categories = [];
+    let contacts = [];
+    let newsletter = [];
+
+    if (canUseFirebase()) {
       try {
-        // In real project, we could load from an 'analytics' collection
-        // For simplicity and matching GA4 integration dashboard, we can return computed database counts
-        // plus simulated trends based on real database contents
-        const blogs = await this.getBlogs(true);
-        const categories = await this.getCategories();
-        const contacts = await this.getContacts();
-        const newsletter = await this.getNewsletterSubscribers();
-
-        // Calculate actual sums
-        const publishedBlogsCount = blogs.filter(
-          (b) => b.status === "published",
-        ).length;
-        const totalViews = blogs.reduce((sum, b) => sum + (b.views || 0), 0);
-
-        return {
-          totalBlogs: blogs.length,
-          publishedBlogs: publishedBlogsCount,
-          draftBlogs: blogs.length - publishedBlogsCount,
-          categoriesCount: categories.length,
-          totalViews: totalViews + MOCK_ANALYTICS.totalVisitors,
-          todaysVisitors: MOCK_ANALYTICS.todaysVisitors,
-          monthlyVisitors: MOCK_ANALYTICS.monthlyVisitors,
-          contactsCount: contacts.length,
-          newsletterCount: newsletter.length,
-          visitorTrends: MOCK_ANALYTICS.visitorTrends,
-          trafficSources: MOCK_ANALYTICS.trafficSources,
-          deviceTypes: MOCK_ANALYTICS.deviceTypes,
-          topLandingPages: MOCK_ANALYTICS.topLandingPages,
-        };
+        blogs = await this.getBlogs(true);
+        categories = await this.getCategories();
+        contacts = await this.getContacts();
+        newsletter = await this.getNewsletterSubscribers();
       } catch (err) {
-        console.error("Firebase getAnalyticsData error:", err);
+        handleFirebaseFailure("getAnalyticsData", err);
       }
     }
-    // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
-    const categories = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
-    const contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
-    const newsletter = getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
 
-    const publishedBlogsCount = blogs.filter(
-      (b) => b.status === "published",
-    ).length;
+    // If Firebase failed or was bypassed, load fallback local data
+    if (blogs.length === 0) {
+      blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+    }
+    if (categories.length === 0) {
+      categories = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+    }
+    if (contacts.length === 0) {
+      contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+    }
+    if (newsletter.length === 0) {
+      newsletter = getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
+    }
+
+    // Calculate actual sums
+    const publishedBlogsCount = blogs.filter((b) => b.status === "published").length;
     const totalViews = blogs.reduce((sum, b) => sum + (b.views || 0), 0);
+
+    // Compute logically consistent traffic metrics derived from actual views
+    const derivedTodaysVisitors = Math.floor(totalViews * 0.08) + 12;
+    const derivedMonthlyVisitors = Math.floor(totalViews * 0.45) + 45;
+    const baseTrend = Math.max(12, Math.floor(totalViews / 30));
+
+    const visitorTrends = [
+      { name: "Mon", visitors: Math.floor(baseTrend * 0.8), bounceRate: 35, duration: 120 },
+      { name: "Tue", visitors: Math.floor(baseTrend * 0.95), bounceRate: 32, duration: 145 },
+      { name: "Wed", visitors: Math.floor(baseTrend * 1.1), bounceRate: 34, duration: 160 },
+      { name: "Thu", visitors: Math.floor(baseTrend * 1.05), bounceRate: 36, duration: 155 },
+      { name: "Fri", visitors: Math.floor(baseTrend * 1.3), bounceRate: 30, duration: 180 },
+      { name: "Sat", visitors: Math.floor(baseTrend * 0.98), bounceRate: 28, duration: 190 },
+      { name: "Sun", visitors: derivedTodaysVisitors, bounceRate: 29, duration: 200 },
+    ];
+
+    const trafficSources = [
+      { name: "Direct", value: Math.floor(totalViews * 0.4) },
+      { name: "Organic Search", value: Math.floor(totalViews * 0.3) },
+      { name: "Social Media", value: Math.floor(totalViews * 0.2) },
+      { name: "Newsletter", value: Math.floor(totalViews * 0.1) },
+    ];
+
+    const deviceTypes = [
+      { name: "Desktop", value: Math.floor(totalViews * 0.6) },
+      { name: "Mobile", value: Math.floor(totalViews * 0.3) },
+      { name: "Tablet", value: Math.floor(totalViews * 0.1) },
+    ];
 
     return {
       totalBlogs: blogs.length,
@@ -684,15 +1083,162 @@ if (canUseFirebase()) {
       draftBlogs: blogs.length - publishedBlogsCount,
       categoriesCount: categories.length,
       totalViews: totalViews,
-      todaysVisitors: MOCK_ANALYTICS.todaysVisitors,
-      monthlyVisitors: MOCK_ANALYTICS.monthlyVisitors,
+      todaysVisitors: derivedTodaysVisitors,
+      monthlyVisitors: derivedMonthlyVisitors,
       contactsCount: contacts.length,
       newsletterCount: newsletter.length,
-      visitorTrends: MOCK_ANALYTICS.visitorTrends,
-      trafficSources: MOCK_ANALYTICS.trafficSources,
-      deviceTypes: MOCK_ANALYTICS.deviceTypes,
+      visitorTrends,
+      trafficSources,
+      deviceTypes,
       topLandingPages: MOCK_ANALYTICS.topLandingPages,
     };
+  },
+
+  // --- ADMINS ---
+  async getAdmins() {
+    if (canUseFirebase()) {
+      try {
+        const snapshot = await withTimeout(getDocs(collection(db, "aether_admins_v2")));
+        const list = [];
+        snapshot.forEach((d) => {
+          list.push({ id: d.id, ...d.data() });
+        });
+        return list;
+      } catch (err) {
+        handleFirebaseFailure("getAdmins", err);
+      }
+    }
+    // Fallback
+    return getLocalData("aether_admins_v2", MOCK_ADMINS);
+  },
+
+  async addAdmin(admin) {
+    const newAdmin = {
+      id: "admin-" + Math.random().toString(36).substr(2, 9),
+      ...admin,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (canUseFirebase()) {
+      try {
+        await withTimeout(setDoc(doc(db, "aether_admins_v2", newAdmin.id), newAdmin));
+        return newAdmin;
+      } catch (err) {
+        handleFirebaseFailure("addAdmin", err);
+      }
+    }
+
+    // Fallback
+    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    admins.push(newAdmin);
+    setLocalData("aether_admins_v2", admins);
+    return newAdmin;
+  },
+
+  async deleteAdmin(id) {
+    if (canUseFirebase()) {
+      try {
+        await withTimeout(deleteDoc(doc(db, "aether_admins_v2", id)));
+        return true;
+      } catch (err) {
+        handleFirebaseFailure("deleteAdmin", err);
+      }
+    }
+
+    // Fallback
+    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    const filtered = admins.filter((a) => a.id !== id);
+    setLocalData("aether_admins_v2", filtered);
+    return true;
+  },
+
+  async updateAdminProfile(id, data) {
+    if (canUseFirebase()) {
+      try {
+        await withTimeout(updateDoc(doc(db, "aether_admins_v2", id), data));
+        return true;
+      } catch (err) {
+        handleFirebaseFailure("updateAdminProfile", err);
+      }
+    }
+
+    // Fallback
+    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    const idx = admins.findIndex((a) => a.id === id);
+    if (idx > -1) {
+      admins[idx] = { ...admins[idx], ...data };
+      setLocalData("aether_admins_v2", admins);
+    }
+    return true;
+  },
+
+  // --- COMMENTS ---
+  async getComments(blogId = null) {
+    if (canUseFirebase()) {
+      try {
+        let q = collection(db, "aether_comments_v2");
+        if (blogId) {
+          q = query(q, where("blogId", "==", blogId));
+        }
+        const snapshot = await withTimeout(getDocs(q));
+        const list = [];
+        snapshot.forEach((d) => {
+          list.push({ id: d.id, ...d.data() });
+        });
+        return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } catch (err) {
+        handleFirebaseFailure("getComments", err);
+      }
+    }
+
+    // Fallback
+    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    let filtered = comments;
+    if (blogId) {
+      filtered = comments.filter((c) => c.blogId === blogId);
+    }
+    return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  async addComment(comment) {
+    const newComment = {
+      id: "comment-" + Math.random().toString(36).substr(2, 9),
+      ...comment,
+      createdAt: new Date().toISOString(),
+      approved: true, // Auto-approved by default
+    };
+
+    if (canUseFirebase()) {
+      try {
+        await withTimeout(setDoc(doc(db, "aether_comments_v2", newComment.id), newComment));
+        return newComment;
+      } catch (err) {
+        handleFirebaseFailure("addComment", err);
+      }
+    }
+
+    // Fallback
+    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    comments.push(newComment);
+    setLocalData("aether_comments_v2", comments);
+    return newComment;
+  },
+
+  async deleteComment(id) {
+    if (canUseFirebase()) {
+      try {
+        await withTimeout(deleteDoc(doc(db, "aether_comments_v2", id)));
+        return true;
+      } catch (err) {
+        handleFirebaseFailure("deleteComment", err);
+      }
+    }
+
+    // Fallback
+    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    const filtered = comments.filter((c) => c.id !== id);
+    setLocalData("aether_comments_v2", filtered);
+    return true;
   },
 
   // --- IMAGE UPLOADS ---
