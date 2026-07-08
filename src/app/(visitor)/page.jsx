@@ -89,13 +89,60 @@ export default function HomePage() {
 
   if (!settings) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
-        <div className="relative h-12 w-12">
-          <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border-2 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
-        </div>
-        <p className="mt-5 text-sm font-medium text-muted-foreground">Loading Aether Journal...</p>
-      </div>
+      <>
+        <div className="scroll-progress" />
+        <VisitorNavbar />
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-12">
+          {/* Header skeleton */}
+          <div className="border-b border-border/40 pb-5 mb-8">
+            <div className="skeleton h-7 w-52 mb-2" />
+            <div className="skeleton h-4 w-80" />
+          </div>
+          {/* Category pills skeleton */}
+          <div className="flex gap-2 mb-8 flex-wrap">
+            {[80, 100, 70, 90, 110, 75].map((w, i) => (
+              <div key={i} className="skeleton h-8 rounded-full" style={{ width: `${w}px` }} />
+            ))}
+          </div>
+          {/* News layout skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left column */}
+            <div className="lg:col-span-8 space-y-6">
+              <div className="skeleton h-8 w-3/4" />
+              <div className="skeleton h-8 w-1/2" />
+              <div className="skeleton w-full aspect-video rounded-[2rem]" />
+              <div className="skeleton h-4 w-full" />
+              <div className="skeleton h-4 w-5/6" />
+              <div className="skeleton h-4 w-24" />
+              <div className="border-t border-border/20 pt-6 flex gap-6">
+                <div className="flex-1 space-y-3">
+                  <div className="skeleton h-4 w-20" />
+                  <div className="skeleton h-5 w-full" />
+                  <div className="skeleton h-5 w-4/5" />
+                  <div className="skeleton h-3 w-16" />
+                </div>
+                <div className="skeleton w-48 h-28 rounded-2xl" />
+              </div>
+            </div>
+            {/* Sidebar */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="skeleton h-4 w-36" />
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="rounded-2xl border border-border/30 p-4 space-y-2">
+                  <div className="skeleton h-3 w-20 rounded-full" />
+                  <div className="skeleton h-4 w-full" />
+                  <div className="skeleton h-4 w-3/4" />
+                  <div className="flex justify-between mt-1">
+                    <div className="skeleton h-3 w-12" />
+                    <div className="skeleton h-3 w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <VisitorFooter />
+      </>
     );
   }
 

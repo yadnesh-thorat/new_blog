@@ -137,13 +137,52 @@ export default function BlogDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <div className="relative h-12 w-12">
-          <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border-2 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
-        </div>
-        <p className="mt-5 text-xs text-muted-foreground font-semibold">Loading article...</p>
-      </div>
+      <>
+        <VisitorNavbar />
+        <main className="flex-grow py-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Back button skeleton */}
+            <div className="skeleton h-4 w-32 mb-8" />
+
+            {/* Article header skeleton */}
+            <div className="space-y-4 max-w-4xl border-b border-border/40 pb-8 mb-8">
+              <div className="skeleton h-5 w-24" />
+              <div className="skeleton h-10 w-full" />
+              <div className="skeleton h-10 w-3/4" />
+              <div className="skeleton h-5 w-full" />
+              <div className="skeleton h-5 w-2/3" />
+              <div className="flex items-center gap-4 pt-2">
+                <div className="skeleton h-9 w-9 rounded-full" />
+                <div className="skeleton h-4 w-28" />
+                <div className="skeleton h-4 w-24" />
+                <div className="skeleton h-4 w-20" />
+              </div>
+            </div>
+
+            {/* Cover image skeleton */}
+            <div className="skeleton w-full aspect-video rounded-2xl mb-12" />
+
+            {/* Content skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-1" />
+              <div className="lg:col-span-8 space-y-4">
+                {[100, 85, 92, 78, 95, 60, 88, 72].map((w, i) => (
+                  <div key={i} className={`skeleton h-4`} style={{ width: `${w}%` }} />
+                ))}
+                <div className="skeleton h-8 w-48 mt-6" />
+                {[90, 75, 88, 65, 95].map((w, i) => (
+                  <div key={i} className={`skeleton h-4`} style={{ width: `${w}%` }} />
+                ))}
+              </div>
+              <div className="lg:col-span-3 space-y-3">
+                <div className="skeleton h-4 w-20" />
+                {[1, 2, 3].map((i) => <div key={i} className="skeleton h-4 w-full" />)}
+              </div>
+            </div>
+          </div>
+        </main>
+        <VisitorFooter />
+      </>
     );
   }
 

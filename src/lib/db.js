@@ -14,23 +14,19 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured, storage } from "./firebase";
 
-const FIREBASE_TIMEOUT_MS = 8000;
-let firebaseUnavailable = typeof window !== "undefined" && sessionStorage.getItem("aether_firebase_unavailable") === "true";
+const FIREBASE_TIMEOUT_MS = 10000;
+// Only block WRITE operations when they fail — never block reads
+let firebaseWriteUnavailable = false;
 
 function canUseFirebase() {
-  return isFirebaseConfigured && Boolean(db) && !firebaseUnavailable;
+  return isFirebaseConfigured && Boolean(db);
 }
 
-function handleFirebaseFailure(operation, error) {
-  if (!firebaseUnavailable) {
-    firebaseUnavailable = true;
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("aether_firebase_unavailable", "true");
-    }
-    console.warn(
-      `Firebase ${operation} is unavailable right now; using local fallback data.`,
-      error,
-    );
+// Only used for non-critical write operations (views, analytics)
+function handleWriteFailure(operation, error) {
+  if (!firebaseWriteUnavailable) {
+    firebaseWriteUnavailable = true;
+    console.warn(`Firebase ${operation} write failed (non-critical):`, error?.message);
   }
 }
 
@@ -564,7 +560,8 @@ export const dbService = {
           rawList.push({ id: d.id, ...d.data() });
         });
       } catch (err) {
-        handleFirebaseFailure("getBlogs", err);
+        // Read failure — fall back to local cache, but do NOT block future Firebase reads
+        console.warn("getBlogs: Firestore read failed, using local cache:", err?.message);
       }
     } else {
       // Fallback
@@ -590,55 +587,48 @@ export const dbService = {
 
   async getBlogBySlug(slug) {
     if (!slug) return null;
-    const normalizedSlug = slug.replace(/^\/+/, "");
-    console.log("[Aether Debug] getBlogBySlug called with slug:", slug);
-    console.log("[Aether Debug] normalizedSlug:", normalizedSlug);
+    const normalizedSlug = slug.replace(/^\/+/, "").trim().toLowerCase();
 
     let rawBlog = null;
 
     if (canUseFirebase()) {
       try {
         const blogsRef = collection(db, "aether_blogs_v2");
-        
-        // Print all database slugs to debug what is actually stored
-        try {
-          const debugSnap = await getDocs(blogsRef);
-          console.log("[Aether Debug] Current blogs in Firestore database:");
-          debugSnap.forEach(d => {
-            console.log(` - ID: "${d.id}", Title: "${d.data().title}", Slug: "${d.data().slug}"`);
-          });
-        } catch (dbgErr) {
-          console.warn("[Aether Debug] Failed to fetch debug slugs:", dbgErr);
-        }
-
-        // Match either "slug" or "/slug" to be completely safe against formatting discrepancies
+        // Try exact slug and lowercase variant
         const q = query(
-          blogsRef, 
-          where("slug", "in", [normalizedSlug, `/${normalizedSlug}`]), 
+          blogsRef,
+          where("slug", "in", [normalizedSlug, `/${normalizedSlug}`, slug.trim()]),
           limit(1)
         );
-        const snapshot = await withTimeout(getDocs(q));
+        const snapshot = await withTimeout(getDocs(q), FIREBASE_TIMEOUT_MS);
         if (!snapshot.empty) {
           const docSnap = snapshot.docs[0];
           rawBlog = { id: docSnap.id, ...docSnap.data() };
-          console.log("[Aether Debug] Match found in Firestore:", rawBlog.title);
         } else {
-          console.warn("[Aether Debug] No match found in Firestore for slug:", normalizedSlug);
+          // Fallback: scan all blogs and do case-insensitive match
+          const allSnap = await withTimeout(getDocs(blogsRef), FIREBASE_TIMEOUT_MS);
+          allSnap.forEach((d) => {
+            if (!rawBlog) {
+              const s = (d.data().slug || "").replace(/^\/+/, "").trim().toLowerCase();
+              if (s === normalizedSlug) {
+                rawBlog = { id: d.id, ...d.data() };
+              }
+            }
+          });
         }
       } catch (err) {
-        handleFirebaseFailure("getBlogBySlug", err);
-        // Fall back immediately to local data during this call
+        // Do NOT poison global Firebase state for reads — just try local cache
+        console.warn("getBlogBySlug: Firestore error, trying local cache", err?.message);
         const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
         rawBlog = blogs.find((b) => {
-          const blogSlugNorm = (b.slug || "").replace(/^\/+/, "");
+          const blogSlugNorm = (b.slug || "").replace(/^\/+/, "").trim().toLowerCase();
           return blogSlugNorm === normalizedSlug;
         }) || null;
       }
     } else {
-      // Fallback
       const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
       rawBlog = blogs.find((b) => {
-        const blogSlugNorm = (b.slug || "").replace(/^\/+/, "");
+        const blogSlugNorm = (b.slug || "").replace(/^\/+/, "").trim().toLowerCase();
         return blogSlugNorm === normalizedSlug;
       }) || null;
     }
@@ -708,7 +698,7 @@ export const dbService = {
         await withTimeout(deleteDoc(doc(db, "aether_blogs_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteBlog", err);
+        handleWriteFailure("deleteBlog", err);
         return false;
       }
     }
@@ -735,7 +725,7 @@ export const dbService = {
         }
         return;
       } catch (err) {
-        handleFirebaseFailure("incrementViews", err);
+        // Non-critical — silently skip view count increment
       }
     }
     // Fallback
@@ -767,7 +757,7 @@ export const dbService = {
         }
         return list;
       } catch (err) {
-        handleFirebaseFailure("getCategories", err);
+        console.warn("getCategories: Firestore read failed, using local cache:", err?.message);
       }
     }
     // Fallback
@@ -795,7 +785,7 @@ export const dbService = {
         await withTimeout(setDoc(doc(db, "aether_categories_v2", newCat.id), newCat));
         return newCat;
       } catch (err) {
-        handleFirebaseFailure("saveCategory", err);
+        handleWriteFailure("saveCategory", err);
       }
     }
 
@@ -817,7 +807,7 @@ export const dbService = {
         await withTimeout(deleteDoc(doc(db, "aether_categories_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteCategory", err);
+        handleWriteFailure("deleteCategory", err);
         return false;
       }
     }
@@ -839,7 +829,7 @@ export const dbService = {
           return docSnap.data();
         }
       } catch (err) {
-        handleFirebaseFailure("getSettings", err);
+        console.warn("getSettings: Firestore read failed, using local cache:", err?.message);
       }
     }
     // Fallback
@@ -852,7 +842,7 @@ export const dbService = {
         await withTimeout(setDoc(doc(db, "aether_settings_v2", "global"), settings));
         return settings;
       } catch (err) {
-        handleFirebaseFailure("saveSettings", err);
+        handleWriteFailure("saveSettings", err);
       }
     }
     // Fallback
@@ -875,7 +865,7 @@ export const dbService = {
         });
         return list;
       } catch (err) {
-        handleFirebaseFailure("getContacts", err);
+        console.warn("getContacts: Firestore read failed:", err?.message);
       }
     }
     // Fallback
@@ -895,7 +885,7 @@ if (canUseFirebase()) {
         await withTimeout(setDoc(doc(db, "aether_contacts_v2", newMsg.id), newMsg));
         return newMsg;
       } catch (err) {
-        handleFirebaseFailure("addContact", err);
+        handleWriteFailure("addContact", err);
       }
     }
 
@@ -912,7 +902,7 @@ if (canUseFirebase()) {
         await withTimeout(updateDoc(doc(db, "aether_contacts_v2", id), { read: true }));
         return;
       } catch (err) {
-        handleFirebaseFailure("markContactAsRead", err);
+        handleWriteFailure("markContactAsRead", err);
       }
     }
     // Fallback
@@ -930,7 +920,7 @@ if (canUseFirebase()) {
         await withTimeout(deleteDoc(doc(db, "aether_contacts_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteContact", err);
+        handleWriteFailure("deleteContact", err);
       }
     }
     // Fallback
@@ -953,7 +943,7 @@ if (canUseFirebase()) {
         });
         return list;
       } catch (err) {
-        handleFirebaseFailure("getNewsletterSubscribers", err);
+        console.warn("getNewsletterSubscribers: Firestore read failed:", err?.message);
       }
     }
     // Fallback
@@ -982,7 +972,7 @@ if (canUseFirebase()) {
         await withTimeout(setDoc(doc(db, "aether_newsletter_v2", subscriber.id), subscriber));
         return { success: true, isNew: true };
       } catch (err) {
-        handleFirebaseFailure("subscribeNewsletter", err);
+        handleWriteFailure("subscribeNewsletter", err);
       }
     }
 
@@ -1003,7 +993,7 @@ if (canUseFirebase()) {
         await withTimeout(deleteDoc(doc(db, "aether_newsletter_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteSubscriber", err);
+        handleWriteFailure("deleteSubscriber", err);
       }
     }
     // Fallback
