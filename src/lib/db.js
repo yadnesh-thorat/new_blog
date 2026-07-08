@@ -676,7 +676,7 @@ export const dbService = {
         await withTimeout(setDoc(doc(db, "aether_blogs_v2", newBlog.id), newBlog));
         return newBlog;
       } catch (err) {
-        handleFirebaseFailure("saveBlog", err);
+        handleWriteFailure("saveBlog", err);
       }
     }
 
