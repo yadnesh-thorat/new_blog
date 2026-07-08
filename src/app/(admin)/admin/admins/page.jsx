@@ -226,40 +226,120 @@ export default function AdminsManagerPage() {
           </form>
         </div>
       ) : (
-        /* Admins List Table */
-        <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow">
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="p-12 text-center text-xs text-muted-foreground font-semibold">
-                Loading administrator list...
+        /* Admins List Table / Card stack */
+        <div className="space-y-4">
+          {loading ? (
+            <div className="rounded-2xl border border-border/40 bg-card p-12 text-center text-xs text-muted-foreground font-semibold">
+              Loading administrator list...
+            </div>
+          ) : (
+            <>
+              {/* Desktop view: Table */}
+              <div className="hidden sm:block rounded-2xl border border-border/40 bg-card overflow-hidden shadow">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                      <tr className="border-b border-border/40 bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground select-none">
+                        <th className="p-4 pl-6">Profile / Name</th>
+                        <th className="p-4">Email</th>
+                        <th className="p-4">Role</th>
+                        <th className="p-4">Created Date</th>
+                        <th className="p-4 pr-6 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/20">
+                      {admins.map((admin) => (
+                        <tr key={admin.id} className="hover:bg-muted/10 transition-colors">
+                          <td className="p-4 pl-6 font-semibold text-foreground flex items-center gap-2.5">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-[10px] border border-primary/20">
+                              {admin.displayName ? admin.displayName.slice(0, 2).toUpperCase() : "AD"}
+                            </div>
+                            <span>{admin.displayName || "N/A"}</span>
+                          </td>
+                          <td className="p-4 font-mono text-muted-foreground">{admin.email}</td>
+                          <td className="p-4">
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                              {admin.role || "Administrator"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-muted-foreground">
+                            {admin.createdAt
+                              ? new Date(admin.createdAt).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : "N/A"}
+                          </td>
+                          <td className="p-4 pr-6 text-right">
+                            <button
+                              onClick={() => handleDelete(admin.id, admin.email)}
+                              disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                user?.email?.toLowerCase() === admin.email.toLowerCase()
+                                  ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
+                                  : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
+                              }`}
+                              title={
+                                user?.email?.toLowerCase() === admin.email.toLowerCase()
+                                  ? "You are logged in with this account"
+                                  : "Delete admin member"
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            ) : (
-              <table className="w-full text-left border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr className="border-b border-border/40 bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground select-none">
-                    <th className="p-4 pl-6">Profile / Name</th>
-                    <th className="p-4">Email</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Created Date</th>
-                    <th className="p-4 pr-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20">
-                  {admins.map((admin) => (
-                    <tr key={admin.id} className="hover:bg-muted/10 transition-colors">
-                      <td className="p-4 pl-6 font-semibold text-foreground flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-[10px] border border-primary/20">
+
+              {/* Mobile view: Card list */}
+              <div className="sm:hidden flex flex-col gap-3">
+                {admins.map((admin) => (
+                  <div
+                    key={admin.id}
+                    className="rounded-2xl border border-border/30 bg-card p-4 space-y-3.5 shadow-sm hover:border-foreground/10 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-[10px] border border-primary/20">
                           {admin.displayName ? admin.displayName.slice(0, 2).toUpperCase() : "AD"}
                         </div>
-                        <span>{admin.displayName || "N/A"}</span>
-                      </td>
-                      <td className="p-4 font-mono text-muted-foreground">{admin.email}</td>
-                      <td className="p-4">
-                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                          {admin.role || "Administrator"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-muted-foreground">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-foreground truncate">
+                            {admin.displayName || "N/A"}
+                          </p>
+                          <span className="inline-flex mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                            {admin.role || "Administrator"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleDelete(admin.id, admin.email)}
+                        disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
+                        className={`p-2 rounded-xl border transition-all shrink-0 ${
+                          user?.email?.toLowerCase() === admin.email.toLowerCase()
+                            ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
+                            : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
+                        }`}
+                        title={
+                          user?.email?.toLowerCase() === admin.email.toLowerCase()
+                            ? "You are logged in with this account"
+                            : "Delete admin member"
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="pt-2.5 border-t border-border/10 flex flex-col gap-1 text-[10px] text-muted-foreground font-semibold">
+                      <p className="font-mono text-foreground truncate">{admin.email}</p>
+                      <p>
+                        Created:{" "}
                         {admin.createdAt
                           ? new Date(admin.createdAt).toLocaleDateString("en-US", {
                               year: "numeric",
@@ -267,31 +347,13 @@ export default function AdminsManagerPage() {
                               day: "numeric",
                             })
                           : "N/A"}
-                      </td>
-                      <td className="p-4 pr-6 text-right">
-                        <button
-                          onClick={() => handleDelete(admin.id, admin.email)}
-                          disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
-                          className={`p-1.5 rounded-lg border transition-all ${
-                            user?.email?.toLowerCase() === admin.email.toLowerCase()
-                              ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
-                              : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
-                          }`}
-                          title={
-                            user?.email?.toLowerCase() === admin.email.toLowerCase()
-                              ? "You are logged in with this account"
-                              : "Delete admin member"
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

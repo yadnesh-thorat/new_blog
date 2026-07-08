@@ -114,40 +114,71 @@ export default function NewsletterManagerPage() {
         </div>
 
         {filteredSubscribers.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-border/40 bg-card">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b border-border/30 bg-muted/40 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  <th className="p-4">Subscriber Email</th>
-                  <th className="p-4">Date Joined</th>
-                  <th className="p-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30 text-foreground">
-                {filteredSubscribers.map((sub) => (
-                  <tr
-                    key={sub.id}
-                    className="hover:bg-muted/15 transition-colors"
-                  >
-                    <td className="p-4 font-semibold text-xs sm:text-sm">
-                      {sub.email}
-                    </td>
-                    <td className="p-4 text-xs text-muted-foreground">
-                      {new Date(sub.subscribedAt).toLocaleString()}
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleDelete(sub.id)}
-                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10"
-                        title="Delete subscriber"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
+          <div className="space-y-4">
+            {/* Desktop view: Table */}
+            <div className="hidden sm:block overflow-hidden rounded-2xl border border-border/40 bg-card">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border/30 bg-muted/40 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <th className="p-4">Subscriber Email</th>
+                    <th className="p-4">Date Joined</th>
+                    <th className="p-4 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/30 text-foreground">
+                  {filteredSubscribers.map((sub) => (
+                    <tr
+                      key={sub.id}
+                      className="hover:bg-muted/15 transition-colors"
+                    >
+                      <td className="p-4 font-semibold text-xs sm:text-sm">
+                        {sub.email}
+                      </td>
+                      <td className="p-4 text-xs text-muted-foreground">
+                        {new Date(sub.subscribedAt).toLocaleString()}
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleDelete(sub.id)}
+                          className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10 cursor-pointer"
+                          title="Delete subscriber"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile view: Card stack */}
+            <div className="sm:hidden flex flex-col gap-3">
+              {filteredSubscribers.map((sub) => (
+                <div
+                  key={sub.id}
+                  className="rounded-2xl border border-border/30 bg-card p-4 flex flex-col gap-3 shadow-sm hover:border-foreground/10 transition-all duration-300"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <p className="font-bold text-sm text-foreground truncate">
+                        {sub.email}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-semibold">
+                        Joined: {new Date(sub.subscribedAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(sub.id)}
+                      className="p-2 rounded-xl text-red-600 hover:bg-red-500/10 border border-red-500/10 cursor-pointer shrink-0"
+                      title="Delete subscriber"
+                    >
+                      <Trash2 className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="text-center py-16 border border-dashed border-border/40 rounded-2xl bg-card">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import {
   Plus,
@@ -22,10 +22,73 @@ import {
   Quote,
   Link as LinkIcon,
   Image as ImageIcon,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { dbService, MOCK_BLOGS } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import confetti from "canvas-confetti";
+
+// Custom Dropdown Component
+function CustomDropdown({ value, onChange, options, placeholder }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative flex-1 sm:flex-initial min-w-0" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-border bg-background/50 px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer font-semibold min-w-[140px] hover:bg-muted/40"
+      >
+        <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-1.5 w-full sm:w-56 max-h-60 overflow-y-auto rounded-xl border border-border/40 bg-card p-1 shadow-lg backdrop-blur-md z-50 animate-fade-in divide-y divide-border/10 focus:outline-none">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg text-left transition-all ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted/70"
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function BlogsManagerContent() {
   const { user } = useAuth();
@@ -68,6 +131,17 @@ function BlogsManagerContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const categoryOptions = [
+    { value: "all", label: "All Categories" },
+    ...categories.map((c) => ({ value: c.slug, label: c.name }))
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "draft", label: "Drafts" },
+    { value: "published", label: "Published" }
+  ];
 
   // Form settings
   const [isEditing, setIsEditing] = useState(false);
@@ -959,140 +1033,231 @@ function BlogsManagerContent() {
               />
             </div>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-              <select
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
+              <CustomDropdown
                 value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="rounded-xl border border-border bg-background/50 px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer font-semibold"
-              >
-                <option value="all" className="bg-card text-foreground">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.slug} className="bg-card text-foreground">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategoryFilter}
+                options={categoryOptions}
+                placeholder="Select Category"
+              />
 
-              <select
+              <CustomDropdown
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-border bg-background/50 px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer font-semibold"
-              >
-                <option value="all" className="bg-card text-foreground">All Statuses</option>
-                <option value="draft" className="bg-card text-foreground">Drafts</option>
-                <option value="published" className="bg-card text-foreground">Published</option>
-              </select>
+                onChange={setStatusFilter}
+                options={statusOptions}
+                placeholder="Select Status"
+              />
             </div>
           </div>
 
           {/* Blogs Table / Card list */}
           {filteredBlogs.length > 0 ? (
-            <div className="overflow-hidden rounded-3xl border border-border/30 bg-card/45 backdrop-blur-md shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-border/20 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      <th className="p-4">Cover / Title</th>
-                      <th className="p-4">Category</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4">Engagement</th>
-                      <th className="p-4">Created Date</th>
-                      <th className="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/25">
-                    {filteredBlogs.map((b) => (
-                      <tr
-                        key={b.id}
-                        className="hover:bg-muted/40 transition-colors duration-150"
-                      >
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={b.coverImage}
-                              alt=""
-                              className="h-10 w-16 object-cover rounded-lg border border-border/60 shrink-0 shadow-sm"
-                            />
+            <div className="space-y-4">
+              {/* Desktop view: Table */}
+              <div className="hidden md:block overflow-hidden rounded-3xl border border-border/30 bg-card/45 backdrop-blur-md shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-border/20 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <th className="p-4">Cover / Title</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4">Engagement</th>
+                        <th className="p-4">Created Date</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/25">
+                      {filteredBlogs.map((b) => (
+                        <tr
+                          key={b.id}
+                          className="hover:bg-muted/40 transition-colors duration-150"
+                        >
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={b.coverImage}
+                                alt=""
+                                className="h-10 w-16 object-cover rounded-lg border border-border/60 shrink-0 shadow-sm"
+                              />
 
-                            <div className="space-y-0.5 truncate max-w-xs sm:max-w-sm">
-                              <p className="font-semibold text-foreground truncate">
-                                {b.title}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
-                                /{b.slug}
-                              </p>
+                              <div className="space-y-0.5 truncate max-w-xs sm:max-w-sm">
+                                <p className="font-semibold text-foreground truncate">
+                                  {b.title}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground font-mono">
+                                  /{b.slug}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-xs px-2.5 py-0.5 rounded-lg bg-muted text-foreground font-semibold">
-                            {categories.find((c) => c.slug === b.category)
-                              ?.name || b.category}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-                              b.status === "published"
-                                ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                            }`}
-                          >
-                            {b.status}
-                          </span>
-                          {b.scheduledAt && (
-                            <p className="text-[9px] text-muted-foreground mt-0.5">
-                              Sched:{" "}
-                              {new Date(b.scheduledAt).toLocaleDateString()}
-                            </p>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Eye className="h-3.5 w-3.5" />
-                            <span>{b.views} views</span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-xs text-muted-foreground">
+                          </td>
+                          <td className="p-4">
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-muted text-foreground font-semibold">
+                              {categories.find((c) => c.slug === b.category)
+                                ?.name || b.category}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                b.status === "published"
+                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              }`}
+                            >
+                              {b.status}
+                            </span>
+                            {b.scheduledAt && (
+                              <p className="text-[9px] text-muted-foreground mt-0.5">
+                                Sched:{" "}
+                                {new Date(b.scheduledAt).toLocaleDateString()}
+                              </p>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Eye className="h-3.5 w-3.5" />
+                              <span>{b.views} views</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-xs text-muted-foreground">
+                            {new Date(b.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {b.status === "published" && (
+                                <a
+                                  href={`/blogs/${(b.slug || "").replace(/^\/+/, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                                  title="View in visitor page"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              )}
+                              <button
+                                onClick={() => handleOpenEdit(b)}
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                                title="Edit post"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBlog(b.id)}
+                                className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10"
+                                title="Delete post"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile View: Cards stack */}
+              <div className="md:hidden flex flex-col gap-4">
+                {filteredBlogs.map((b) => (
+                  <div
+                    key={b.id}
+                    className="rounded-2xl border border-border/30 bg-card p-4 space-y-4 shadow-sm hover:border-foreground/10 transition-all duration-300"
+                  >
+                    {/* Top row: Cover image and title info */}
+                    <div className="flex gap-3">
+                      <img
+                        src={b.coverImage}
+                        alt=""
+                        className="h-14 w-20 object-cover rounded-lg border border-border/60 shrink-0 shadow-sm"
+                      />
+                      <div className="space-y-1 min-w-0">
+                        <p className="font-bold text-sm text-foreground leading-snug line-clamp-2">
+                          {b.title}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-mono truncate">
+                          /{b.slug}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Middle details: Category, Status, Engagement, Date */}
+                    <div className="flex flex-wrap gap-2 items-center justify-between text-xs pt-1 border-t border-border/10">
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-foreground font-semibold">
+                          {categories.find((c) => c.slug === b.category)?.name || b.category}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                            b.status === "published"
+                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          }`}
+                        >
+                          {b.status}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2.5 items-center text-[10px] text-muted-foreground font-semibold">
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {b.views}
+                        </span>
+                        <span>
                           {new Date(b.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
-                            year: "numeric",
                           })}
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {b.status === "published" && (
-                              <a
-                                href={`/blogs/${(b.slug || "").replace(/^\/+/, "")}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                                title="View in visitor page"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            )}
-                            <button
-                              onClick={() => handleOpenEdit(b)}
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                              title="Edit post"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteBlog(b.id)}
-                              className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10"
-                              title="Delete post"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom actions row */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border/15">
+                      {b.scheduledAt ? (
+                        <p className="text-[9px] text-muted-foreground font-semibold">
+                          Sched: {new Date(b.scheduledAt).toLocaleDateString()}
+                        </p>
+                      ) : (
+                        <div />
+                      )}
+                      
+                      <div className="flex items-center gap-2">
+                        {b.status === "published" && (
+                          <a
+                            href={`/blogs/${(b.slug || "").replace(/^\/+/, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border/45"
+                            title="View in visitor page"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => handleOpenEdit(b)}
+                          className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border/45"
+                          title="Edit post"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(b.id)}
+                          className="p-2 rounded-xl text-red-600 hover:bg-red-500/10 border border-red-500/15"
+                          title="Delete post"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
