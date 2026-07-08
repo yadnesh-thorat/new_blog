@@ -1017,7 +1017,7 @@ if (canUseFirebase()) {
         contacts = await this.getContacts();
         newsletter = await this.getNewsletterSubscribers();
       } catch (err) {
-        handleFirebaseFailure("getAnalyticsData", err);
+        console.warn("getAnalyticsData: Firestore read failed:", err?.message);
       }
     }
 
@@ -1095,7 +1095,7 @@ if (canUseFirebase()) {
         });
         return list;
       } catch (err) {
-        handleFirebaseFailure("getAdmins", err);
+        console.warn("getAdmins: Firestore read failed, using local cache:", err?.message);
       }
     }
     // Fallback
@@ -1114,7 +1114,7 @@ if (canUseFirebase()) {
         await withTimeout(setDoc(doc(db, "aether_admins_v2", newAdmin.id), newAdmin));
         return newAdmin;
       } catch (err) {
-        handleFirebaseFailure("addAdmin", err);
+        handleWriteFailure("addAdmin", err);
       }
     }
 
@@ -1131,7 +1131,7 @@ if (canUseFirebase()) {
         await withTimeout(deleteDoc(doc(db, "aether_admins_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteAdmin", err);
+        handleWriteFailure("deleteAdmin", err);
       }
     }
 
@@ -1148,7 +1148,7 @@ if (canUseFirebase()) {
         await withTimeout(updateDoc(doc(db, "aether_admins_v2", id), data));
         return true;
       } catch (err) {
-        handleFirebaseFailure("updateAdminProfile", err);
+        handleWriteFailure("updateAdminProfile", err);
       }
     }
 
@@ -1177,7 +1177,7 @@ if (canUseFirebase()) {
         });
         return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } catch (err) {
-        handleFirebaseFailure("getComments", err);
+        console.warn("getComments: Firestore read failed, using local cache:", err?.message);
       }
     }
 
@@ -1203,7 +1203,7 @@ if (canUseFirebase()) {
         await withTimeout(setDoc(doc(db, "aether_comments_v2", newComment.id), newComment));
         return newComment;
       } catch (err) {
-        handleFirebaseFailure("addComment", err);
+        handleWriteFailure("addComment", err);
       }
     }
 
@@ -1220,7 +1220,7 @@ if (canUseFirebase()) {
         await withTimeout(deleteDoc(doc(db, "aether_comments_v2", id)));
         return true;
       } catch (err) {
-        handleFirebaseFailure("deleteComment", err);
+        handleWriteFailure("deleteComment", err);
       }
     }
 
