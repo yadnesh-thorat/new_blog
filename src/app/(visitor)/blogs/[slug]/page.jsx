@@ -285,7 +285,7 @@ export default function BlogDetailPage() {
         const title = block.replace("## ", "");
         const id = title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
         return (
-          <h2 key={idx} id={id} className="text-xl sm:text-2xl font-bold font-geist-sans text-foreground mt-10 mb-4 border-b border-border/20 pb-2 scroll-mt-24 leading-snug">
+          <h2 key={idx} id={id} className="text-xl sm:text-2xl font-bold font-marathi-heading text-foreground mt-10 mb-4 border-b border-outline-variant/20 pb-2 scroll-mt-24 leading-snug">
             {title}
           </h2>
         );
@@ -294,7 +294,7 @@ export default function BlogDetailPage() {
         const title = block.replace("### ", "");
         const id = title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
         return (
-          <h3 key={idx} id={id} className="text-lg sm:text-xl font-bold font-geist-sans text-foreground mt-8 mb-3 scroll-mt-24 leading-snug">
+          <h3 key={idx} id={id} className="text-lg sm:text-xl font-bold font-marathi-heading text-foreground mt-8 mb-3 scroll-mt-24 leading-snug">
             {title}
           </h3>
         );
@@ -336,21 +336,21 @@ export default function BlogDetailPage() {
           </button>
 
           {/* Article Header */}
-          <div className="space-y-5 max-w-4xl border-b border-border/40 pb-8 mb-8 animate-entrance">
+          <div className="space-y-5 max-w-4xl border-b border-outline-variant/20 pb-8 mb-8 animate-entrance">
             <div className="flex items-center gap-3">
               <span className="inline-flex rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
                 {categories.find((c) => c.slug === blog.category)?.name || blog.category}
               </span>
               {blog.views && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant/70 font-medium">
                   <Eye className="h-3.5 w-3.5" /> {blog.views} views
                 </span>
               )}
             </div>
-            <h1 className="text-3xl font-extrabold sm:text-5xl text-foreground font-geist-sans leading-[1.15] tracking-tight">
+            <h1 className="text-3xl font-extrabold sm:text-5xl text-foreground font-marathi-heading leading-[1.15] tracking-tight">
               {blog.title}
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-lg text-on-surface-variant/80 leading-relaxed">
               {blog.excerpt}
             </p>
 

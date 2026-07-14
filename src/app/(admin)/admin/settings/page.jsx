@@ -10,6 +10,11 @@ import {
   Users,
   Globe,
   Palette,
+  Home,
+  Plus,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { dbService } from "@/lib/db";
 import confetti from "canvas-confetti";
@@ -179,6 +184,18 @@ export default function SettingsManagerPage() {
     });
   };
 
+  const updateHomepageSetting = (field, value) => {
+    if (!settings) return;
+    setSettings({
+      ...settings,
+      homepage: {
+        ...settings.homepage,
+        [field]: value,
+      },
+    });
+  };
+
+
   if (loading || !settings) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -189,6 +206,7 @@ export default function SettingsManagerPage() {
 
   const tabs = [
     { id: "general", name: "General & Hero", icon: Sliders },
+    { id: "homepage", name: "Homepage Sections", icon: Home },
     { id: "about", name: "About Details", icon: Users },
     { id: "contact", name: "Contact & Info", icon: Info },
     { id: "seo", name: "Default SEO", icon: Globe },
@@ -439,6 +457,177 @@ export default function SettingsManagerPage() {
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "homepage" && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-base font-bold font-geist-sans text-foreground border-b border-border/20 pb-2">
+                  Homepage Section Headers & Spotlights
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                  Modify the titles and subtitles of the public homepage grid containers and the spotlight tag.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-spotlight-tag" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Spotlight / Hero Tag
+                  </label>
+                  <input
+                    id="homepage-spotlight-tag"
+                    type="text"
+                    required
+                    value={settings.homepage?.spotlightTag || ""}
+                    onChange={(e) => updateHomepageSetting("spotlightTag", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-sidebar-title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Sidebar Title (मागील तपासणी)
+                  </label>
+                  <input
+                    id="homepage-sidebar-title"
+                    type="text"
+                    required
+                    value={settings.homepage?.sidebarTitle || ""}
+                    onChange={(e) => updateHomepageSetting("sidebarTitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-border/10 pt-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-latest-title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Latest Articles Section Title
+                  </label>
+                  <input
+                    id="homepage-latest-title"
+                    type="text"
+                    required
+                    value={settings.homepage?.latestBlogsTitle || ""}
+                    onChange={(e) => updateHomepageSetting("latestBlogsTitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-latest-subtitle" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Latest Articles Section Subtitle
+                  </label>
+                  <input
+                    id="homepage-latest-subtitle"
+                    type="text"
+                    required
+                    value={settings.homepage?.latestBlogsSubtitle || ""}
+                    onChange={(e) => updateHomepageSetting("latestBlogsSubtitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-border/10 pt-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-categories-title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Categories Section Title
+                  </label>
+                  <input
+                    id="homepage-categories-title"
+                    type="text"
+                    required
+                    value={settings.homepage?.categoriesTitle || ""}
+                    onChange={(e) => updateHomepageSetting("categoriesTitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-categories-subtitle" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Categories Section Subtitle
+                  </label>
+                  <textarea
+                    id="homepage-categories-subtitle"
+                    required
+                    rows={2}
+                    value={settings.homepage?.categoriesSubtitle || ""}
+                    onChange={(e) => updateHomepageSetting("categoriesSubtitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-border/10 pt-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-videos-title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Popular Videos Section Title
+                  </label>
+                  <input
+                    id="homepage-videos-title"
+                    type="text"
+                    required
+                    value={settings.homepage?.featuredVideosTitle || ""}
+                    onChange={(e) => updateHomepageSetting("featuredVideosTitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="homepage-videos-subtitle" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Popular Videos Section Subtitle
+                  </label>
+                  <input
+                    id="homepage-videos-subtitle"
+                    type="text"
+                    required
+                    value={settings.homepage?.featuredVideosSubtitle || ""}
+                    onChange={(e) => updateHomepageSetting("featuredVideosSubtitle", e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Quote Editor */}
+              <div className="space-y-4 border-t border-border/20 pt-6">
+                <div>
+                  <h3 className="text-base font-bold font-geist-sans text-foreground border-b border-border/20 pb-2">
+                    Homepage Editorial Quote
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                    Modify the central quote banner that sits between homepage sections.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label htmlFor="homepage-quote-text" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Quote Text
+                    </label>
+                    <textarea
+                      id="homepage-quote-text"
+                      required
+                      rows={3}
+                      value={settings.homepage?.quoteText || ""}
+                      onChange={(e) => updateHomepageSetting("quoteText", e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="homepage-quote-author" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Citation Author
+                    </label>
+                    <input
+                      id="homepage-quote-author"
+                      type="text"
+                      required
+                      value={settings.homepage?.quoteAuthor || ""}
+                      onChange={(e) => updateHomepageSetting("quoteAuthor", e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           )}
 
@@ -946,41 +1135,26 @@ export default function SettingsManagerPage() {
                   <p className="text-xs text-muted-foreground font-medium">Adjust the brand action, links, badges, and button highlights.</p>
                   
                   <div className="space-y-3.5">
-                    {/* Light Mode Accent */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Light Mode Accent</label>
                       <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={settings.theme?.primaryColorLight || "#4f46e5"}
+                        <input type="text" value={settings.theme?.primaryColorLight || "#4f46e5"}
                           onChange={(e) => updateThemeSetting("primaryColorLight", e.target.value)}
-                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
-                        />
-                        <input
-                          type="color"
-                          value={settings.theme?.primaryColorLight || "#4f46e5"}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.primaryColorLight || "#4f46e5"}
                           onChange={(e) => updateThemeSetting("primaryColorLight", e.target.value)}
-                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
-                        />
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1" />
                       </div>
                     </div>
-
-                    {/* Dark Mode Accent */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Dark Mode Accent</label>
                       <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={settings.theme?.primaryColorDark || "#818cf8"}
+                        <input type="text" value={settings.theme?.primaryColorDark || "#818cf8"}
                           onChange={(e) => updateThemeSetting("primaryColorDark", e.target.value)}
-                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
-                        />
-                        <input
-                          type="color"
-                          value={settings.theme?.primaryColorDark || "#818cf8"}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.primaryColorDark || "#818cf8"}
                           onChange={(e) => updateThemeSetting("primaryColorDark", e.target.value)}
-                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
-                        />
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1" />
                       </div>
                     </div>
                   </div>
@@ -990,45 +1164,179 @@ export default function SettingsManagerPage() {
                 <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
                   <h4 className="text-sm font-bold text-foreground">Footer Background Color</h4>
                   <p className="text-xs text-muted-foreground font-medium">Give the footer a distinct background color separate from the page.</p>
-
                   <div className="space-y-3.5">
-                    {/* Light Mode Footer */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Light Mode Footer Background</label>
                       <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={settings.theme?.footerBgColorLight || "#f4f4f5"}
+                        <input type="text" value={settings.theme?.footerBgColorLight || "#f4f4f5"}
                           onChange={(e) => updateThemeSetting("footerBgColorLight", e.target.value)}
-                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
-                        />
-                        <input
-                          type="color"
-                          value={settings.theme?.footerBgColorLight || "#f4f4f5"}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.footerBgColorLight || "#f4f4f5"}
                           onChange={(e) => updateThemeSetting("footerBgColorLight", e.target.value)}
-                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
-                        />
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1" />
                       </div>
                     </div>
-
-                    {/* Dark Mode Footer */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Dark Mode Footer Background</label>
                       <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={settings.theme?.footerBgColorDark || "#101014"}
+                        <input type="text" value={settings.theme?.footerBgColorDark || "#101014"}
                           onChange={(e) => updateThemeSetting("footerBgColorDark", e.target.value)}
-                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"
-                        />
-                        <input
-                          type="color"
-                          value={settings.theme?.footerBgColorDark || "#101014"}
+                          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.footerBgColorDark || "#101014"}
                           onChange={(e) => updateThemeSetting("footerBgColorDark", e.target.value)}
-                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1"
-                        />
+                          className="h-10 w-12 shrink-0 rounded-xl border border-border bg-background cursor-pointer p-1" />
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Page Background & Surface Colors */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">Page Background &amp; Surface Colors</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Control the main page background, text color, card surface, and border tones.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* Background */}
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">Page Background</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Light Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.bgLight || "#ffffff"}
+                          onChange={(e) => updateThemeSetting("bgLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.bgLight || "#ffffff"}
+                          onChange={(e) => updateThemeSetting("bgLight", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Dark Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.bgDark || "#131313"}
+                          onChange={(e) => updateThemeSetting("bgDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.bgDark || "#131313"}
+                          onChange={(e) => updateThemeSetting("bgDark", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Foreground / Text */}
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">Text / Foreground</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Light Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.fgLight || "#0f0f0f"}
+                          onChange={(e) => updateThemeSetting("fgLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.fgLight || "#0f0f0f"}
+                          onChange={(e) => updateThemeSetting("fgLight", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Dark Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.fgDark || "#e5e2e1"}
+                          onChange={(e) => updateThemeSetting("fgDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.fgDark || "#e5e2e1"}
+                          onChange={(e) => updateThemeSetting("fgDark", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Card */}
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">Card / Panel Surface</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Light Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.cardLight || "#f9f9f9"}
+                          onChange={(e) => updateThemeSetting("cardLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.cardLight || "#f9f9f9"}
+                          onChange={(e) => updateThemeSetting("cardLight", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Dark Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.cardDark || "#1a1a1a"}
+                          onChange={(e) => updateThemeSetting("cardDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.cardDark || "#1a1a1a"}
+                          onChange={(e) => updateThemeSetting("cardDark", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Border */}
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">Border &amp; Divider Color</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Light Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.borderLight || "#e4e4e7"}
+                          onChange={(e) => updateThemeSetting("borderLight", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.borderLight || "#e4e4e7"}
+                          onChange={(e) => updateThemeSetting("borderLight", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Dark Mode</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={settings.theme?.borderDark || "#4e453a"}
+                          onChange={(e) => updateThemeSetting("borderDark", e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none" />
+                        <input type="color" value={settings.theme?.borderDark || "#4e453a"}
+                          onChange={(e) => updateThemeSetting("borderDark", e.target.value)}
+                          className="h-9 w-11 shrink-0 rounded-lg border border-border bg-background cursor-pointer p-1" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Color Preview */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+                <h4 className="text-sm font-bold text-foreground">Live Color Preview</h4>
+                <p className="text-xs text-muted-foreground font-medium">A real-time preview of how your chosen colors will look together.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  {/* Light Preview */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: settings.theme?.borderLight || "#e4e4e7" }}>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: settings.theme?.bgLight || "#ffffff" }}>
+                      <span className="text-xs font-bold" style={{ color: settings.theme?.fgLight || "#0f0f0f" }}>☀ Light Mode Preview</span>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ backgroundColor: settings.theme?.primaryColorLight || "#4f46e5", color: "#fff" }}>Button</span>
+                    </div>
+                    <div className="px-4 py-3" style={{ backgroundColor: settings.theme?.cardLight || "#f9f9f9" }}>
+                      <p className="text-xs font-medium" style={{ color: settings.theme?.fgLight || "#0f0f0f" }}>Card surface — body text here</p>
+                      <div className="mt-2 border-t pt-2" style={{ borderColor: settings.theme?.borderLight || "#e4e4e7" }}>
+                        <p className="text-[10px]" style={{ color: settings.theme?.fgLight || "#0f0f0f", opacity: 0.5 }}>Muted / secondary text</p>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2 text-[10px] font-semibold" style={{ backgroundColor: settings.theme?.footerBgColorLight || "#f4f4f5", color: settings.theme?.fgLight || "#0f0f0f" }}>Footer area</div>
+                  </div>
+                  {/* Dark Preview */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: settings.theme?.borderDark || "#4e453a" }}>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: settings.theme?.bgDark || "#131313" }}>
+                      <span className="text-xs font-bold" style={{ color: settings.theme?.fgDark || "#e5e2e1" }}>🌙 Dark Mode Preview</span>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ backgroundColor: settings.theme?.primaryColorDark || "#818cf8", color: "#fff" }}>Button</span>
+                    </div>
+                    <div className="px-4 py-3" style={{ backgroundColor: settings.theme?.cardDark || "#1a1a1a" }}>
+                      <p className="text-xs font-medium" style={{ color: settings.theme?.fgDark || "#e5e2e1" }}>Card surface — body text here</p>
+                      <div className="mt-2 border-t pt-2" style={{ borderColor: settings.theme?.borderDark || "#4e453a" }}>
+                        <p className="text-[10px]" style={{ color: settings.theme?.fgDark || "#e5e2e1", opacity: 0.5 }}>Muted / secondary text</p>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2 text-[10px] font-semibold" style={{ backgroundColor: settings.theme?.footerBgColorDark || "#101014", color: settings.theme?.fgDark || "#e5e2e1" }}>Footer area</div>
                   </div>
                 </div>
               </div>
@@ -1036,32 +1344,78 @@ export default function SettingsManagerPage() {
               {/* Color Presets Selector */}
               <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
                 <h4 className="text-sm font-bold text-foreground">Premium Preset Palettes</h4>
-                <p className="text-xs text-muted-foreground font-medium">Choose from our curated professional branding setups.</p>
+                <p className="text-xs text-muted-foreground font-medium">One-click complete color scheme setups across all page surfaces.</p>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { name: "Default Indigo", light: "#4f46e5", dark: "#818cf8", footerL: "#f4f4f5", footerD: "#101014" },
-                    { name: "Emerald Forest", light: "#059669", dark: "#34d399", footerL: "#f0fdf4", footerD: "#061f14" },
-                    { name: "Rose Crimson", light: "#e11d48", dark: "#fb7185", footerL: "#fff1f2", footerD: "#24070e" },
-                    { name: "Ocean Breeze", light: "#0284c7", dark: "#38bdf8", footerL: "#f0f9ff", footerD: "#081d2c" },
+                    {
+                      name: "Satyavedh Default",
+                      light: "#e8c086", dark: "#e8c086",
+                      footerL: "#0e0e0e", footerD: "#0e0e0e",
+                      bgLight: "#ffffff", bgDark: "#131313",
+                      fgLight: "#0f0f0f", fgDark: "#e5e2e1",
+                      cardLight: "#f9f9f9", cardDark: "#1a1a1a",
+                      borderLight: "#e4e4e7", borderDark: "#4e453a",
+                    },
+                    {
+                      name: "Indigo Dark",
+                      light: "#4f46e5", dark: "#818cf8",
+                      footerL: "#f4f4f5", footerD: "#101014",
+                      bgLight: "#ffffff", bgDark: "#0f0f13",
+                      fgLight: "#111827", fgDark: "#f1f5f9",
+                      cardLight: "#f8f8fc", cardDark: "#18181f",
+                      borderLight: "#e0e0f0", borderDark: "#2d2d40",
+                    },
+                    {
+                      name: "Emerald Forest",
+                      light: "#059669", dark: "#34d399",
+                      footerL: "#f0fdf4", footerD: "#061f14",
+                      bgLight: "#f7fffe", bgDark: "#081a12",
+                      fgLight: "#052e16", fgDark: "#d1fae5",
+                      cardLight: "#ecfdf5", cardDark: "#0d2818",
+                      borderLight: "#a7f3d0", borderDark: "#14532d",
+                    },
+                    {
+                      name: "Rose Crimson",
+                      light: "#e11d48", dark: "#fb7185",
+                      footerL: "#fff1f2", footerD: "#24070e",
+                      bgLight: "#fffafa", bgDark: "#180409",
+                      fgLight: "#4a0010", fgDark: "#ffe4e6",
+                      cardLight: "#fff0f1", cardDark: "#220710",
+                      borderLight: "#fecdd3", borderDark: "#6b1020",
+                    },
                   ].map((preset) => (
                     <button
                       key={preset.name}
                       type="button"
                       onClick={() => {
-                        updateThemeSetting("primaryColorLight", preset.light);
-                        updateThemeSetting("primaryColorDark", preset.dark);
-                        updateThemeSetting("footerBgColorLight", preset.footerL);
-                        updateThemeSetting("footerBgColorDark", preset.footerD);
+                        setSettings({
+                          ...settings,
+                          theme: {
+                            ...(settings.theme || {}),
+                            primaryColorLight: preset.light,
+                            primaryColorDark: preset.dark,
+                            footerBgColorLight: preset.footerL,
+                            footerBgColorDark: preset.footerD,
+                            bgLight: preset.bgLight,
+                            bgDark: preset.bgDark,
+                            fgLight: preset.fgLight,
+                            fgDark: preset.fgDark,
+                            cardLight: preset.cardLight,
+                            cardDark: preset.cardDark,
+                            borderLight: preset.borderLight,
+                            borderDark: preset.borderDark,
+                          }
+                        });
                       }}
                       className="flex flex-col items-start gap-1 p-3.5 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
                     >
                       <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">{preset.name}</span>
-                      <div className="flex gap-1.5 mt-1">
-                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.light }} />
-                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.dark }} />
-                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.footerL }} />
-                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.footerD }} />
+                      <div className="flex gap-1.5 mt-1 flex-wrap">
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.bgLight }} title="BG Light" />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.bgDark }} title="BG Dark" />
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.light }} title="Accent Light" />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: preset.dark }} title="Accent Dark" />
                       </div>
                     </button>
                   ))}

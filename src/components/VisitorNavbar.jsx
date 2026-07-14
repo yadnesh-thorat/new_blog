@@ -95,25 +95,23 @@ export const VisitorNavbar = () => {
   }, [mobileMenuOpen, searchOpen]);
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Categories", href: "/categories" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "तपास", href: "/" },
+    { name: "विषय सूची", href: "/categories" },
+    { name: "आमच्याबद्दल", href: "/about" },
+    { name: "संपर्क", href: "/contact" },
   ];
 
-  const siteName = settings?.websiteName || "AETHER";
+  const siteName = settings?.websiteName || "सत्यवेध";
 
   return (
     <>
       {/* ─── HEADER ──────────────────────────────────────────────────────── */}
       <header
-        className={`sticky top-0 z-45 w-full transition-all duration-300 ${
-          scrolled
-            ? "border-b border-border/50 bg-background/90 backdrop-blur-2xl shadow-[0_1px_30px_-5px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_30px_-5px_rgba(0,0,0,0.4)]"
-            : "border-b border-transparent bg-transparent"
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-background/80 backdrop-blur-md border-b border-border/20 ${
+          scrolled ? "py-2.5 shadow-lg border-border/30" : "py-4"
         }`}
       >
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-6">
 
           {/* ── Logo ── */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
@@ -124,29 +122,24 @@ export const VisitorNavbar = () => {
                 className="h-8 w-auto object-contain"
               />
             ) : (
-              <span className="font-geist-sans text-[1.15rem] font-black tracking-tight text-foreground flex items-center gap-1.5 select-none">
-                <span className="text-primary transition-transform duration-300 group-hover:rotate-[20deg] group-hover:scale-110 inline-block">
-                  ✦
-                </span>
-                <span className="group-hover:text-primary/80 transition-colors duration-200">
-                  {siteName.toUpperCase()}
-                </span>
+              <span className="font-geist-sans text-xl font-bold tracking-tight text-primary select-none font-headline-md">
+                {siteName}
               </span>
             )}
           </Link>
 
           {/* ── Desktop Nav ── */}
-          <nav className="hidden md:flex items-center gap-1 bg-muted/40 border border-border/40 rounded-full p-1 backdrop-blur-sm">
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  className={`pb-1 font-semibold text-xs tracking-wider uppercase transition-all duration-200 font-marathi-body ${
                     isActive
-                      ? "bg-background text-foreground shadow-sm border border-border/50"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-primary"
                   }`}
                 >
                   {link.name}
@@ -156,24 +149,20 @@ export const VisitorNavbar = () => {
           </nav>
 
           {/* ── Action Buttons ── */}
-          <div className="hidden md:flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-4 h-10 rounded-full border border-border/50 bg-muted/40 text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/70 transition-all duration-200 text-sm group"
+              className="text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary/10"
               aria-label="Search"
             >
-              <Search className="h-4 w-4" />
-              <span className="hidden lg:block text-xs text-muted-foreground/70 font-medium">Search...</span>
-              <kbd className="hidden lg:inline-flex items-center gap-0.5 text-[10px] font-bold bg-background border border-border/60 px-1.5 py-0.5 rounded-lg text-muted-foreground/60 ml-1">
-                ⌘K
-              </kbd>
+              <Search className="h-4.5 w-4.5" />
             </button>
 
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-border/50 bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 hover:border-border transition-all duration-200"
+              className="text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary/10"
               aria-label="Toggle theme"
             >
               {theme === "light"
@@ -185,32 +174,16 @@ export const VisitorNavbar = () => {
             {user && (
               <Link
                 to="/admin/dashboard"
-                className="btn-shimmer inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 h-10 text-xs font-bold text-primary-foreground shadow-[0_4px_14px_rgba(99,102,241,0.3)] hover:opacity-92 hover:scale-[1.02] active:scale-95 transition-all"
+                className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-sm bg-primary px-4 py-2 text-xs font-bold text-on-primary hover:bg-primary/90 transition-all font-marathi-body"
               >
-                Dashboard <ArrowRight className="h-3.5 w-3.5" />
+                डॅशबोर्ड <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             )}
-          </div>
 
-          {/* ── Mobile Controls ── */}
-          <div className="flex md:hidden items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-border/40 bg-muted/40 text-muted-foreground hover:text-foreground transition-all"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-border/40 bg-muted/40 text-muted-foreground hover:text-foreground transition-all"
-              aria-label="Toggle theme"
-            >
-              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </button>
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-border/40 bg-muted/40 text-muted-foreground hover:text-foreground transition-all"
+              className="md:hidden text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

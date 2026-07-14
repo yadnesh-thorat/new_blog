@@ -49,6 +49,37 @@ const MOCK_SETTINGS = {
   websiteName: "Aether",
   logo: "✦ AETHER",
   logoImage: "",
+  homepage: {
+    spotlightTag: "विशेष तपास",
+    latestBlogsTitle: "नवीन तपास आणि शोधकथा",
+    latestBlogsSubtitle: "सत्यशोध आणि पुराव्यांवर आधारित चालू तपासणी",
+    sidebarTitle: "मागील तपासणी",
+    categoriesTitle: "विषय सूची",
+    categoriesSubtitle: "सत्यवेधच्या व्यासपीठावर आम्ही विविध पैलूंनी इतिहासाचा आणि वर्तमानाचा वेध घेतो.",
+    featuredVideosTitle: "लोकप्रिय माहितीपट",
+    featuredVideosSubtitle: "सखोल संशोधनावर आधारित लेख आणि वृत्त",
+    timelineTitle: "काळाचा ओघ: एक प्रवास",
+    timelineSubtitle: "महाराष्ट्राच्या आणि भारताच्या समृद्ध वारशाचा वेध घेण्यासाठी या कालपटलावर नजर टाका.",
+    quoteText: "इतिहास कधीच मरत नाही... तो फक्त पुन्हा वाचला जातो.",
+    quoteAuthor: "सत्यवेध संपादकीय",
+    timeline: [
+      {
+        year: "१९४७",
+        title: "स्वातंत्र्याचा सूर्योदय",
+        desc: "वसाहतवादाच्या अंताची आणि नव्या स्वतंत्र भारताच्या निर्मितीची सुवर्णगाथा."
+      },
+      {
+        year: "१८५७",
+        title: "पहिले स्वातंत्र्यसमर",
+        desc: "मंगल पांडे ते झाशीची राणी लक्ष्मीबाई... इंग्रज सत्तेविरुद्ध संघर्षाची पहिली महाठिणगी."
+      },
+      {
+        year: "१६७४",
+        title: "शिवराज्याभिषेक सोहळा",
+        desc: "रायगडावर छत्रपती शिवाजी महाराजांचा राज्याभिषेक आणि हिंदवी स्वराज्याची अधिकृत स्थापना."
+      }
+    ]
+  },
   hero: {
     title: "The Future of Web Engineering & Aesthetics",
     subtitle:
@@ -820,20 +851,36 @@ export const dbService = {
 
   // --- SETTINGS ---
   async getSettings() {
+    let settingsData = null;
     if (canUseFirebase()) {
       try {
         const docSnap = await withTimeout(
           getDoc(doc(db, "aether_settings_v2", "global")),
         );
         if (docSnap.exists()) {
-          return docSnap.data();
+          settingsData = docSnap.data();
         }
       } catch (err) {
         console.warn("getSettings: Firestore read failed, using local cache:", err?.message);
       }
     }
-    // Fallback
-    return getLocalData("aether_settings_v2", MOCK_SETTINGS);
+    if (!settingsData) {
+      // Fallback
+      settingsData = getLocalData("aether_settings_v2", MOCK_SETTINGS);
+    }
+
+    // Safety merge for homepage settings to support backward compatibility
+    if (settingsData) {
+      if (!settingsData.homepage) {
+        settingsData.homepage = { ...MOCK_SETTINGS.homepage };
+      } else {
+        settingsData.homepage = {
+          ...MOCK_SETTINGS.homepage,
+          ...settingsData.homepage,
+        };
+      }
+    }
+    return settingsData;
   },
 
   async saveSettings(settings) {

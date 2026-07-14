@@ -21,6 +21,15 @@ import { dbService } from "@/lib/db";
 import { event } from "@/lib/analytics";
 import confetti from "canvas-confetti";
 
+const toMarathiNumerals = (num) => {
+  const marathiDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+  return String(num)
+    .split("")
+    .map((char) => marathiDigits[parseInt(char)] || char)
+    .join("");
+};
+
+
 export default function HomePage() {
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -158,12 +167,8 @@ export default function HomePage() {
   const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
   const paginatedBlogs = filteredBlogs.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
-  const hasNewsLayout = currentPage === 1 && paginatedBlogs.length > 1;
-  const mainArticle = hasNewsLayout ? paginatedBlogs[0] : null;
-  const subArticle = hasNewsLayout && paginatedBlogs.length > 2 ? paginatedBlogs[1] : null;
-  const sidebarArticles = hasNewsLayout
-    ? (paginatedBlogs.length === 2 ? [paginatedBlogs[1]] : paginatedBlogs.slice(2))
-    : [];
+  const mainArticle = currentPage === 1 && paginatedBlogs.length > 0 ? paginatedBlogs[0] : null;
+  const leftColumnBlogs = mainArticle ? paginatedBlogs.slice(1) : paginatedBlogs;
 
   return (
     <>
@@ -172,248 +177,349 @@ export default function HomePage() {
 
       <VisitorNavbar />
 
-      {/* Latest Blogs Listing */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-12">
-        <div className="border-b border-border/40 pb-5 mb-8 flex justify-between items-end">
-          <div>
-            <h3 className="font-geist-sans text-2xl font-bold">Latest Publications</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Browse our most recent deep-dives and engineering guides.
-            </p>
+      {/* Documentary Spotlight Hero */}
+      {mainArticle ? (
+        <section className="relative h-[80vh] md:h-[85vh] w-full flex items-end overflow-hidden mt-20">
+          <div className="absolute inset-0 z-0">
+            <div 
+              className="w-full h-full bg-cover bg-center" 
+              style={{ backgroundImage: `url(${mainArticle.coverImage})` }}
+            />
+            <div className="absolute inset-0 cinematic-overlay" />
           </div>
-          {selectedCategory !== "all" && (
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className="text-xs font-semibold text-primary hover:underline transition-all"
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-16 md:pb-24 w-full max-w-5xl mx-auto">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="w-12 h-[2px] bg-primary"></span>
+              <span className="font-label-caps text-xs tracking-widest text-primary uppercase font-semibold">
+                {settings.homepage?.spotlightTag || "विशेष तपास"}
+              </span>
+            </div>
+            <h1 className="font-display-lg text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-[1.1] font-bold">
+              {mainArticle.title}
+            </h1>
+            <p className="font-body-lg text-sm sm:text-base md:text-lg text-zinc-300 mb-6 max-w-2xl leading-relaxed opacity-90">
+              {mainArticle.excerpt}
+            </p>
+            <Link 
+              to={`/blogs/${mainArticle.slug}`}
+              className="bg-primary text-on-primary font-bold px-8 py-3.5 inline-flex items-center gap-2 hover:bg-primary/90 transition-all rounded-sm group text-xs uppercase tracking-wider font-marathi-body"
             >
-              Clear filters
-            </button>
+              <span>संपूर्ण कथा वाचा</span>
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <div className="h-20" />
+      )}
+
+      {/* Main Content: Asymmetric 70/30 Layout */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-[120px] grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+        {/* Latest Articles (70%) */}
+        <div className="lg:col-span-8 space-y-12">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-outline-variant/10">
+            <div>
+              <h2 className="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">
+                {settings.homepage?.latestBlogsTitle || "नवीन तपास आणि शोधकथा"}
+              </h2>
+              <p className="text-body-md text-on-surface-variant mt-1">
+                {settings.homepage?.latestBlogsSubtitle || "सत्यशोध आणि पुराव्यांवर आधारित चालू तपासणी"}
+              </p>
+            </div>
+            {selectedCategory !== "all" && (
+              <button
+                onClick={() => setSelectedCategory("all")}
+                className="text-xs font-semibold text-primary hover:underline transition-all"
+              >
+                सर्व दाखवा
+              </button>
+            )}
+          </div>
+
+          {filteredBlogs.length > 0 ? (
+            <div className="space-y-10">
+              {leftColumnBlogs.map((blog, idx) => (
+                <article key={blog.id} className="cursor-pointer border-b border-outline-variant/10 pb-8 last:border-b-0">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                    {blog.coverImage && (
+                      <div className="md:col-span-5 aspect-[16/10] w-full overflow-hidden rounded-lg relative border border-outline-variant/10">
+                        <img 
+                          src={blog.coverImage} 
+                          alt={blog.title} 
+                          className="w-full h-full object-cover transition-transform duration-700" 
+                        />
+                        <span className="absolute top-3 left-3 bg-primary text-on-primary px-3 py-1 text-[9px] font-bold tracking-widest rounded-full uppercase">
+                          {categories.find((c) => c.slug === blog.category)?.name || blog.category}
+                        </span>
+                      </div>
+                    )}
+                    <div className="md:col-span-7 flex flex-col justify-between space-y-3">
+                      <Link to={`/blogs/${blog.slug}`} className="block transition-colors">
+                        <h3 className="font-headline-sm text-lg md:text-xl font-bold leading-snug text-on-surface">
+                          {blog.title}
+                        </h3>
+                      </Link>
+                      <p className="font-body-md text-sm text-on-surface-variant/80 line-clamp-3 leading-relaxed">
+                        {blog.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-on-surface-variant/50 pt-2 font-marathi-body">
+                        <div className="flex items-center gap-3">
+                          <span>{new Date(blog.createdAt).toLocaleDateString("mr-IN", { month: "short", day: "numeric", year: "numeric" })}</span>
+                          <span className="w-1 h-1 rounded-full bg-outline-variant/60"></span>
+                          <span>{blog.readingTime} मिनिटे वाचन</span>
+                        </div>
+                        <Link to={`/blogs/${blog.slug}`} className="text-primary font-bold hover:underline inline-flex items-center gap-0.5">
+                          वाचा <ArrowRight className="h-3.5 w-3.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-12 flex justify-center items-center gap-2 pt-6">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-2.5 rounded-sm border border-outline-variant/30 text-on-surface hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Previous"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`h-10 w-10 rounded-sm border text-sm font-bold transition-all ${
+                        currentPage === pageNumber
+                          ? "bg-primary text-on-primary border-primary"
+                          : "border-outline-variant/30 text-on-surface hover:bg-primary/10"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-2.5 rounded-sm border border-outline-variant/30 text-on-surface hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Next"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-on-surface-variant">कोणतेही लेख आढळले नाहीत.</p>
+            </div>
           )}
         </div>
 
-        {filteredBlogs.length > 0 ? (
-          <div className="space-y-12">
-            {hasNewsLayout ? (
-              /* News Portal Grid Layout */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 border-b border-border/30">
-                {/* Left Section (Main + Sub Horizontal) */}
-                <div className="lg:col-span-8 space-y-8">
-                  {/* Main Article (Left Top) */}
-                  {mainArticle && (
-                    <article className="space-y-4 group">
-                      <Link to={`/blogs/${mainArticle.slug}`} className="block hover:text-primary transition-colors">
-                        <h2 className="text-2xl sm:text-3.5xl font-black text-foreground font-geist-sans leading-tight tracking-tight">
-                          {mainArticle.title}
-                        </h2>
+        {/* Sticky Sidebar / Numbered Timeline (30%) */}
+        <aside className="lg:col-span-4 lg:border-l lg:border-outline-variant/20 lg:pl-8 space-y-8">
+          <div className="sticky top-28 space-y-8">
+            <div>
+              <h3 className="font-label-caps text-label-caps text-primary border-b border-primary/20 pb-2 mb-6 uppercase">
+                {settings.homepage?.sidebarTitle || "मागील तपासणी"}
+              </h3>
+              <div className="flex flex-col gap-8">
+                {blogs.slice(0, 4).map((blog, idx) => (
+                  <div key={`side-${blog.id}`} className="cursor-pointer flex gap-4 items-start">
+                    <span className="font-display-lg text-headline-md text-primary/35 shrink-0 whitespace-nowrap">
+                      {toMarathiNumerals(String(idx + 1).padStart(2, "0"))}
+                    </span>
+                    <div className="space-y-1 min-w-0">
+                      <Link to={`/blogs/${blog.slug}`}>
+                        <h4 className="font-headline-sm text-headline-sm text-on-surface leading-tight">
+                          {blog.title}
+                        </h4>
                       </Link>
-
-                      {mainArticle.coverImage && (
-                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[2rem] border border-border/30 shadow-md">
-                          <img
-                            src={mainArticle.coverImage}
-                            alt={mainArticle.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                          />
-                        </div>
-                      )}
-
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {mainArticle.excerpt}
+                      <p className="text-on-surface-variant/70 font-body-md text-xs line-clamp-2 leading-relaxed">
+                        {blog.excerpt}
                       </p>
-                      
-                      <div>
-                        <Link to={`/blogs/${mainArticle.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 font-bold text-sm">
-                          Read More <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </article>
-                  )}
-
-                  {/* Sub Article (Left Bottom) */}
-                  {subArticle && (
-                    <article className="border-t border-border/20 pt-8 flex flex-col sm:flex-row gap-6 items-start group">
-                      <div className="flex-1 space-y-2">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400 block">
-                          {categories.find((c) => c.slug === subArticle.category)?.name || subArticle.category}
-                        </span>
-                        <Link to={`/blogs/${subArticle.slug}`} className="block hover:text-primary transition-colors">
-                          <h3 className="text-lg sm:text-xl font-bold text-foreground font-geist-sans leading-snug">
-                            {subArticle.title}
-                          </h3>
-                        </Link>
-                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                          {subArticle.excerpt}
-                        </p>
-                        <div className="pt-1">
-                          <Link to={`/blogs/${subArticle.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 font-bold text-xs">
-                            Read More <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        </div>
-                      </div>
-                      {subArticle.coverImage && (
-                        <div className="w-full sm:w-48 h-28 shrink-0 overflow-hidden rounded-2xl border border-border/30 relative">
-                          <img
-                            src={subArticle.coverImage}
-                            alt={subArticle.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </div>
-                      )}
-                    </article>
-                  )}
-                </div>
-
-                {/* Right Section (Sidebar Stack) */}
-                <div className="lg:col-span-4 lg:border-l lg:border-border/30 lg:pl-8 space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary animate-pulse" /> Trending Topics
-                  </h3>
-                  <div className="space-y-4">
-                    {sidebarArticles.map((blog) => (
-                      <article
-                        key={blog.id}
-                        className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card/60 p-4.5 shadow-sm hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300 backdrop-blur-sm"
-                      >
-                        <div className="space-y-2.5">
-                          <span className="inline-block rounded-lg bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-primary border border-primary/15">
-                            {categories.find((c) => c.slug === blog.category)?.name || blog.category}
-                          </span>
-                          <Link to={`/blogs/${blog.slug}`} className="block hover:text-primary transition-colors duration-200">
-                            <h4 className="text-sm sm:text-base font-bold text-foreground font-geist-sans leading-snug line-clamp-2">
-                              {blog.title}
-                            </h4>
-                          </Link>
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold pt-1">
-                            <span>
-                              {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </span>
-                            <Link to={`/blogs/${blog.slug}`} className="text-primary hover:underline flex items-center gap-0.5 font-bold transition-all text-[10px]">
-                              Read More <ArrowRight className="h-3 w-3" />
-                            </Link>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              /* Single Article fallback or Standard Grid when only 1 is present */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {paginatedBlogs.map((blog, idx) => (
-                  <article
-                    key={blog.id}
-                    className="flex flex-col overflow-hidden rounded-[2rem] border border-border/30 bg-card/50 backdrop-blur-sm hover-lift hover-glow gradient-border transition-all duration-300 group animate-entrance"
-                    style={{ animationDelay: `${idx * 0.04}s` }}
-                  >
-                    {/* Image */}
-                    <div className="relative h-52 overflow-hidden">
-                      <img
-                        src={blog.coverImage}
-                        alt={blog.title}
-                        className="h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.07]"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                      <span className="absolute top-3 left-3 rounded-xl bg-background/85 backdrop-blur-md px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
-                        {categories.find((c) => c.slug === blog.category)?.name || blog.category}
-                      </span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 flex flex-col p-6 space-y-3 justify-between">
-                      <div className="space-y-2">
-                        <Link
-                          to={`/blogs/${blog.slug}`}
-                          className="block hover:text-primary transition-colors duration-200"
-                        >
-                          <h4 className="text-lg font-bold leading-snug line-clamp-2 text-foreground font-geist-sans">
-                            {blog.title}
-                          </h4>
-                        </Link>
-                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed font-medium">
-                          {blog.excerpt}
-                        </p>
-                        <div className="pt-1">
-                          <Link to={`/blogs/${blog.slug}`} className="text-primary hover:underline inline-flex items-center gap-1 text-xs font-bold transition-all">
-                            Read More <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-border/20 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {blog.author?.avatar ? (
-                            <img
-                              src={blog.author.avatar}
-                              alt={blog.author.name}
-                              className="h-7 w-7 rounded-full object-cover border border-border/50 shadow-sm"
-                            />
-                          ) : (
-                            <div className="h-7 w-7 rounded-full border border-border/50 shadow-sm bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                              {blog.author?.name?.charAt(0)?.toUpperCase() || "?"}
-                            </div>
-                          )}
-                          <span className="text-xs font-bold text-foreground truncate max-w-[100px]">
-                            {blog.author?.name || "Aether Writer"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold">
-                          <span>
-                            {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
-                          <span>•</span>
-                          <span>{blog.readingTime} min</span>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
                 ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      {/* Bento Grid Category Directory */}
+      <section className="bg-surface-container-lowest py-[120px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-14 text-center max-w-3xl mx-auto">
+            <h2 className="font-display-lg text-display-lg text-primary mb-4">
+              {settings.homepage?.categoriesTitle || "विषय सूची"}
+            </h2>
+            <p className="font-body-lg text-body-lg text-on-surface-variant/80">
+              {settings.homepage?.categoriesSubtitle || "सत्यवेधच्या व्यासपीठावर आम्ही विविध पैलूंनी इतिहासाचा आणि वर्तमानाचा वेध घेतो."}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1 (Tall) */}
+            {categories[0] && (
+              <div 
+                onClick={() => setSelectedCategory(categories[0].slug)}
+                className="relative group aspect-[4/5] overflow-hidden rounded-xl cursor-pointer border border-outline-variant/20 hover:border-primary/40 transition-all duration-300"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                  style={{ backgroundImage: `url('https://images.unsplash.com/photo-1677442136019-21780efad99a?w=600&auto=format&fit=crop&q=80')` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <h3 className="font-headline-md text-xl text-white mb-1 group-hover:text-primary transition-colors">{categories[0].name}</h3>
+                  <p className="font-label-caps text-xs text-primary">शोधकथा वाचा</p>
+                </div>
               </div>
             )}
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="mt-12 flex justify-center items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-2.5 rounded-xl border border-border bg-card/60 text-foreground hover:bg-muted/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
-                  title="Previous Page"
+            {/* Card 2 Column (Two shorter cards) */}
+            <div className="flex flex-col gap-6">
+              {categories[1] && (
+                <div 
+                  onClick={() => setSelectedCategory(categories[1].slug)}
+                  className="relative group flex-1 min-h-[160px] overflow-hidden rounded-xl cursor-pointer border border-outline-variant/20 hover:border-primary/40 transition-all duration-300"
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`h-10 w-10 rounded-xl border text-sm font-bold transition-all duration-200 ${
-                      currentPage === pageNumber
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "border-border bg-card/60 text-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="p-2.5 rounded-xl border border-border bg-card/60 text-foreground hover:bg-muted/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
-                  title="Next Page"
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                    style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&auto=format&fit=crop&q=80')` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                  <div className="absolute bottom-6 left-6">
+                    <h3 className="font-headline-sm text-lg text-white mb-1 group-hover:text-primary transition-colors">{categories[1].name}</h3>
+                    <p className="font-label-caps text-xs text-primary">विश्लेषणे</p>
+                  </div>
+                </div>
+              )}
+              {categories[2] && (
+                <div 
+                  onClick={() => setSelectedCategory(categories[2].slug)}
+                  className="relative group flex-1 min-h-[160px] overflow-hidden rounded-xl cursor-pointer border border-outline-variant/20 hover:border-primary/40 transition-all duration-300"
                 >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                    style={{ backgroundImage: `url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80')` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                  <div className="absolute bottom-6 left-6">
+                    <h3 className="font-headline-sm text-lg text-white mb-1 group-hover:text-primary transition-colors">{categories[2].name}</h3>
+                    <p className="font-label-caps text-xs text-primary">लेख व संशोधन</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Card 3 (Tall) */}
+            {categories[3] && (
+              <div 
+                onClick={() => setSelectedCategory(categories[3].slug)}
+                className="relative group aspect-[4/5] overflow-hidden rounded-xl cursor-pointer border border-outline-variant/20 hover:border-primary/40 transition-all duration-300"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                  style={{ backgroundImage: `url('https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&auto=format&fit=crop&q=80')` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <h3 className="font-headline-md text-xl text-white mb-1 group-hover:text-primary transition-colors">{categories[3].name}</h3>
+                  <p className="font-label-caps text-xs text-primary">माहितीपट आणि इतिहास</p>
+                </div>
               </div>
             )}
           </div>
-        ) : null}
+        </div>
       </section>
+
+      {/* Quote Block Section */}
+      <section className="py-24 flex justify-center items-center relative overflow-hidden bg-background border-t border-b border-outline-variant/10">
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <span className="font-display-lg text-primary text-6xl block mb-6 select-none opacity-80">“</span>
+          <blockquote className="font-display-lg text-2xl md:text-3xl text-on-surface leading-snug mb-6 italic font-semibold">
+            &ldquo;{settings.homepage?.quoteText || "इतिहास कधीच मरत नाही... तो फक्त पुन्हा वाचला जातो."}&rdquo;
+          </blockquote>
+          <cite className="font-label-caps text-xs text-primary uppercase tracking-widest block font-bold">
+            — {settings.homepage?.quoteAuthor || "सत्यवेध संपादकीय"}
+          </cite>
+        </div>
+      </section>
+
+      {/* Horizontal Scroll Documentary Row */}
+      <section className="py-[120px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex justify-between items-end">
+          <div>
+            <h2 className="font-headline-md text-headline-md font-bold text-on-surface">
+              {settings.homepage?.featuredVideosTitle || "लोकप्रिय माहितीपट"}
+            </h2>
+            <p className="text-on-surface-variant/70 font-body-md text-sm mt-1">
+              {settings.homepage?.featuredVideosSubtitle || "सखोल संशोधनावर आधारित लेख आणि वृत्त"}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                const el = document.getElementById("movie-row");
+                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+              }}
+              className="p-2 border border-outline-variant/30 hover:bg-primary/10 hover:border-primary/40 transition-colors rounded-full text-on-surface flex items-center justify-center cursor-pointer"
+              title="मागे"
+            >
+              <ChevronLeft className="h-4 w-4 text-primary" />
+            </button>
+            <button 
+              onClick={() => {
+                const el = document.getElementById("movie-row");
+                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+              }}
+              className="p-2 border border-outline-variant/30 hover:bg-primary/10 hover:border-primary/40 transition-colors rounded-full text-on-surface flex items-center justify-center cursor-pointer"
+              title="पुढे"
+            >
+              <ChevronRight className="h-4 w-4 text-primary" />
+            </button>
+          </div>
+        </div>
+        
+        <div id="movie-row" className="flex gap-6 overflow-x-auto pb-6 custom-scrollbar no-scrollbar scroll-smooth">
+          {blogs.map((blog) => (
+            <div key={`doc-${blog.id}`} className="flex-none w-72 md:w-96 group cursor-pointer">
+              <div className="aspect-[16/9] rounded-lg overflow-hidden relative mb-3 border border-outline-variant/20 group-hover:border-primary/40 transition-all duration-300">
+                <img 
+                  src={blog.coverImage} 
+                  alt={blog.title} 
+                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" 
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-500 shadow-lg">
+                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-on-surface font-label-caps">
+                  {blog.readingTime}:०० मिनिटे
+                </div>
+              </div>
+              <Link to={`/blogs/${blog.slug}`}>
+                <h3 className="font-headline-sm text-base font-bold text-on-surface group-hover:text-primary transition-colors leading-tight line-clamp-1">
+                  {blog.title}
+                </h3>
+              </Link>
+              <p className="text-on-surface-variant/70 font-body-md text-xs mt-1 line-clamp-2 leading-relaxed">
+                {blog.excerpt}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
 
       <VisitorFooter />
 
@@ -421,7 +527,7 @@ export default function HomePage() {
       {showBackToTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border/40 bg-background/90 backdrop-blur-md text-foreground shadow-lg hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:border-primary active:scale-95 transition-all duration-300 group animate-scale-in"
+          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant/30 bg-background/90 backdrop-blur-md text-primary shadow-lg hover:bg-primary hover:text-on-primary hover:scale-110 hover:border-primary active:scale-95 transition-all duration-300 group animate-scale-in cursor-pointer"
           aria-label="Back to top"
         >
           <ArrowUp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />

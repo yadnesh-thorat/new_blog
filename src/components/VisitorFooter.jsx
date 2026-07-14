@@ -54,55 +54,49 @@ export const VisitorFooter = () => {
     );
   }
 
+  const siteName = settings?.websiteName || "सत्यवेध";
+
   return (
-    <footer className="w-full border-t border-zinc-800 bg-[#09090b] text-zinc-400 transition-colors duration-300 relative overflow-hidden">
-      {/* Top ambient gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-14">
-
-          {/* Logo / Tagline */}
-          <div className="space-y-4 md:col-span-1">
-            <Link to="/" className="group inline-flex items-center gap-1.5">
-              <span className="font-geist-sans text-xl font-bold tracking-tight text-white flex items-center gap-1.5 group-hover:text-primary transition-colors">
-                <span className="text-primary font-black group-hover:rotate-12 transition-transform duration-300 inline-block">✦</span>
-                AETHER
-              </span>
-            </Link>
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-xs">
-              {settings.seoDefaults.description}
+    <footer className="bg-surface-container-lowest border-t border-outline-variant/10 text-on-surface-variant font-marathi-body">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+          
+          {/* Brand Info */}
+          <div className="md:col-span-4 space-y-4">
+            <div className="font-headline-sm text-headline-sm text-primary font-bold">{siteName}</div>
+            <p className="text-on-surface-variant/80 font-body-md max-w-sm leading-relaxed text-sm">
+              {settings?.seoDefaults?.description || "इतिहासाच्या पाऊलखुणांचा वैज्ञानिक आणि पुराव्यांवर आधारित वेध घेणारे महाराष्ट्रातील अग्रगण्य व्यासपीठ."}
             </p>
-            {/* Social links in brand col */}
-            <div className="flex gap-2 pt-1">
-              {settings.contactInfo.socialLinks.twitter && (
+            {/* Social links */}
+            <div className="flex gap-4 pt-2">
+              {settings?.contactInfo?.socialLinks?.twitter && (
                 <a
                   href={settings.contactInfo.socialLinks.twitter}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all hover:scale-110 active:scale-90 border border-transparent hover:border-zinc-800"
+                  className="w-10 h-10 flex items-center justify-center border border-outline-variant/30 rounded-full text-on-surface-variant hover:text-primary hover:border-primary transition-all hover:scale-105"
                   aria-label="Twitter / X"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
               )}
-              {settings.contactInfo.socialLinks.github && (
+              {settings?.contactInfo?.socialLinks?.github && (
                 <a
                   href={settings.contactInfo.socialLinks.github}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all hover:scale-110 active:scale-90 border border-transparent hover:border-zinc-800"
+                  className="w-10 h-10 flex items-center justify-center border border-outline-variant/30 rounded-full text-on-surface-variant hover:text-primary hover:border-primary transition-all hover:scale-105"
                   aria-label="GitHub"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
                 </a>
               )}
-              {settings.contactInfo.socialLinks.linkedin && (
+              {settings?.contactInfo?.socialLinks?.linkedin && (
                 <a
                   href={settings.contactInfo.socialLinks.linkedin}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all hover:scale-110 active:scale-90 border border-transparent hover:border-zinc-800"
+                  className="w-10 h-10 flex items-center justify-center border border-outline-variant/30 rounded-full text-on-surface-variant hover:text-primary hover:border-primary transition-all hover:scale-105"
                   aria-label="LinkedIn"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
@@ -111,81 +105,55 @@ export const VisitorFooter = () => {
             </div>
           </div>
 
-          {/* Quick links */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-300">Navigation</h4>
-            <ul className="space-y-2.5">
-              {[
-                { label: "Home", href: "/" },
-                { label: "Categories", href: "/categories" },
-                { label: "About", href: "/about" },
-                { label: "Contact", href: "/contact" },
-                { label: "Admin Login", href: "/admin" },
-              ].map(({ label, href }) => (
-                <li key={label}>
-                  <Link
-                    to={href}
-                    className="text-sm text-zinc-400 hover:text-white transition-all hover:translate-x-1 duration-200 inline-flex items-center gap-1 group"
-                  >
-                    <span className="w-0 group-hover:w-3 transition-all duration-200 overflow-hidden text-primary text-xs">›</span>
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {/* Quick Links */}
+          <div className="md:col-span-2 space-y-4">
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">दुवे</h5>
+            <nav className="flex flex-col gap-2.5">
+              <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors text-sm">तपास</Link>
+              <Link to="/categories" className="text-on-surface-variant hover:text-primary transition-colors text-sm">विषय सूची</Link>
+              <Link to="/about" className="text-on-surface-variant hover:text-primary transition-colors text-sm">आमच्याबद्दल</Link>
+              <Link to="/contact" className="text-on-surface-variant hover:text-primary transition-colors text-sm">संपर्क</Link>
+            </nav>
           </div>
 
           {/* Categories */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-300">Categories</h4>
-            <ul className="space-y-2.5">
-              {categories.slice(0, 4).map((cat) => (
-                <li key={cat.id}>
-                  <Link
-                    to={`/categories?filter=${cat.slug}`}
-                    className="text-sm text-zinc-400 hover:text-white transition-all hover:translate-x-1 duration-200 inline-flex items-center gap-1 group"
-                  >
-                    <span className="w-0 group-hover:w-3 transition-all duration-200 overflow-hidden text-primary text-xs">›</span>
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="md:col-span-2 space-y-4">
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">माहिती</h5>
+            <nav className="flex flex-col gap-2.5">
+              <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors text-sm">डॅशबोर्ड</Link>
+              <a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm">संपादकीय धोरणे</a>
+            </nav>
           </div>
 
           {/* Newsletter Subscribe */}
-          <div className="space-y-4 md:col-span-1">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-300">Stay Updated</h4>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Subscribe to get notifications of new technical articles and deep-dives.
-            </p>
-
+          <div className="md:col-span-4 space-y-4">
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">सदस्यता</h5>
+            <p className="text-on-surface-variant/85 text-sm">नवीन तपासांचे अपडेट्स थेट तुमच्या ईमेलवर मिळवा.</p>
+            
             {subscribed ? (
               <div className="flex items-center gap-2 text-green-400 text-sm font-semibold py-2 animate-entrance">
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
-                Thanks for subscribing!
+                तुमची सदस्यता यशस्वी झाली आहे!
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2.5 mt-1">
+              <form onSubmit={handleSubscribe} className="flex border-b border-outline-variant/60 focus-within:border-primary transition-colors mt-2">
                 <input
                   type="email"
-                  placeholder="name@domain.com"
+                  placeholder="ईमेल पत्ता"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-white focus:outline-none placeholder:text-zinc-500 transition-all focus:border-primary"
+                  className="bg-transparent text-on-surface w-full py-2 px-3 outline-none text-sm placeholder:text-zinc-500"
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-shimmer w-full flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:opacity-92 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(99,102,241,0.2)] cursor-pointer"
+                  className="bg-primary text-on-primary px-6 py-2 font-bold hover:bg-primary/90 transition-all rounded-sm flex items-center justify-center shrink-0 cursor-pointer text-xs uppercase tracking-wider"
                 >
                   {loading ? (
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
                   ) : (
-                    <>
-                      Subscribe <Send className="h-3.5 w-3.5" />
-                    </>
+                    "जोडा"
                   )}
                 </button>
               </form>
@@ -193,17 +161,12 @@ export const VisitorFooter = () => {
           </div>
         </div>
 
-        {/* Divider with gradient */}
-        <div className="relative my-10">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-zinc-500">{settings.footerText}</p>
-          <p className="text-xs text-zinc-500/60">
-            Built with ✦ by Aether Team
+        <div className="border-t border-outline-variant/10 mt-12 pt-8 text-center flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-on-surface-variant/50">
+            {settings?.footerText || `© २०२४ ${siteName}. सर्व हक्क राखीव.`}
+          </p>
+          <p className="text-xs text-on-surface-variant/40">
+            सत्यवेध संपादकीय द्वारा संचलित
           </p>
         </div>
       </div>
