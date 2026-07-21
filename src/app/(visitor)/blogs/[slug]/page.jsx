@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { VisitorNavbar } from "@/components/VisitorNavbar";
 import { VisitorFooter } from "@/components/VisitorFooter";
+import { useLanguage } from "@/components/LanguageContext";
 import { dbService } from "@/lib/db";
 
 const LinkedinIcon = (props) => (
@@ -35,6 +36,7 @@ const TwitterIcon = (props) => (
 import confetti from "canvas-confetti";
 
 export default function BlogDetailPage() {
+  const { t, translateText } = useLanguage();
   const params = useParams();
   const navigate = useNavigate();
   const slug = params?.slug;
@@ -302,7 +304,7 @@ export default function BlogDetailPage() {
       if (block.startsWith("* ") || block.startsWith("- ")) {
         const items = block.split(/\n[*\-]\s/);
         return (
-          <ul key={idx} className="list-disc pl-5 my-4 space-y-2 text-sm sm:text-base leading-relaxed text-muted-foreground">
+          <ul key={idx} className="list-disc pl-5 my-4 space-y-2 text-sm sm:text-base leading-relaxed text-on-surface-variant font-normal">
             {items.map((item, itemIdx) => {
               const cleaned = item.replace(/^[*\-\s]+/, "").replace(/\*\*([\s\S]*?)\*\*/g, "$1").replace(/`([\s\S]*?)`/g, "$1");
               return <li key={itemIdx}>{cleaned}</li>;
@@ -316,7 +318,7 @@ export default function BlogDetailPage() {
         .replace(inlineBoldPattern, "<strong>$1</strong>")
         .replace(inlineCodePattern, "<code class='bg-muted px-1.5 py-0.5 rounded text-xs font-mono border border-border/40 text-primary dark:text-white'>$1</code>");
       return (
-        <p key={idx} className="text-sm sm:text-base leading-[1.9] text-muted-foreground my-4" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+        <p key={idx} className="text-sm sm:text-base leading-[1.9] text-on-surface-variant font-normal my-4" dangerouslySetInnerHTML={{ __html: htmlContent }} />
       );
     });
   };
@@ -330,35 +332,35 @@ export default function BlogDetailPage() {
           {/* Back button */}
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-8 transition-colors group"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-foreground mb-8 transition-colors group"
           >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Back to Articles
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t("back_to_articles")}
           </button>
 
           {/* Article Header */}
           <div className="space-y-5 max-w-4xl border-b border-outline-variant/20 pb-8 mb-8 animate-entrance">
             <div className="flex items-center gap-3">
               <span className="inline-flex rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-                {categories.find((c) => c.slug === blog.category)?.name || blog.category}
+                {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
               </span>
               {blog.views && (
-                <span className="flex items-center gap-1 text-xs text-on-surface-variant/70 font-medium">
-                  <Eye className="h-3.5 w-3.5" /> {blog.views} views
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant font-medium">
+                  <Eye className="h-3.5 w-3.5" /> {blog.views} {t("views")}
                 </span>
               )}
             </div>
             <h1 className="text-3xl font-extrabold sm:text-5xl text-foreground font-marathi-heading leading-[1.15] tracking-tight">
-              {blog.title}
+              {translateText(blog.title)}
             </h1>
-            <p className="text-base sm:text-lg text-on-surface-variant/80 leading-relaxed">
-              {blog.excerpt}
+            <p className="text-base sm:text-lg text-on-surface-variant font-medium leading-relaxed">
+              {translateText(blog.excerpt)}
             </p>
 
             {/* Author / Date Meta Bar */}
             {(() => {
               const authorDetails = getAuthorDetails();
               return (
-                <div className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2 text-xs sm:text-sm text-on-surface-variant font-medium">
                   <div className="flex items-center gap-2.5">
                     {authorDetails.avatar ? (
                       <img
@@ -379,7 +381,7 @@ export default function BlogDetailPage() {
                     {new Date(blog.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" /> {blog.readingTime} min read
+                    <Clock className="h-3.5 w-3.5" /> {blog.readingTime} {t("min_read")}
                   </span>
                 </div>
               );
@@ -387,9 +389,16 @@ export default function BlogDetailPage() {
           </div>
 
           {/* Featured Cover Image */}
-          <div className="relative rounded-2xl overflow-hidden aspect-video w-full border border-border/30 shadow-lg mb-12 animate-entrance" style={{ animationDelay: "0.1s" }}>
-            <img src={blog.coverImage} alt={blog.title} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 ring-1 ring-inset ring-white/5 rounded-2xl" />
+          <div className="mb-12 animate-entrance space-y-2" style={{ animationDelay: "0.1s" }}>
+            <div className="relative rounded-2xl overflow-hidden aspect-video w-full border border-border/30 shadow-lg">
+              <img src={blog.coverImage} alt={blog.title} className="absolute inset-0 h-full w-full object-cover" />
+              <div className="absolute inset-0 ring-1 ring-inset ring-white/5 rounded-2xl" />
+            </div>
+            {(blog.coverImageCredit || blog.imageCredit) && (
+              <p className="text-right text-[11px] font-medium text-on-surface-variant/70 italic px-1">
+                {t("photo_credit")}: {blog.coverImageCredit || blog.imageCredit}
+              </p>
+            )}
           </div>
 
           {/* Layout Grid */}
@@ -397,7 +406,7 @@ export default function BlogDetailPage() {
             {/* Share Column (Left - Col 1) */}
             <div className="lg:col-span-1 flex lg:flex-col lg:sticky lg:top-24 gap-3 py-2 items-center justify-center lg:justify-start">
               {/* Share label */}
-              <span className="hidden lg:block text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Share</span>
+              <span className="hidden lg:block text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{t("share")}</span>
               <button
                 onClick={handleCopyLink}
                 className="group relative p-2.5 rounded-xl border border-border/50 hover:border-primary/40 hover:bg-primary/8 text-muted-foreground hover:text-primary bg-card transition-all duration-200"
@@ -407,7 +416,7 @@ export default function BlogDetailPage() {
                 <Link2 className="h-4 w-4" />
                 {copied && (
                   <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] px-2 py-1 rounded-lg shadow font-semibold whitespace-nowrap animate-entrance">
-                    Copied!
+                    {t("copied")}
                   </span>
                 )}
               </button>

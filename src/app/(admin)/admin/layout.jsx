@@ -19,10 +19,15 @@ import {
   Moon,
   Home,
   ShieldCheck,
+  Globe,
+  ChevronDown,
 } from "lucide-react";
 import { dbService } from "@/lib/db";
+import { useLanguage } from "@/components/LanguageContext";
 
 export default function AdminLayout() {
+  const { language, changeLanguage, t, languages } = useLanguage();
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
@@ -64,19 +69,19 @@ export default function AdminLayout() {
   };
 
   const navItems = [
-    { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-    { name: "Blogs", href: "/admin/blogs", icon: FileText },
-    { name: "Categories", href: "/admin/categories", icon: Layers },
+    { name: t("admin_dashboard"), href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: t("admin_blogs"), href: "/admin/blogs", icon: FileText },
+    { name: t("admin_categories"), href: "/admin/categories", icon: Layers },
     {
-      name: "Messages",
+      name: t("admin_messages"),
       href: "/admin/contacts",
       icon: Mail,
       badge: unreadContacts > 0 ? unreadContacts : undefined,
     },
-    { name: "Newsletter", href: "/admin/newsletter", icon: Users },
-    { name: "Media Library", href: "/admin/media", icon: ImageIcon },
-    { name: "Settings", href: "/admin/settings", icon: SettingsIcon },
-    { name: "Admins", href: "/admin/admins", icon: ShieldCheck },
+    { name: t("admin_newsletter"), href: "/admin/newsletter", icon: Users },
+    { name: t("admin_media"), href: "/admin/media", icon: ImageIcon },
+    { name: t("admin_settings"), href: "/admin/settings", icon: SettingsIcon },
+    { name: t("admin_admins"), href: "/admin/admins", icon: ShieldCheck },
   ];
 
   if (loading) {
@@ -261,13 +266,30 @@ export default function AdminLayout() {
             </button>
           </div>
 
+          {/* Language selection in mobile drawer */}
+          <div className="flex gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            {languages.map((lang) => (
+              <button
+                key={`mob-${lang.code}`}
+                onClick={() => changeLanguage(lang.code)}
+                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  language === lang.code
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {lang.flag} {lang.name}
+              </button>
+            ))}
+          </div>
+
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-xl transition-all hover:translate-x-0.5"
           >
             <Home className="h-4.5 w-4.5" />
-            <span>Visitor Portal</span>
+            <span>{t("visitor_portal")}</span>
           </Link>
 
           <button
@@ -278,7 +300,7 @@ export default function AdminLayout() {
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:translate-x-0.5 cursor-pointer text-left"
           >
             <LogOut className="h-4.5 w-4.5" />
-            <span>Sign Out</span>
+            <span>{t("sign_out")}</span>
           </button>
         </div>
       </aside>
@@ -381,13 +403,29 @@ export default function AdminLayout() {
               )}
             </button>
           </div>
+          {/* Language selection in sidebar */}
+          <div className="flex gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            {languages.map((lang) => (
+              <button
+                key={`desk-${lang.code}`}
+                onClick={() => changeLanguage(lang.code)}
+                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  language === lang.code
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {lang.flag} {lang.name}
+              </button>
+            ))}
+          </div>
 
           <Link
             to="/"
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-xl transition-all hover:translate-x-0.5"
           >
             <Home className="h-4.5 w-4.5" />
-            <span>Visitor Portal</span>
+            <span>{t("visitor_portal")}</span>
           </Link>
 
           <button
@@ -395,7 +433,7 @@ export default function AdminLayout() {
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:translate-x-0.5 cursor-pointer text-left"
           >
             <LogOut className="h-4.5 w-4.5" />
-            <span>Sign Out</span>
+            <span>{t("sign_out")}</span>
           </button>
         </div>
       </aside>

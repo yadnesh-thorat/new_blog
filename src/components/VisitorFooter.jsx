@@ -7,7 +7,10 @@ import { dbService } from "@/lib/db";
 import { event } from "@/lib/analytics";
 import confetti from "canvas-confetti";
 
+import { useLanguage } from "./LanguageContext";
+
 export const VisitorFooter = () => {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [categories, setCategories] = useState([]);
   const [email, setEmail] = useState("");
@@ -64,8 +67,8 @@ export const VisitorFooter = () => {
           {/* Brand Info */}
           <div className="md:col-span-4 space-y-4">
             <div className="font-headline-sm text-headline-sm text-primary font-bold">{siteName}</div>
-            <p className="text-on-surface-variant/80 font-body-md max-w-sm leading-relaxed text-sm">
-              {settings?.seoDefaults?.description || "इतिहासाच्या पाऊलखुणांचा वैज्ञानिक आणि पुराव्यांवर आधारित वेध घेणारे महाराष्ट्रातील अग्रगण्य व्यासपीठ."}
+            <p className="text-on-surface-variant font-body-md max-w-sm leading-relaxed text-sm">
+              {t("footer_tagline")}
             </p>
             {/* Social links */}
             <div className="flex gap-4 pt-2">
@@ -107,39 +110,39 @@ export const VisitorFooter = () => {
 
           {/* Quick Links */}
           <div className="md:col-span-2 space-y-4">
-            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">दुवे</h5>
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">{t("links")}</h5>
             <nav className="flex flex-col gap-2.5">
-              <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors text-sm">तपास</Link>
-              <Link to="/categories" className="text-on-surface-variant hover:text-primary transition-colors text-sm">विषय सूची</Link>
-              <Link to="/about" className="text-on-surface-variant hover:text-primary transition-colors text-sm">आमच्याबद्दल</Link>
-              <Link to="/contact" className="text-on-surface-variant hover:text-primary transition-colors text-sm">संपर्क</Link>
+              <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_home")}</Link>
+              <Link to="/categories" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_categories")}</Link>
+              <Link to="/about" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_about")}</Link>
+              <Link to="/contact" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_contact")}</Link>
             </nav>
           </div>
 
           {/* Categories */}
           <div className="md:col-span-2 space-y-4">
-            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">माहिती</h5>
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">{t("information")}</h5>
             <nav className="flex flex-col gap-2.5">
-              <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors text-sm">डॅशबोर्ड</Link>
-              <a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm">संपादकीय धोरणे</a>
+              <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_dashboard")}</Link>
+              <a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("editorial_policy")}</a>
             </nav>
           </div>
 
           {/* Newsletter Subscribe */}
           <div className="md:col-span-4 space-y-4">
-            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">सदस्यता</h5>
-            <p className="text-on-surface-variant/85 text-sm">नवीन तपासांचे अपडेट्स थेट तुमच्या ईमेलवर मिळवा.</p>
+            <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">{t("subscription")}</h5>
+            <p className="text-on-surface-variant text-sm">{t("subscription_text")}</p>
             
             {subscribed ? (
               <div className="flex items-center gap-2 text-green-400 text-sm font-semibold py-2 animate-entrance">
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
-                तुमची सदस्यता यशस्वी झाली आहे!
+                {t("subscription_success")}
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="flex border-b border-outline-variant/60 focus-within:border-primary transition-colors mt-2">
                 <input
                   type="email"
-                  placeholder="ईमेल पत्ता"
+                  placeholder={t("email_placeholder")}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -153,7 +156,7 @@ export const VisitorFooter = () => {
                   {loading ? (
                     <div className="h-4 w-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
                   ) : (
-                    "जोडा"
+                    t("subscribe_button")
                   )}
                 </button>
               </form>
@@ -162,11 +165,8 @@ export const VisitorFooter = () => {
         </div>
 
         <div className="border-t border-outline-variant/10 mt-12 pt-8 text-center flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-on-surface-variant/50">
-            {settings?.footerText || `© २०२४ ${siteName}. सर्व हक्क राखीव.`}
-          </p>
-          <p className="text-xs text-on-surface-variant/40">
-            सत्यवेध संपादकीय द्वारा संचलित
+          <p className="text-xs text-on-surface-variant/70">
+            {settings?.footerText || `© 2026 ${siteName}. ${t("all_rights_reserved")}`}
           </p>
         </div>
       </div>

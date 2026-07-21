@@ -134,36 +134,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Timeline */}
-        <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24 space-y-14">
-          <div className="text-center space-y-3 animate-entrance">
-            <h2 className="text-3xl font-black font-geist-sans tracking-tight text-foreground">Our Timeline</h2>
-            <p className="text-base text-muted-foreground">Key milestones on our publishing roadmap.</p>
-          </div>
-          <div className="relative">
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary/60 via-primary/20 to-transparent" />
-            <div className="space-y-5">
-              {aboutContent.timeline.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="relative pl-16 group animate-entrance"
-                  style={{ animationDelay: `${idx * 0.08}s` }}
-                >
-                  <div className="absolute left-[18px] top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background group-hover:bg-primary group-hover:scale-125 transition-all duration-300 shadow-[0_0_0_3px_hsl(var(--background))]">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary group-hover:bg-white transition-colors" />
-                  </div>
-                  <div className="rounded-2xl border border-border/30 bg-card/60 p-5 hover:bg-card hover:border-primary/25 hover:shadow-md transition-all duration-300 backdrop-blur-sm">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                      <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1 rounded-full w-fit border border-primary/20">{item.year}</span>
-                      <h4 className="text-sm font-bold text-foreground font-geist-sans">{item.title}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
       </main>
 

@@ -4,10 +4,12 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { VisitorNavbar } from "@/components/VisitorNavbar";
 import { VisitorFooter } from "@/components/VisitorFooter";
+import { useLanguage } from "@/components/LanguageContext";
 import { dbService } from "@/lib/db";
 import { Search, Clock, ArrowRight, Layers, ChevronLeft } from "lucide-react";
 
 function CategoriesContent() {
+  const { t, translateText } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeFilter = searchParams.get("filter") || "all";
@@ -52,9 +54,9 @@ function CategoriesContent() {
       {/* Header section matching homepage */}
       <div className="border-b border-border/40 pb-5 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h3 className="font-geist-sans text-2xl font-bold">Browse by Category</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Specialized columns authored by our design architects, code creators, and database experts.
+          <h3 className="font-geist-sans text-2xl font-bold">{t("browse_by_category")}</h3>
+          <p className="text-sm text-on-surface-variant mt-1">
+            {t("categories_desc")}
           </p>
         </div>
         {activeFilter === "all" && (
@@ -62,7 +64,7 @@ function CategoriesContent() {
             <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
             <input
               type="text"
-              placeholder="Search categories..."
+              placeholder={t("search_categories")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent text-xs w-full focus:outline-none placeholder:text-muted-foreground/50 text-foreground"
@@ -72,7 +74,7 @@ function CategoriesContent() {
                 onClick={() => setSearchQuery("")}
                 className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors ml-1 shrink-0"
               >
-                Clear
+                {t("clear")}
               </button>
             )}
           </div>
@@ -84,8 +86,8 @@ function CategoriesContent() {
           <>
             {/* Category count header */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">
-                <span className="font-bold text-foreground">{filteredCategories.length}</span> {filteredCategories.length === 1 ? "category" : "categories"} available
+              <p className="text-sm text-on-surface-variant font-medium">
+                <span className="font-bold text-foreground">{filteredCategories.length}</span> {t("categories_available")}
               </p>
             </div>
 
@@ -114,22 +116,22 @@ function CategoriesContent() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
                         <div className="absolute bottom-3 left-3 rounded-full bg-background/90 backdrop-blur-md px-3 py-1 text-xs font-bold text-foreground border border-white/10 shadow-sm">
-                          {blogCount} {blogCount === 1 ? "article" : "articles"}
+                          {blogCount} {t("articles_count")}
                         </div>
                       </div>
                       <div className="p-5 space-y-2">
                         <h3 className="text-base font-bold font-geist-sans group-hover:text-primary transition-colors duration-200">
-                          {cat.name}
+                          {translateText(cat.name)}
                         </h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                          {cat.description}
+                        <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                          {translateText(cat.description)}
                         </p>
                       </div>
                     </div>
 
                     <div className="px-5 pb-5">
                       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform duration-200">
-                        Explore Articles <ArrowRight className="h-3.5 w-3.5" />
+                        {t("explore_articles")} <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </div>
                   </div>
@@ -165,8 +167,8 @@ function CategoriesContent() {
                       All Categories
                     </button>
                   </div>
-                  <h2 className="text-2xl font-bold font-geist-sans text-foreground">{activeCategoryDetail.name}</h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{activeCategoryDetail.description}</p>
+                  <h2 className="text-2xl font-bold font-geist-sans text-foreground">{translateText(activeCategoryDetail.name)}</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{translateText(activeCategoryDetail.description)}</p>
                 </div>
               </div>
             )}
@@ -175,7 +177,7 @@ function CategoriesContent() {
             <div className="space-y-5">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <h3 className="text-lg font-bold font-geist-sans">
-                  Articles in {activeCategoryDetail?.name || activeFilter}
+                  Articles in {translateText(activeCategoryDetail?.name || activeFilter)}
                   <span className="ml-2 text-sm font-normal text-muted-foreground">({displayedBlogs.length})</span>
                 </h3>
               </div>
@@ -195,7 +197,7 @@ function CategoriesContent() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                         <span className="absolute top-3 left-3 rounded-lg bg-background/85 backdrop-blur-sm px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
-                          {blog.category}
+                          {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
                         </span>
                       </div>
                       <div className="flex-1 flex flex-col p-5 space-y-3 justify-between">
@@ -205,11 +207,11 @@ function CategoriesContent() {
                             className="block hover:text-primary transition-colors duration-200"
                           >
                             <h4 className="text-base font-bold leading-snug line-clamp-2 text-foreground font-geist-sans">
-                              {blog.title}
+                              {translateText(blog.title)}
                             </h4>
                           </Link>
                           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                            {blog.excerpt}
+                            {translateText(blog.excerpt)}
                           </p>
                         </div>
                         <div className="pt-3 border-t border-border/20 flex items-center justify-between">

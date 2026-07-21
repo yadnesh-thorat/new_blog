@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, Moon, Search, Menu, X, ArrowRight, Layers, BookOpen } from "lucide-react";
+import { Sun, Moon, Search, Menu, X, ArrowRight, Layers, BookOpen, Globe, ChevronDown } from "lucide-react";
 import { useTheme } from "./ThemeContext";
+import { useLanguage } from "./LanguageContext";
 import { dbService } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 
@@ -11,6 +12,7 @@ export const VisitorNavbar = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const { theme, toggleTheme } = useTheme();
+  const { language, changeLanguage, t, languages } = useLanguage();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -20,6 +22,7 @@ export const VisitorNavbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [settings, setSettings] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -35,6 +38,7 @@ export const VisitorNavbar = () => {
       } else if (e.key === "Escape") {
         setSearchOpen(false);
         setMobileMenuOpen(false);
+        setLangDropdownOpen(false);
       } else if (
         e.key === "/" &&
         document.activeElement?.tagName !== "INPUT" &&
@@ -95,10 +99,10 @@ export const VisitorNavbar = () => {
   }, [mobileMenuOpen, searchOpen]);
 
   const navLinks = [
-    { name: "तपास", href: "/" },
-    { name: "विषय सूची", href: "/categories" },
-    { name: "आमच्याबद्दल", href: "/about" },
-    { name: "संपर्क", href: "/contact" },
+    { name: t("nav_home"), href: "/" },
+    { name: t("nav_categories"), href: "/categories" },
+    { name: t("nav_about"), href: "/about" },
+    { name: t("nav_contact"), href: "/contact" },
   ];
 
   const siteName = settings?.websiteName || "सत्यवेध";
@@ -139,7 +143,7 @@ export const VisitorNavbar = () => {
                   className={`pb-1 font-semibold text-xs tracking-wider uppercase transition-all duration-200 font-marathi-body ${
                     isActive
                       ? "text-primary border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-primary"
+                      : "text-on-surface-variant hover:text-primary"
                   }`}
                 >
                   {link.name}
@@ -149,7 +153,52 @@ export const VisitorNavbar = () => {
           </nav>
 
           {/* ── Action Buttons ── */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full border border-border/40 hover:border-primary/40 bg-card text-on-surface hover:text-primary transition-all cursor-pointer shadow-sm"
+                aria-label="Select Language"
+                title="Change language"
+              >
+                <Globe className="h-3.5 w-3.5 text-primary" />
+                <span className="uppercase tracking-wider">{language}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${langDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {langDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setLangDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-36 rounded-xl border border-border/50 bg-card p-1 shadow-xl z-50 animate-scale-in">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          changeLanguage(lang.code);
+                          setLangDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                          language === lang.code
+                            ? "bg-primary/10 text-primary font-bold"
+                            : "text-on-surface hover:bg-muted"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{lang.flag}</span>
+                          <span>{lang.name}</span>
+                        </span>
+                        {language === lang.code && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
@@ -176,7 +225,7 @@ export const VisitorNavbar = () => {
                 to="/admin/dashboard"
                 className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-sm bg-primary px-4 py-2 text-xs font-bold text-on-primary hover:bg-primary/90 transition-all font-marathi-body"
               >
-                डॅशबोर्ड <ArrowRight className="h-3.5 w-3.5" />
+                {t("nav_dashboard")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             )}
 
@@ -234,13 +283,33 @@ export const VisitorNavbar = () => {
               })}
             </nav>
 
+            {/* Language Selection in Drawer */}
+            <div className="px-4 py-3 border-t border-border/40 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">भाषा / Language</span>
+              <div className="flex gap-1.5">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => changeLanguage(lang.code)}
+                    className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all ${
+                      language === lang.code
+                        ? "bg-primary text-on-primary border-primary shadow-sm"
+                        : "border-border/40 text-on-surface hover:bg-muted"
+                    }`}
+                  >
+                    {lang.flag} {lang.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {user && (
               <div className="px-4 pb-5 border-t border-border/40 pt-4">
                 <Link
                   to="/admin/dashboard"
-                  className="btn-shimmer flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground shadow-[0_4px_14px_rgba(99,102,241,0.25)] hover:opacity-90 transition-all"
+                  className="btn-shimmer flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-on-primary shadow-[0_4px_14px_rgba(99,102,241,0.25)] hover:opacity-90 transition-all"
                 >
-                  Dashboard <ArrowRight className="h-4 w-4" />
+                  {t("nav_dashboard")} <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             )}

@@ -153,6 +153,7 @@ function BlogsManagerContent() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [imageCredit, setImageCredit] = useState("");
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [tagsInput, setTagsInput] = useState("");
@@ -262,6 +263,7 @@ function BlogsManagerContent() {
     setCoverImage(
       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
     );
+    setImageCredit("");
     setCategory(categories[0]?.slug || "__custom__");
     setCustomCategory("");
     setTagsInput("");
@@ -284,6 +286,7 @@ function BlogsManagerContent() {
     setExcerpt(blog.excerpt);
     setContent(blog.content);
     setCoverImage(blog.coverImage);
+    setImageCredit(blog.coverImageCredit || blog.imageCredit || "");
     
     // Check if the blog's category exists in standard categories
     const categoryExists = categories.some((c) => c.slug === blog.category);
@@ -368,6 +371,7 @@ function BlogsManagerContent() {
       excerpt,
       content,
       coverImage,
+      coverImageCredit: imageCredit,
       category: finalCategory,
       tags,
       author: typeof author === "object" ? (author?.name || author?.email || "") : author,
@@ -902,6 +906,24 @@ function BlogsManagerContent() {
                       />
                     </div>
                   )}
+
+                  <div className="pt-2">
+                    <label
+                      htmlFor="blog-cover-credit"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
+                    >
+                      <span>Photo Credit / Source</span>
+                      <span className="text-[10px] text-muted-foreground/60 font-normal lowercase">(optional)</span>
+                    </label>
+                    <input
+                      id="blog-cover-credit"
+                      type="text"
+                      value={imageCredit}
+                      onChange={(e) => setImageCredit(e.target.value)}
+                      placeholder="e.g. Photo by Unsplash / Photographer Name"
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50 mt-1.5"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
