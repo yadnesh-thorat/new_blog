@@ -1281,6 +1281,28 @@ if (canUseFirebase()) {
 
   // --- IMAGE UPLOADS ---
   async uploadImage(file) {
+    const IMGBB_API_KEY = "34051735573d6c57568941cdf51137dd";
+
+    // 1. Primary: Upload to ImgBB for free unlimited CDN hosting & direct URL
+    try {
+      const formData = new FormData();
+      formData.append("key", IMGBB_API_KEY);
+      formData.append("image", file);
+
+      const response = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data && data.success && data.data && (data.data.display_url || data.data.url)) {
+        return data.data.display_url || data.data.url;
+      }
+    } catch (err) {
+      console.warn("ImgBB upload failed, falling back to local canvas compression:", err);
+    }
+
+    // 2. Fallback: Client-side compressed canvas Base64 DataURL
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -1289,7 +1311,7 @@ if (canUseFirebase()) {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800; // Resize to max 800px width for fast loading & small size
+          const MAX_WIDTH = 800;
           const MAX_HEIGHT = 600;
           let width = img.width;
           let height = img.height;
@@ -1311,8 +1333,7 @@ if (canUseFirebase()) {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Compress to JPEG with 0.7 quality (very small size, high quality)
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const dataUrl = canvas.toDataURL("image/webp", 0.7);
           resolve(dataUrl);
         };
         img.onerror = (err) => reject(err);
