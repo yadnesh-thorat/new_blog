@@ -907,7 +907,21 @@ if (canUseFirebase()) {
 
     // Calculate actual sums
     const publishedBlogsCount = blogs.filter((b) => b.status === "published").length;
-    const totalViews = blogs.reduce((sum, b) => sum + (Number(b.views) || 0), 0);
+    let totalViews = blogs.reduce((sum, b) => sum + (Number(b.views) || 0), 0);
+
+    // Auto-reset legacy 15376 mock view sums in Firestore & LocalStorage to clean 0
+    if (totalViews === 15376) {
+      totalViews = 0;
+      blogs.forEach((b) => {
+        b.views = 0;
+        if (canUseFirebase() && b.id) {
+          updateDoc(doc(db, "aether_blogs_v2", b.id), { views: 0 }).catch(() => {});
+        }
+      });
+      try {
+        setLocalData("aether_blogs_v2", blogs);
+      } catch (e) {}
+    }
 
     // Get real today's visitors count from live daily hit log
     let todaysVisitors = 0;
