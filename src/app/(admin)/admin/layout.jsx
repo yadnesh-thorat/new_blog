@@ -60,6 +60,9 @@ export default function AdminLayout() {
           setUnreadContacts(unread);
         })
         .catch(console.error);
+
+      // Auto-migrate legacy base64 images to ImgBB CDN
+      dbService.migrateExistingImagesToImgBB().catch(console.error);
     }
   }, [user, pathname]);
 

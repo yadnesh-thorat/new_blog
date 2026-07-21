@@ -1341,4 +1341,140 @@ if (canUseFirebase()) {
       reader.onerror = (err) => reject(err);
     });
   },
+
+  // --- MIGRATION HELPER ---
+  async migrateExistingImagesToImgBB() {
+    const IMGBB_API_KEY = "34051735573d6c57568941cdf51137dd";
+
+    const uploadBase64 = async (base64Str) => {
+      if (!base64Str || typeof base64Str !== "string" || !base64Str.startsWith("data:image")) {
+        return base64Str;
+      }
+      try {
+        const base64Data = base64Str.includes(",") ? base64Str.split(",")[1] : base64Str;
+        const formData = new FormData();
+        formData.append("key", IMGBB_API_KEY);
+        formData.append("image", base64Data);
+
+        const response = await fetch("https://api.imgbb.com/1/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data && data.success && data.data && (data.data.display_url || data.data.url)) {
+          return data.data.display_url || data.data.url;
+        }
+      } catch (err) {
+        console.error("Migration failed for image:", err);
+      }
+      return base64Str;
+    };
+
+    let migratedCount = 0;
+
+    // 1. Migrate Blogs
+    try {
+      const blogs = await this.getBlogs();
+      let blogsChanged = false;
+      for (const blog of blogs) {
+        if (blog.coverImage && blog.coverImage.startsWith("data:image")) {
+          console.log(`Migrating blog cover image: ${blog.title}...`);
+          const newUrl = await uploadBase64(blog.coverImage);
+          if (newUrl !== blog.coverImage) {
+            blog.coverImage = newUrl;
+            migratedCount++;
+            blogsChanged = true;
+            if (canUseFirebase()) {
+              try {
+                await updateDoc(doc(db, "aether_blogs_v2", blog.id), { coverImage: newUrl });
+              } catch (e) { console.warn("Firestore blog update failed:", e); }
+            }
+          }
+        }
+      }
+      if (blogsChanged) {
+        setLocalData("aether_blogs_v2", blogs);
+      }
+    } catch (err) {
+      console.warn("Blog migration check failed:", err);
+    }
+
+    // 2. Migrate Categories
+    try {
+      const categories = await this.getCategories();
+      let catChanged = false;
+      for (const cat of categories) {
+        if (cat.image && cat.image.startsWith("data:image")) {
+          console.log(`Migrating category image: ${cat.name}...`);
+          const newUrl = await uploadBase64(cat.image);
+          if (newUrl !== cat.image) {
+            cat.image = newUrl;
+            migratedCount++;
+            catChanged = true;
+            if (canUseFirebase()) {
+              try {
+                await updateDoc(doc(db, "aether_categories_v2", cat.id), { image: newUrl });
+              } catch (e) { console.warn("Firestore category update failed:", e); }
+            }
+          }
+        }
+      }
+      if (catChanged) {
+        setLocalData("aether_categories_v2", categories);
+      }
+    } catch (err) {
+      console.warn("Category migration check failed:", err);
+    }
+
+    // 3. Migrate Settings
+    try {
+      const settings = await this.getSettings();
+      let settingsChanged = false;
+      if (settings.logoImage && settings.logoImage.startsWith("data:image")) {
+        console.log("Migrating logo image...");
+        const newUrl = await uploadBase64(settings.logoImage);
+        if (newUrl !== settings.logoImage) {
+          settings.logoImage = newUrl;
+          migratedCount++;
+          settingsChanged = true;
+        }
+      }
+      if (settingsChanged) {
+        await this.updateSettings(settings);
+      }
+    } catch (err) {
+      console.warn("Settings migration check failed:", err);
+    }
+
+    // 4. Migrate Media Library Items
+    try {
+      const media = await this.getMedia();
+      let mediaChanged = false;
+      for (const item of media) {
+        if (item.url && item.url.startsWith("data:image")) {
+          console.log(`Migrating media item: ${item.name}...`);
+          const newUrl = await uploadBase64(item.url);
+          if (newUrl !== item.url) {
+            item.url = newUrl;
+            migratedCount++;
+            mediaChanged = true;
+            if (canUseFirebase()) {
+              try {
+                await updateDoc(doc(db, "aether_media_v2", item.id), { url: newUrl });
+              } catch (e) { console.warn("Firestore media update failed:", e); }
+            }
+          }
+        }
+      }
+      if (mediaChanged) {
+        setLocalData("aether_media_v2", media);
+      }
+    } catch (err) {
+      console.warn("Media migration check failed:", err);
+    }
+
+    console.log(`Migration complete. Migrated ${migratedCount} images to ImgBB.`);
+    return migratedCount;
+  },
 };
