@@ -399,7 +399,12 @@ export const dbService = {
         }
         const snapshot = await withTimeout(getDocs(q));
         snapshot.forEach((d) => {
-          rawList.push({ id: d.id, ...d.data() });
+          if (d.id && d.id.startsWith("mock-blog-")) {
+            // Permanently purge legacy mock blog document from Firestore database
+            deleteDoc(doc(db, "aether_blogs_v2", d.id)).catch(() => {});
+          } else {
+            rawList.push({ id: d.id, ...d.data() });
+          }
         });
       } catch (err) {
         // Read failure — fall back to local cache, but do NOT block future Firebase reads
@@ -408,13 +413,9 @@ export const dbService = {
     } else {
       // Fallback
       let blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
-      if (blogs.length <= 1) {
-        setLocalData("aether_blogs_v2", MOCK_BLOGS);
-        blogs = MOCK_BLOGS;
-      }
-      let filtered = blogs;
+      let filtered = blogs.filter((b) => !b.id || !b.id.startsWith("mock-blog-"));
       if (!includeDrafts) {
-        filtered = blogs.filter((b) => b.status === "published");
+        filtered = filtered.filter((b) => b.status === "published");
       }
       rawList = filtered.sort(
         (a, b) =>
