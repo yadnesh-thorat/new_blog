@@ -244,7 +244,19 @@ function getLocalData(key, fallback) {
     localStorage.setItem(key, JSON.stringify(fallback));
     return fallback;
   }
-  return JSON.parse(stored);
+  try {
+    const data = JSON.parse(stored);
+    if (key === "aether_blogs_v2" && Array.isArray(data)) {
+      const realBlogsOnly = data.filter((b) => b.id && !b.id.startsWith("mock-blog-"));
+      if (realBlogsOnly.length !== data.length) {
+        localStorage.setItem(key, JSON.stringify(realBlogsOnly));
+        return realBlogsOnly;
+      }
+    }
+    return data;
+  } catch (e) {
+    return fallback;
+  }
 }
 
 function setLocalData(key, data) {
