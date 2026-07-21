@@ -1285,11 +1285,18 @@ if (canUseFirebase()) {
 
     // 1. Primary: Upload to ImgBB for free unlimited CDN hosting & direct URL
     try {
-      const formData = new FormData();
-      formData.append("key", IMGBB_API_KEY);
-      formData.append("image", file);
+      let imagePayload = file;
 
-      const response = await fetch("https://api.imgbb.com/1/upload", {
+      // If passed a base64 string, convert to Blob for robust upload
+      if (typeof file === "string" && file.startsWith("data:image")) {
+        const res = await fetch(file);
+        imagePayload = await res.blob();
+      }
+
+      const formData = new FormData();
+      formData.append("image", imagePayload);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: "POST",
         body: formData,
       });
@@ -1297,12 +1304,16 @@ if (canUseFirebase()) {
       const data = await response.json();
       if (data && data.success && data.data && (data.data.display_url || data.data.url)) {
         return data.data.display_url || data.data.url;
+      } else {
+        console.warn("ImgBB API upload response:", data);
       }
     } catch (err) {
       console.warn("ImgBB upload failed, falling back to local canvas compression:", err);
     }
 
     // 2. Fallback: Client-side compressed canvas Base64 DataURL
+    if (typeof file === "string") return file;
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -1351,12 +1362,14 @@ if (canUseFirebase()) {
         return base64Str;
       }
       try {
-        const base64Data = base64Str.includes(",") ? base64Str.split(",")[1] : base64Str;
-        const formData = new FormData();
-        formData.append("key", IMGBB_API_KEY);
-        formData.append("image", base64Data);
+        // Convert Base64 Data URL to Blob for reliable binary upload
+        const res = await fetch(base64Str);
+        const blob = await res.blob();
 
-        const response = await fetch("https://api.imgbb.com/1/upload", {
+        const formData = new FormData();
+        formData.append("image", blob, "migrated_image.jpg");
+
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
           method: "POST",
           body: formData,
         });
@@ -1364,6 +1377,8 @@ if (canUseFirebase()) {
         const data = await response.json();
         if (data && data.success && data.data && (data.data.display_url || data.data.url)) {
           return data.data.display_url || data.data.url;
+        } else {
+          console.warn("ImgBB API returned error during migration:", data);
         }
       } catch (err) {
         console.error("Migration failed for image:", err);
@@ -1381,7 +1396,7 @@ if (canUseFirebase()) {
         if (blog.coverImage && blog.coverImage.startsWith("data:image")) {
           console.log(`Migrating blog cover image: ${blog.title}...`);
           const newUrl = await uploadBase64(blog.coverImage);
-          if (newUrl !== blog.coverImage) {
+          if (newUrl && newUrl !== blog.coverImage && !newUrl.startsWith("data:image")) {
             blog.coverImage = newUrl;
             migratedCount++;
             blogsChanged = true;
@@ -1408,7 +1423,7 @@ if (canUseFirebase()) {
         if (cat.image && cat.image.startsWith("data:image")) {
           console.log(`Migrating category image: ${cat.name}...`);
           const newUrl = await uploadBase64(cat.image);
-          if (newUrl !== cat.image) {
+          if (newUrl && newUrl !== cat.image && !newUrl.startsWith("data:image")) {
             cat.image = newUrl;
             migratedCount++;
             catChanged = true;
@@ -1431,10 +1446,10 @@ if (canUseFirebase()) {
     try {
       const settings = await this.getSettings();
       let settingsChanged = false;
-      if (settings.logoImage && settings.logoImage.startsWith("data:image")) {
+      if (settings && settings.logoImage && settings.logoImage.startsWith("data:image")) {
         console.log("Migrating logo image...");
         const newUrl = await uploadBase64(settings.logoImage);
-        if (newUrl !== settings.logoImage) {
+        if (newUrl && newUrl !== settings.logoImage && !newUrl.startsWith("data:image")) {
           settings.logoImage = newUrl;
           migratedCount++;
           settingsChanged = true;
@@ -1447,23 +1462,18 @@ if (canUseFirebase()) {
       console.warn("Settings migration check failed:", err);
     }
 
-    // 4. Migrate Media Library Items
+    // 4. Migrate Media Items in local storage if present
     try {
-      const media = await this.getMedia();
+      const media = getLocalData("aether_media_v2", []);
       let mediaChanged = false;
       for (const item of media) {
         if (item.url && item.url.startsWith("data:image")) {
-          console.log(`Migrating media item: ${item.name}...`);
+          console.log(`Migrating media item: ${item.name || item.id}...`);
           const newUrl = await uploadBase64(item.url);
-          if (newUrl !== item.url) {
+          if (newUrl && newUrl !== item.url && !newUrl.startsWith("data:image")) {
             item.url = newUrl;
             migratedCount++;
             mediaChanged = true;
-            if (canUseFirebase()) {
-              try {
-                await updateDoc(doc(db, "aether_media_v2", item.id), { url: newUrl });
-              } catch (e) { console.warn("Firestore media update failed:", e); }
-            }
           }
         }
       }
