@@ -164,208 +164,7 @@ const MOCK_SETTINGS = {
   },
 };
 
-export const MOCK_BLOGS = [
-  {
-    id: "mock-blog-1",
-    title: "कृत्रिम बुद्धिमत्ता (AI) आणि मानवी जीवन: एक नवी दिशा",
-    slug: "ai-and-human-life-new-direction",
-    excerpt: "कृत्रिम बुद्धिमत्ता (AI) आपल्या दैनंदिन जीवनाचा एक महत्त्वाचा भाग बनत चालली आहे. या लेखात आपण त्याचे मानवी जीवनावरील सकारात्मक आणि नकारात्मक परिणाम पाहणार आहोत.",
-    content: "## कृत्रिम बुद्धिमत्ता (AI) म्हणजे काय?\n\nकृत्रिम बुद्धिमत्ता ही संगणक विज्ञानाची एक शाखा आहे जी मानवी बुद्धिमत्तेचे अनुकरण करू शकणारे स्मार्ट मशीन तयार करण्याशी संबंधित आहे. आजच्या काळात AI चा वापर आरोग्य, शिक्षण, वाहतूक आणि मनोरंजन अशा सर्वच क्षेत्रांमध्ये वेगाने होत आहे.\n\n### मानवी जीवनावरील प्रभाव\n\nAI मुळे मानवी कामे अधिक सुलभ आणि कार्यक्षम झाली आहेत. परंतु, यामुळे नोकऱ्यांवर होणारा परिणाम आणि डेटा सुरक्षितता याविषयी चिंता देखील वाढत आहे.",
-    coverImage: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=1200&auto=format&fit=crop&q=80",
-    category: "ai-engineering",
-    tags: ["AI", "Technology", "Future"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    views: 1250,
-    readingTime: 5,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect & Editor",
-      bio: "Yadnesh is a full stack specialist who spends his time designing systems with Next.js, Firebase, and real-time data sync."
-    }
-  },
-  {
-    id: "mock-blog-2",
-    title: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
-    slug: "modern-trends-in-web-design-2026",
-    excerpt: "वेब डिझाइन जग सतत बदलत असते. या वर्षात लोकप्रिय ठरणारे ग्लासमॉर्फिझम, थ्रीडी एलिमेंट्स आणि डार्क मोड डिझाइन्स याविषयी सविस्तर माहिती घ्या.",
-    content: "## वेब डिझाइनचे नवीन पर्व\n\n२०२६ मध्ये वेब डिझाइनिंग केवळ सुंदर दिसण्यापुरते मर्यादित राहिलेले नाही, तर ते अधिक परस्परसंवादी (interactive) आणि वापरण्यास सोपे (user-friendly) बनले आहे. या वर्षात ग्लासमॉर्फिझम (Glassmorphism) आणि निओमॉर्फिझम (Neomorphism) हे ट्रेंड्स अधिक लोकप्रिय ठरत आहेत.\n\n### महत्त्वाचे ट्रेंड्स\n1. **डार्क मोड** - डोळ्यांना त्रास न होण्यासाठी डार्क मोड आता अनिवार्य झाला आहे.\n2. **थ्रीडी ग्राफिक्स** - अधिक आकर्षक अनुभव देण्यासाठी थ्रीडी इमेजेसचा वापर वाढला आहे.",
-    coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80",
-    category: "design-systems",
-    tags: ["Web Design", "UI/UX", "Trends"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    views: 980,
-    readingTime: 4,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-3",
-    title: "रिएक्ट १९ मधील नवीन फीचर्स आणि त्यांचे फायदे",
-    slug: "react-19-new-features-and-benefits",
-    excerpt: "रिएक्ट १९ चे नवीन कॉम्पायलर आणि रिॲक्ट सर्वर कॉम्पोनंट्स (RSC) डिझाइनिंगला आणि परफॉर्मन्सला कशी नवी गती देणार आहेत ते समजून घ्या.",
-    content: "## रिएक्ट १९ चे आगमन\n\nरिएक्ट १९ मध्ये अनेक महत्त्वपूर्ण बदल करण्यात आले आहेत. सर्वात मोठा बदल म्हणजे 'React Compiler' चा समावेश, जो न वापरलेला कोड आणि मेमोआयझेशन (memoization) स्वयंचलितपणे हाताळतो, ज्यामुळे डेव्हलपर्सचा वेळ वाचतो.",
-    coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&auto=format&fit=crop&q=80",
-    category: "web-dev",
-    tags: ["React", "JavaScript", "Frontend"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    views: 2400,
-    readingTime: 6,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-4",
-    title: "सायबर सुरक्षा: तुमचे डिजिटल अस्तित्व कसे सुरक्षित ठेवावे?",
-    slug: "cyber-security-protect-digital-presence",
-    excerpt: "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. या लेखात आपण आपले सोशल मीडिया खाती, बँक खाती आणि वैयक्तिक डेटा सुरक्षित ठेवण्यासाठी काही टिप्स जाणून घेणार आहोत.",
-    content: "## सायबर सुरक्षेचे महत्त्व\n\nइंटरनेटचा वापर वाढल्याने सायबर हल्ल्यांचा धोकाही वाढला आहे. फिशिंग, मालवेअर आणि रॅन्समवेअर यांसारख्या धोक्यांपासून स्वतःचा बचाव करणे आवश्यक आहे.",
-    coverImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&auto=format&fit=crop&q=80",
-    category: "web-dev",
-    tags: ["Security", "Cyber", "Tips"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    views: 1850,
-    readingTime: 5,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-5",
-    title: "युझर इंटरफेस (UI) डिझाइनचे ५ महत्त्वाचे नियम",
-    slug: "5-important-rules-of-ui-design",
-    excerpt: "एक उत्तम युझर इंटरफेस कसा डिझाइन करावा? या लेखात आपण UI डिझाइनचे ५ सोपे पण अत्यंत प्रभावी नियम अभ्यासणार आहोत जे प्रत्येक डिझायनरला माहित असावेत.",
-    content: "## UI डिझाइनचे नियम\n\nउत्कृष्ट UI मुळे युझरचा अनुभव सुधारतो. नियम १: सुसंगतता (Consistency), नियम २: स्पष्टता (Clarity), नियम ३: फीडबॅक (Feedback), नियम ४: नियंत्रण (User Control), नियम ५: साधेपणा (Simplicity).",
-    coverImage: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=1200&auto=format&fit=crop&q=80",
-    category: "design-systems",
-    tags: ["UI", "UX", "Design"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-    views: 1420,
-    readingTime: 4,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-6",
-    title: "डेटा सायन्समध्ये करिअर कसे करावे?",
-    slug: "how-to-make-career-in-data-science",
-    excerpt: "डेटा सायन्स हे सध्याच्या काळातील सर्वात जास्त मागणी असलेले क्षेत्र आहे. या क्षेत्रात करिअर करण्यासाठी कोणती कौशल्ये आवश्यक आहेत आणि सुरुवात कशी करावी याबद्दल मार्गदर्शन.",
-    content: "## डेटा सायन्स आणि करिअर\n\nडेटा सायन्स म्हणजे डेटाच्या मदतीने महत्त्वाचे निष्कर्ष काढणे. यासाठी पायथन (Python), एसक्यूएल (SQL), आणि स्टॅटिस्टिक्स (Statistics) यांचे ज्ञान असणे आवश्यक आहे.",
-    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80",
-    category: "ai-engineering",
-    tags: ["Data Science", "Career", "Python"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
-    views: 3100,
-    readingTime: 7,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-7",
-    title: "क्लाउड कम्प्युटिंग: भविष्यातील तंत्रज्ञानाचा पाया",
-    slug: "cloud-computing-foundation-of-future-tech",
-    excerpt: "AWS, Google Cloud आणि Azure यांसारख्या क्लाउड प्लॅटफॉर्म्सचे महत्त्व आणि ते आजच्या व्यवसायांचे संचालन कसे बदलत आहेत, याबद्दल सविस्तर माहिती.",
-    content: "## क्लाउड कम्प्युटिंगचे महत्त्व\n\nक्लाउड कम्प्युटिंगमुळे कंपन्यांना स्वतःचे फिजिकल सर्व्हर्स ठेवण्याची गरज भासत नाही. ते सर्व्हिस मॉडेलवर स्पेस आणि कम्प्युटिंग पॉवर भाड्याने घेऊ शकतात, ज्याने खर्च कमी होतो.",
-    coverImage: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80",
-    category: "web-dev",
-    tags: ["Cloud", "AWS", "DevOps"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
-    views: 1150,
-    readingTime: 5,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-8",
-    title: "स्मार्टफोन्सचे भविष्य आणि फोल्डेबल तंत्रज्ञान",
-    slug: "future-of-smartphones-and-foldable-tech",
-    excerpt: "फोल्डेबल आणि फ्लेक्सिबल स्क्रीन्सच्या आगमनामुळे स्मार्टफोन डिझाइनमध्ये क्रांती झाली आहे. पुढील ५ वर्षांत स्मार्टफोन कसे असतील याचा आढावा.",
-    content: "## स्मार्टफोनचे बदलते स्वरूप\n\nसध्या सॅमसंग, वनप्लस आणि गुगल या कंपन्यांचे फोल्डेबल फोन्स बाजारात उपलब्ध आहेत. भविष्यात स्क्रोल करण्यायोग्य (rollable) डिस्प्ले देखील पाहायला मिळू शकतात.",
-    coverImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&auto=format&fit=crop&q=80",
-    category: "design-systems",
-    tags: ["Mobile", "Foldable", "Gadgets"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 144).toISOString(),
-    views: 2040,
-    readingTime: 4,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-9",
-    title: "मशीन लर्निंग आणि त्याचा उद्योगांवर होणारा परिणाम",
-    slug: "machine-learning-impact-on-industries",
-    excerpt: "मशीन लर्निंग (ML) मॉडेल्सचा वापर करून विविध क्षेत्रे आपले काम कसे स्वयंचलित करत आहेत, आणि यामुळे व्यवसायांमध्ये कशी वाढ होत आहे ते जाणून घ्या.",
-    content: "## मशीन लर्निंगचे औद्योगिक महत्त्व\n\nमशीन लर्निंगमुळे फायनान्स, हेल्थकेअर, आणि ई-कॉमर्समध्ये मोठे बदल झाले आहेत. उदा. खरेदीदार काय खरेदी करू शकतात याचा अंदाज लावणे.",
-    coverImage: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=1200&auto=format&fit=crop&q=80",
-    category: "ai-engineering",
-    tags: ["ML", "Data science", "AI"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 168).toISOString(),
-    views: 1950,
-    readingTime: 5,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  },
-  {
-    id: "mock-blog-10",
-    title: "सर्व्हरलेस तंत्रज्ञान म्हणजे काय? सोप्या भाषेत",
-    slug: "what-is-serverless-technology-in-simple-words",
-    excerpt: "डेव्हलपर्ससाठी सर्व्हरलेस आर्किटेक्चरचे महत्त्व, त्याचे फायदे (उदा. ऑटो-स्केलिंग, पे-पर-युज) आणि या तंत्रज्ञानाच्या मर्यादा यावर एक सखोल नजर.",
-    content: "## सर्व्हरलेस आर्किटेक्चर म्हणजे काय?\n\nसर्व्हरलेस म्हणजे सर्व्हर नसणे नव्हे, तर त्याचा अर्थ असा की डेव्हलपर्सना सर्व्हर मॅनेज करण्याची गरज नसते. ही जबाबदारी क्लाउड प्रोव्हाइ़डरवर असते. त्यामुळे डेव्हलपर्स केवळ कोड लिहिण्यावर लक्ष केंद्रित करू शकतात.",
-    coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
-    category: "web-dev",
-    tags: ["Serverless", "Backend", "Functions"],
-    status: "published",
-    createdAt: new Date(Date.now() - 3600000 * 192).toISOString(),
-    views: 1670,
-    readingTime: 5,
-    author: {
-      name: "Yadnesh Thorat",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      role: "Chief Architect",
-      bio: "Specialist in Next.js and Firebase."
-    }
-  }
-];
+export const MOCK_BLOGS = [];
 
 const MOCK_CONTACTS = [];
 
@@ -742,6 +541,16 @@ export const dbService = {
   },
 
   async incrementViews(slug) {
+    // Log real daily hit for today's visitors count
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const todayKey = `aether_daily_hits_${todayStr}`;
+      const currentHits = Number(localStorage.getItem(todayKey) || 0);
+      localStorage.setItem(todayKey, String(currentHits + 1));
+    } catch (e) {
+      console.warn("Failed to store daily hit:", e);
+    }
+
     if (canUseFirebase()) {
       try {
         const blogsRef = collection(db, "aether_blogs_v2");
@@ -1085,35 +894,17 @@ if (canUseFirebase()) {
 
     // Calculate actual sums
     const publishedBlogsCount = blogs.filter((b) => b.status === "published").length;
-    const totalViews = blogs.reduce((sum, b) => sum + (b.views || 0), 0);
+    const totalViews = blogs.reduce((sum, b) => sum + (Number(b.views) || 0), 0);
 
-    // Compute logically consistent traffic metrics derived from actual views
-    const derivedTodaysVisitors = Math.floor(totalViews * 0.08) + 12;
-    const derivedMonthlyVisitors = Math.floor(totalViews * 0.45) + 45;
-    const baseTrend = Math.max(12, Math.floor(totalViews / 30));
-
-    const visitorTrends = [
-      { name: "Mon", visitors: Math.floor(baseTrend * 0.8), bounceRate: 35, duration: 120 },
-      { name: "Tue", visitors: Math.floor(baseTrend * 0.95), bounceRate: 32, duration: 145 },
-      { name: "Wed", visitors: Math.floor(baseTrend * 1.1), bounceRate: 34, duration: 160 },
-      { name: "Thu", visitors: Math.floor(baseTrend * 1.05), bounceRate: 36, duration: 155 },
-      { name: "Fri", visitors: Math.floor(baseTrend * 1.3), bounceRate: 30, duration: 180 },
-      { name: "Sat", visitors: Math.floor(baseTrend * 0.98), bounceRate: 28, duration: 190 },
-      { name: "Sun", visitors: derivedTodaysVisitors, bounceRate: 29, duration: 200 },
-    ];
-
-    const trafficSources = [
-      { name: "Direct", value: Math.floor(totalViews * 0.4) },
-      { name: "Organic Search", value: Math.floor(totalViews * 0.3) },
-      { name: "Social Media", value: Math.floor(totalViews * 0.2) },
-      { name: "Newsletter", value: Math.floor(totalViews * 0.1) },
-    ];
-
-    const deviceTypes = [
-      { name: "Desktop", value: Math.floor(totalViews * 0.6) },
-      { name: "Mobile", value: Math.floor(totalViews * 0.3) },
-      { name: "Tablet", value: Math.floor(totalViews * 0.1) },
-    ];
+    // Get real today's visitors count from live daily hit log
+    let todaysVisitors = 0;
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const todayKey = `aether_daily_hits_${todayStr}`;
+      todaysVisitors = Number(localStorage.getItem(todayKey) || 0);
+    } catch (e) {
+      todaysVisitors = 0;
+    }
 
     return {
       totalBlogs: blogs.length,
@@ -1121,14 +912,9 @@ if (canUseFirebase()) {
       draftBlogs: blogs.length - publishedBlogsCount,
       categoriesCount: categories.length,
       totalViews: totalViews,
-      todaysVisitors: derivedTodaysVisitors,
-      monthlyVisitors: derivedMonthlyVisitors,
+      todaysVisitors: todaysVisitors,
       contactsCount: contacts.length,
       newsletterCount: newsletter.length,
-      visitorTrends,
-      trafficSources,
-      deviceTypes,
-      topLandingPages: MOCK_ANALYTICS.topLandingPages,
     };
   },
 
