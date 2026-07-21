@@ -8,7 +8,6 @@ import {
   Edit,
   Trash2,
   X,
-  Eye,
   FileText,
   AlertCircle,
   CheckCircle2,
@@ -1084,7 +1083,6 @@ function BlogsManagerContent() {
                         <th className="p-4">Cover / Title</th>
                         <th className="p-4">Category</th>
                         <th className="p-4">Status</th>
-                        <th className="p-4">Engagement</th>
                         <th className="p-4">Created Date</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
@@ -1135,12 +1133,6 @@ function BlogsManagerContent() {
                                 {new Date(b.scheduledAt).toLocaleDateString()}
                               </p>
                             )}
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Eye className="h-3.5 w-3.5" />
-                              <span>{b.views} views</span>
-                            </div>
                           </td>
                           <td className="p-4 text-xs text-muted-foreground">
                             {new Date(b.createdAt).toLocaleDateString("en-US", {
@@ -1227,10 +1219,6 @@ function BlogsManagerContent() {
                       </div>
 
                       <div className="flex gap-2.5 items-center text-[10px] text-muted-foreground font-semibold">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {b.views}
-                        </span>
                         <span>
                           {new Date(b.createdAt).toLocaleDateString("en-US", {
                             month: "short",
