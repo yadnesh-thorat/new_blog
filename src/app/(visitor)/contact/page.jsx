@@ -82,7 +82,7 @@ export default function ContactPage() {
         {/* Header section matching homepage */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28 pb-8 animate-entrance">
           <div className="border-b border-border/40 pb-5 mb-8">
-            <h3 className="font-geist-sans text-2xl font-bold">Contact Aether</h3>
+            <h3 className="font-geist-sans text-2xl font-bold">Contact</h3>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               Have questions, editorial pitches, or sponsorship proposals? Fill out the form or reach us via our direct channels.
             </p>
