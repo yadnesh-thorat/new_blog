@@ -70,18 +70,24 @@ export const VisitorFooter = () => {
   const siteName = settings?.websiteName || "सत्यवेध";
 
   return (
-    <footer className="bg-surface-container-lowest border-t border-outline-variant/10 text-on-surface-variant font-marathi-body">
+    <footer className="border-t border-outline-variant/10 text-on-surface-variant font-marathi-body bg-[#F0E9E0] dark:bg-zinc-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
           
           {/* Brand Info */}
           <div className="md:col-span-4 space-y-4">
-            <div className="font-headline-sm text-headline-sm text-primary font-bold">{siteName}</div>
-            <p className="text-on-surface-variant font-body-md max-w-sm leading-relaxed text-sm">
-              {t("footer_tagline")}
-            </p>
+            <div className="flex flex-col items-center md:items-start gap-3 text-center md:text-left">
+              {settings?.logoImage ? (
+                <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                  <img src={settings.logoImage} alt={siteName} className="h-full w-full object-cover" />
+                </div>
+              ) : null}
+              <div>
+                <p className="text-on-surface-variant font-body-md max-w-sm leading-relaxed text-sm">{t("footer_tagline")}</p>
+              </div>
+            </div>
             {/* Social links */}
-            <div className="flex gap-4 pt-2">
+            <div className="flex gap-4 pt-2 justify-center md:justify-start">
               {settings?.contactInfo?.socialLinks?.twitter && (
                 <a
                   href={settings.contactInfo.socialLinks.twitter}

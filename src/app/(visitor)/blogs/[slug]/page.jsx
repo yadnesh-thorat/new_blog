@@ -302,23 +302,25 @@ export default function BlogDetailPage() {
 
       <main className="flex-grow pt-24 sm:pt-28 pb-16 transition-colors duration-300">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Top Navigation: Back to Articles */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card px-4 py-2 text-xs font-bold text-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shadow-2xs group cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
-              <span>{t("back_to_articles") || "Back to Articles"}</span>
-            </button>
-          </div>
+          {/* Article Header (includes Back button on same row as category) */}
 
           {/* Article Header */}
           <div className="space-y-5 max-w-4xl border-b border-outline-variant/20 pb-8 mb-8 animate-entrance">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-                {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
-              </span>
+            <div className="flex items-center justify-between gap-3 w-full">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-bold text-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shadow-2xs group cursor-pointer"
+                >
+                  <ArrowLeft className="h-4 w-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
+                  <span>{t("back_to_articles") || "Back to Articles"}</span>
+                </button>
+
+                <span className="inline-flex rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
+                  {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
+                </span>
+              </div>
+
               {blog.views && (
                 <span className="flex items-center gap-1 text-xs text-on-surface-variant font-medium">
                   <Eye className="h-3.5 w-3.5" /> {blog.views} {t("views")}
@@ -366,8 +368,8 @@ export default function BlogDetailPage() {
 
           {/* Featured Cover Image */}
           <div className="mb-12 animate-entrance space-y-2" style={{ animationDelay: "0.1s" }}>
-            <div className="relative rounded-2xl overflow-hidden aspect-video w-full border border-border/30 shadow-lg">
-              <img src={blog.coverImage} alt={blog.title} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="relative rounded-2xl overflow-hidden h-48 sm:h-64 md:h-72 w-full border border-border/30 shadow-lg">
+              <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 ring-1 ring-inset ring-white/5 rounded-2xl" />
             </div>
             {(blog.coverImageCredit || blog.imageCredit) && (
