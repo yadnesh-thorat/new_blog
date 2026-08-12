@@ -114,14 +114,14 @@ export default function App() {
   const footerLight = themeConfig?.footerBgColorLight || "#f8f9fa";
   const footerDark = themeConfig?.footerBgColorDark || "#0e0e0e";
 
-  const bgLight = themeConfig?.bgLight || '#ffffff';
+  const bgLight = themeConfig?.bgLight || '#F8F5F0';
   const fgLight = themeConfig?.fgLight || '#0f0f0f';
-  const cardLight = themeConfig?.cardLight || '#f9f9f9';
-  const borderLight = themeConfig?.borderLight || '#e4e4e7';
+  const cardLight = themeConfig?.cardLight || '#FAF7F3';
+  const borderLight = themeConfig?.borderLight || '#E2DCD5';
 
-  const bgDark = themeConfig?.bgDark || '#131313';
+  const bgDark = themeConfig?.bgDark || '#131210';
   const fgDark = themeConfig?.fgDark || '#e5e2e1';
-  const cardDark = themeConfig?.cardDark || '#1a1a1a';
+  const cardDark = themeConfig?.cardDark || '#191816';
   const borderDark = themeConfig?.borderDark || '#4e453a';
 
   const mutedLight = mixHexColors(fgLight, bgLight, 0.05);

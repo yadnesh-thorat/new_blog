@@ -5,45 +5,31 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext(undefined);
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState("light");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("aether_theme");
+      if (storedTheme) return storedTheme;
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+    }
+    return "light";
+  });
 
   useEffect(() => {
-    // Check local storage or prefers-color-scheme
-    const storedTheme = localStorage.getItem("aether_theme");
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
-      ? "dark"
-      : "light";
-    const initialTheme = storedTheme || systemTheme;
-    setTheme(initialTheme);
-    if (initialTheme === "dark") {
+    localStorage.setItem("aether_theme", theme);
+    if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    setMounted(true);
-  }, []);
+  }, [theme]);
 
   const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
-    localStorage.setItem("aether_theme", nextTheme);
-    if (nextTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div
-        style={{ visibility: mounted ? "visible" : "hidden" }}
-        className="contents"
-      >
-        {children}
-      </div>
+      <div className="contents">{children}</div>
     </ThemeContext.Provider>
   );
 };

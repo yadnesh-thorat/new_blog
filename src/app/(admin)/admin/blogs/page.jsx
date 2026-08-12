@@ -24,7 +24,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import { dbService, MOCK_BLOGS } from "@/lib/db";
+import { dbService } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import confetti from "canvas-confetti";
 
@@ -184,38 +184,7 @@ function BlogsManagerContent() {
     }
   };
 
-  const handleSeedMarathiArticles = async () => {
-    if (submitting) return;
-    if (!confirm("Are you sure you want to seed 10 Marathi articles directly into the database?")) return;
-    
-    setSubmitting(true);
-    setErrorMsg("");
-    setSuccessMsg("Seeding started... please wait.");
-    
-    try {
-      let count = 0;
-      for (const blog of MOCK_BLOGS) {
-        await dbService.saveBlog({
-          ...blog,
-          status: "published",
-          createdAt: new Date(Date.now() - count * 3600000 * 24).toISOString()
-        });
-        count++;
-      }
-      setSuccessMsg("Successfully seeded 10 Marathi articles directly into the database!");
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      setErrorMsg(err?.message || "Failed to seed articles.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  // Seeding helper removed to disable demo/mock blog insertion.
 
   // Load Data
   const loadData = async () => {

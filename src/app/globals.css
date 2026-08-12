@@ -70,53 +70,59 @@
   }
 }
 
+html, body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
 :root {
-  --background: 0 0% 100%; /* #ffffff */
+  --background: 32 25% 97%; /* #F8F5F0 - a little darker soft warm studio tone */
   --foreground: 0 0% 9%; /* #171717 */
-  --card: 0 0% 98%; /* #fafafa */
+  --card: 32 30% 98.5%; /* #FAF7F3 */
   --card-foreground: 0 0% 9%;
-  --popover: 0 0% 100%;
+  --popover: 32 25% 97%;
   --popover-foreground: 0 0% 9%;
   --primary: 36 80% 40%; /* #b45309 - rich high contrast amber/bronze for light mode */
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%; /* #f4f4f5 */
+  --secondary: 32 15% 94%;
   --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96%;
+  --muted: 32 15% 94%; /* #F3EFEA */
   --muted-foreground: 0 0% 32%; /* #525252 - crisp dark gray text */
-  --accent: 0 0% 96%;
+  --accent: 32 20% 95%;
   --accent-foreground: 0 0% 9%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 88.2%; /* #e0e0e0 */
-  --input: 0 0% 88.2%;
+  --border: 32 15% 87%; /* #E2DCD5 */
+  --input: 32 15% 87%;
   --ring: 36 80% 40%;
   --radius: 0.5rem;
   --primary-color: hsl(36 80% 40%);
-  --footer-bg: hsl(0 0% 98%);
+  --footer-bg: hsl(32 20% 95%);
 }
 
 .dark {
-  --background: 0 0% 7.5%; /* #131313 */
+  --background: 30 15% 7.5%; /* #131210 */
   --foreground: 15 4% 88.6%; /* #e5e2e1 */
-  --card: 0 0% 7.5%; /* #131313 */
+  --card: 30 15% 9.5%; /* #191816 */
   --card-foreground: 15 4% 88.6%;
-  --popover: 0 0% 7.5%;
+  --popover: 30 15% 7.5%;
   --popover-foreground: 15 4% 88.6%;
   --primary: 36 67% 72%; /* #e8c086 */
   --primary-foreground: 36 67% 20%;
-  --secondary: 0 0% 12.2%; /* #201f1f */
+  --secondary: 30 12% 12%;
   --secondary-foreground: 15 4% 88.6%;
-  --muted: 0 0% 11.0%; /* #1c1b1b */
+  --muted: 30 12% 11%;
   --muted-foreground: 33 21% 85%; /* #e4dcd0 - high contrast light text */
-  --accent: 0 0% 5.5%; /* #0e0e0e */
+  --accent: 30 15% 5.5%;
   --accent-foreground: 15 4% 88.6%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 33 15% 26.9%; /* #4e453a */
+  --border: 33 15% 26.9%;
   --input: 33 15% 26.9%;
   --ring: 36 67% 72%;
   --primary-color: hsl(36 67% 72%);
-  --footer-bg: hsl(0 0% 5.5%);
+  --footer-bg: hsl(30 15% 5.5%);
 }
 
 * {
@@ -139,6 +145,42 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.font-devanagari {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-grotesk {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 /* Glassmorphism custom utilities */

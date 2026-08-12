@@ -40,10 +40,10 @@ export default function AdminDashboardPage() {
     }
     loadStats();
 
-    // Auto-refresh live analytics metrics every 10 seconds
+    // Auto-refresh live analytics metrics every 60 seconds (reduced to prevent browser overload)
     const interval = setInterval(() => {
       loadStats();
-    }, 10000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);

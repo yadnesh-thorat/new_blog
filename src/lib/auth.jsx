@@ -74,17 +74,9 @@ export const AuthProvider = ({ children }) => {
         console.error(err);
       }
 
-      // Seed default admin if list is empty
+      // Do not auto-seed a default admin. Require explicit admin creation.
       if (localAdmins.length === 0) {
-        localAdmins.push({
-          id: "admin-primary",
-          email: "admin@aether-blog.com",
-          password: "admin123",
-          displayName: "Primary Admin",
-          role: "Administrator",
-          createdAt: new Date("2026-07-01").toISOString()
-        });
-        localStorage.setItem("aether_admins_v2", JSON.stringify(localAdmins));
+        throw new Error("No local admin accounts configured. Create an admin via the admin UI or configure Firebase authentication.");
       }
 
       const matchedAdmin = localAdmins.find(

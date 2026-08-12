@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Sparkles,
   Eye,
+  Home,
 } from "lucide-react";
 import { VisitorNavbar } from "@/components/VisitorNavbar";
 import { VisitorFooter } from "@/components/VisitorFooter";
@@ -61,8 +62,11 @@ export default function BlogDetailPage() {
       const activeBlog = await dbService.getBlogBySlug(slug);
       const allBlogs = await dbService.getBlogs(false);
       const cats = await dbService.getCategories();
-      const allAdmins = await dbService.getAdmins();
-      
+      let allAdmins = [];
+      try {
+        allAdmins = await dbService.getAdmins();
+      } catch (e) {}
+
       if (activeBlog) {
         const blogComments = await dbService.getComments(activeBlog.id);
         setComments(blogComments);
@@ -71,7 +75,7 @@ export default function BlogDetailPage() {
       setBlog(activeBlog);
       setBlogs(allBlogs);
       setCategories(cats);
-      setAdminUsers(allAdmins);
+      setAdminUsers(allAdmins || []);
       setLoading(false);
     }
     loadBlogData();
@@ -137,50 +141,68 @@ export default function BlogDetailPage() {
     };
   };
 
+  const extractHeaders = (content) => {
+    if (!content) return [];
+    const lines = content.split("\n");
+    const headers = [];
+    lines.forEach((line) => {
+      if (line.startsWith("## ")) {
+        const text = line.replace("## ", "").trim();
+        const id = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
+        headers.push({ id, text, level: 2 });
+      } else if (line.startsWith("### ")) {
+        const text = line.replace("### ", "").trim();
+        const id = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
+        headers.push({ id, text, level: 3 });
+      }
+    });
+    return headers;
+  };
+
+  const headers = blog ? extractHeaders(blog.content) : [];
+  const relatedBlogs = blog ? blogs.filter((b) => b.category === blog.category && b.id !== blog.id).slice(0, 3) : [];
+  const currentIdx = blog ? blogs.findIndex((b) => b.id === blog.id) : -1;
+  const nextBlog = currentIdx > 0 ? blogs[currentIdx - 1] : null;
+  const prevBlog = currentIdx >= 0 && currentIdx < blogs.length - 1 ? blogs[currentIdx + 1] : null;
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!newCommentName.trim() || !newCommentText.trim()) return;
+    const newComment = {
+      id: "c-" + Math.random().toString(36).substr(2, 9),
+      name: newCommentName,
+      avatar: `https://images.unsplash.com/photo-${["1535713875002-d1d0cf377fde", "1494790108377-be9c29b29330", "1599566150163-29194dcaad36"][Math.floor(Math.random() * 3)]}?w=200&auto=format&fit=crop&q=60`,
+      content: newCommentText,
+      createdAt: new Date().toISOString(),
+    };
+    setComments([...comments, newComment]);
+    setNewCommentName("");
+    setNewCommentText("");
+    setCommentSuccess(true);
+    setTimeout(() => setCommentSuccess(false), 3000);
+    confetti({ particleCount: 30, spread: 30, origin: { y: 0.8 } });
+  };
+
+  const handleCopyLink = () => {
+    if (typeof window === "undefined") return;
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (loading) {
     return (
       <>
         <VisitorNavbar />
-        <main className="flex-grow py-10">
+        <main className="flex-grow pt-24 sm:pt-28 pb-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {/* Back button skeleton */}
             <div className="skeleton h-4 w-32 mb-8" />
-
-            {/* Article header skeleton */}
             <div className="space-y-4 max-w-4xl border-b border-border/40 pb-8 mb-8">
               <div className="skeleton h-5 w-24" />
               <div className="skeleton h-10 w-full" />
               <div className="skeleton h-10 w-3/4" />
-              <div className="skeleton h-5 w-full" />
-              <div className="skeleton h-5 w-2/3" />
-              <div className="flex items-center gap-4 pt-2">
-                <div className="skeleton h-9 w-9 rounded-full" />
-                <div className="skeleton h-4 w-28" />
-                <div className="skeleton h-4 w-24" />
-                <div className="skeleton h-4 w-20" />
-              </div>
             </div>
-
-            {/* Cover image skeleton */}
             <div className="skeleton w-full aspect-video rounded-2xl mb-12" />
-
-            {/* Content skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-1" />
-              <div className="lg:col-span-8 space-y-4">
-                {[100, 85, 92, 78, 95, 60, 88, 72].map((w, i) => (
-                  <div key={i} className={`skeleton h-4`} style={{ width: `${w}%` }} />
-                ))}
-                <div className="skeleton h-8 w-48 mt-6" />
-                {[90, 75, 88, 65, 95].map((w, i) => (
-                  <div key={i} className={`skeleton h-4`} style={{ width: `${w}%` }} />
-                ))}
-              </div>
-              <div className="lg:col-span-3 space-y-3">
-                <div className="skeleton h-4 w-20" />
-                {[1, 2, 3].map((i) => <div key={i} className="skeleton h-4 w-full" />)}
-              </div>
-            </div>
           </div>
         </main>
         <VisitorFooter />
@@ -211,55 +233,6 @@ export default function BlogDetailPage() {
       </>
     );
   }
-
-  const extractHeaders = (content) => {
-    const lines = content.split("\n");
-    const headers = [];
-    lines.forEach((line) => {
-      if (line.startsWith("## ")) {
-        const text = line.replace("## ", "").trim();
-        // Unicode-safe slug: keep letters (including Devanagari), digits, replace rest with -
-        const id = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
-        headers.push({ id, text, level: 2 });
-      } else if (line.startsWith("### ")) {
-        const text = line.replace("### ", "").trim();
-        const id = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
-        headers.push({ id, text, level: 3 });
-      }
-    });
-    return headers;
-  };
-
-  const headers = extractHeaders(blog.content);
-  const relatedBlogs = blogs.filter((b) => b.category === blog.category && b.id !== blog.id).slice(0, 3);
-  const currentIdx = blogs.findIndex((b) => b.id === blog.id);
-  const nextBlog = currentIdx > 0 ? blogs[currentIdx - 1] : null;
-  const prevBlog = currentIdx < blogs.length - 1 ? blogs[currentIdx + 1] : null;
-
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!newCommentName.trim() || !newCommentText.trim()) return;
-    const newComment = {
-      id: "c-" + Math.random().toString(36).substr(2, 9),
-      name: newCommentName,
-      avatar: `https://images.unsplash.com/photo-${["1535713875002-d1d0cf377fde", "1494790108377-be9c29b29330", "1599566150163-29194dcaad36"][Math.floor(Math.random() * 3)]}?w=200&auto=format&fit=crop&q=60`,
-      content: newCommentText,
-      createdAt: new Date().toISOString(),
-    };
-    setComments([...comments, newComment]);
-    setNewCommentName("");
-    setNewCommentText("");
-    setCommentSuccess(true);
-    setTimeout(() => setCommentSuccess(false), 3000);
-    confetti({ particleCount: 30, spread: 30, origin: { y: 0.8 } });
-  };
-
-  const handleCopyLink = () => {
-    if (typeof window === "undefined") return;
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const renderRichText = (text) => {
     const normalized = (text || "").replace(/^(#{2,3}\s[^\n]+)\n(?![#\n])/gm, "$1\n\n");
@@ -327,15 +300,18 @@ export default function BlogDetailPage() {
     <>
       <VisitorNavbar />
 
-      <main className="flex-grow py-10 transition-colors duration-300">
+      <main className="flex-grow pt-24 sm:pt-28 pb-16 transition-colors duration-300">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Back button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-foreground mb-8 transition-colors group"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t("back_to_articles")}
-          </button>
+          {/* Top Navigation: Back to Articles */}
+          <div className="flex items-center justify-between mb-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card px-4 py-2 text-xs font-bold text-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shadow-2xs group cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
+              <span>{t("back_to_articles") || "Back to Articles"}</span>
+            </button>
+          </div>
 
           {/* Article Header */}
           <div className="space-y-5 max-w-4xl border-b border-outline-variant/20 pb-8 mb-8 animate-entrance">

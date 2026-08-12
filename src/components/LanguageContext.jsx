@@ -10,12 +10,13 @@ export const LANGUAGES = [
 
 export const TRANSLATIONS = {
   mr: {
-    nav_home: "तपास",
-    nav_categories: "विषय सूची",
+    nav_home: "मुख्य पृष्ठ",
+    nav_categories: "श्रेण्या",
     nav_about: "आमच्याबद्दल",
     nav_contact: "संपर्क",
     nav_search: "शोधा...",
     nav_dashboard: "डॅशबोर्ड",
+    back_to_home: "मुख्य पृष्ठावर जा",
     
     spotlight_tag: "विशेष तपास",
     read_full_story: "संपूर्ण कथा वाचा",
@@ -31,10 +32,6 @@ export const TRANSLATIONS = {
     analyses: "विश्लेषणे",
     articles_research: "लेख व संशोधन",
     documentaries_history: "माहितीपट आणि इतिहास",
-    quote_text: "इतिहास कधीच मरत नाही... तो फक्त पुन्हा वाचला जातो.",
-    quote_author: "सत्यवेध संपादकीय",
-    popular_documentaries: "लोकप्रिय माहितीपट",
-    popular_documentaries_subtitle: "सखोल संशोधनावर आधारित लेख आणि वृत्त",
     no_blogs_found: "कोणतेही लेख आढळले नाहीत.",
     
     footer_tagline: "इतिहासाच्या पाऊलखुणांचा वैज्ञानिक आणि पुराव्यांवर आधारित वेध घेणारे महाराष्ट्रातील अग्रगण्य व्यासपीठ.",
@@ -96,6 +93,7 @@ export const TRANSLATIONS = {
     nav_contact: "Contact",
     nav_search: "Search...",
     nav_dashboard: "Dashboard",
+    back_to_home: "Back to Home",
     
     spotlight_tag: "Special Investigation",
     read_full_story: "Read Full Story",
@@ -111,10 +109,6 @@ export const TRANSLATIONS = {
     analyses: "Analyses",
     articles_research: "Articles & Research",
     documentaries_history: "Documentaries & History",
-    quote_text: "History never dies... it is simply re-read.",
-    quote_author: "Satyavedh Editorial",
-    popular_documentaries: "Popular Documentaries",
-    popular_documentaries_subtitle: "In-depth research-backed articles and reports",
     no_blogs_found: "No articles found.",
     
     footer_tagline: "Maharashtra's leading platform exploring historical footprints with scientific & evidence-based rigor.",
@@ -170,12 +164,13 @@ export const TRANSLATIONS = {
     photo_credit: "Photo Credit",
   },
   hi: {
-    nav_home: "जांच",
+    nav_home: "मुख्य पृष्ठ",
     nav_categories: "विषय सूची",
     nav_about: "हमारे बारे में",
     nav_contact: "संपर्क",
     nav_search: "खोजें...",
     nav_dashboard: "डैशबोर्ड",
+    back_to_home: "मुख्य पृष्ठ पर जाएं",
     
     spotlight_tag: "विशेष जांच",
     read_full_story: "पूरी कहानी पढ़ें",
@@ -191,10 +186,6 @@ export const TRANSLATIONS = {
     analyses: "विश्लेषण",
     articles_research: "लेख एवं अनुसंधान",
     documentaries_history: "वृत्तचित्र और इतिहास",
-    quote_text: "इतिहास कभी नहीं मरता... वह बस पुन: पढ़ा जाता है।",
-    quote_author: "सत्यवेध संपादकीय",
-    popular_documentaries: "लोकप्रिय वृत्तचित्र",
-    popular_documentaries_subtitle: "गहन शोध पर आधारित लेख और रिपोर्ट",
     no_blogs_found: "कोई लेख नहीं मिला।",
     
     footer_tagline: "वैज्ञानिक और साक्ष्य-आधारित दृष्टिकोण से इतिहास के पदचिन्हों की जांच करने वाला प्रमुख मंच।",
@@ -257,8 +248,10 @@ export const CONTENT_TRANSLATIONS = {
     "कृत्रिम बुद्धिमत्ता (AI) आणि मानवी जीवन: एक नवी दिशा": "Artificial Intelligence (AI) and Human Life: A New Direction",
     "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६": "Modern Trends in Web Design 2026",
     "वेब डिझाइनमधील आधुनिक ट्रेंड्स 2026": "Modern Trends in Web Design 2026",
+    "रिएक्ट १९ मधील नवीन फीचर्स आणि me त्यांचे फायदे": "New Features in React 19 and Their Benefits",
     "रिएक्ट १९ मधील नवीन फीचर्स आणि त्यांचे फायदे": "New Features in React 19 and Their Benefits",
     "सायबर सुरक्षा: तुमचे डिजिटल अस्तित्व कसे सुरक्षित ठेवावे?": "Cyber Security: How to Protect Your Digital Presence?",
+    "सायबर सुरक्षेच्या सोप्या टिप्स: सोशल मीडिया आणि बँकेची सुरक्षा": "Simple Cyber Security Tips: Social Media and Bank Account Safety",
     "युझर इंटरफेस (UI) डिझाइनचे ५ महत्त्वाचे नियम": "5 Essential Rules of User Interface (UI) Design",
     "डेटा सायन्समध्ये करिअर कसे करावे?": "How to Build a Career in Data Science?",
     "क्लाउड कम्प्युटिंग: भविष्यातील तंत्रज्ञानाचा पाया": "Cloud Computing: The Foundation of Future Technology",
@@ -269,6 +262,7 @@ export const CONTENT_TRANSLATIONS = {
     "वेब डिझाइन जग सतत बदलत असते. या वर्षात लोकप्रिय ठरणारे ग्लासमॉर्फिझम, 3डी एलिमेंट्स आणि डार्क मोड डिझाइन्स याविषयी सविस्तर माहिती घ्या.": "The web design world is constantly evolving. Get detailed insights into glassmorphism, 3D elements, and dark mode designs trending this year.",
     "रिएक्ट १९ चे नवीन कॉम्पायलर आणि रिॲक्ट सर्वर कॉम्पोनंट्स (RSC) डिझाइनिंगला आणि परफॉर्मन्सला कशी नवी गती देणार आहेत ते समजून घ्या.": "Understand how the new React 19 compiler and React Server Components (RSC) bring new speed to design and performance.",
     "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. या लेखात आपण आपले सोशल मीडिया खाती, बँक खाती आणि वैयक्तिक डेटा सुरक्षित ठेवण्यासाठी काही टिप्स जाणून घेणार आहोत.": "Cybercrime is growing rapidly in today's digital era. In this article, we share key tips to keep your social media accounts, bank accounts, and personal data secure.",
+    "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. आपले बँक खाते आणि सोशल मीडिया अकाउंट हॅकर्सपासून सुरक्षित कसे ठेवाायचे, याच्या काही अत्यंत महत्त्वाच्या टिप्स.": "Cybercrime is growing rapidly in today's digital era. Here are essential tips to keep your bank account and social media accounts safe from hackers.",
     "एक उत्तम युझर इंटरफेस कसा डिझाइन करावा? या लेखात आपण UI डिझाइनचे ५ सोपे पण अत्यंत प्रभावी नियम अभ्यासणार आहोत जे प्रत्येक डिझायनरला माहित असावेत.": "How to design a great user interface? In this article, we study 5 simple yet highly effective UI design rules that every designer should know.",
     "डेटा सायन्स हे सध्याच्या काळातील सर्वात जास्त मागणी असलेले क्षेत्र आहे. या क्षेत्रात करिअर करण्यासाठी कोणती कौशल्ये आवश्यक आहेत आणि सुरुवात कशी करावी याबद्दल मार्गदर्शन.": "Data science is one of the most in-demand fields today. Learn what skills are required and how to get started in this career path.",
     "AWS, Google Cloud आणि Azure यांसारख्या क्लाउड प्लॅटफॉर्म्सचे महत्त्व आणि ते आजच्या व्यवसायांचे संचालन कसे बदलत आहेत, याबद्दल सविस्तर माहिती.": "Detailed insights into the importance of cloud platforms like AWS, Google Cloud, and Azure, and how they are transforming business operations today.",
@@ -292,9 +286,10 @@ export const CONTENT_TRANSLATIONS = {
     "वेब डिझाइनमधील आधुनिक ट्रेंड्स 2026": "वेब डिज़ाइन में आधुनिक ट्रेंड्स 2026",
     "रिएक्ट १९ मधील नवीन फीचर्स आणि त्यांचे फायदे": "रिएक्ट 19 में नए फीचर्स और उनके लाभ",
     "सायबर सुरक्षा: तुमचे डिजिटल अस्तित्व कसे सुरक्षित ठेवावे?": "साइबर सुरक्षा: अपनी डिजिटल उपस्थिति को कैसे सुरक्षित रखें?",
+    "सायबर सुरक्षेच्या सोप्या टिप्स: सोशल मीडिया आणि बँकेची सुरक्षा": "साइबर सुरक्षा के आसान टिप्स: सोशल मीडिया और बैंक सुरक्षा",
     "युझर इंटरफेस (UI) डिझाइनचे ५ महत्त्वाचे नियम": "यूजर इंटरफेस (UI) डिज़ाइन के 5 महत्वपूर्ण नियम",
     "डेटा सायन्समध्ये करिअर कसे करावे?": "डेटा साइंस में करियर कैसे बनाएं?",
-    "क्लाउड कम्प्युटिंग: भविष्यातील तंत्रज्ञानाचा पाया": "क्लाउड कंप्यूटिंग: भविष्य की तकनीक की नींव",
+    "क्लाउड कम्प्युटिंग: भविष्यातील तंत्रज्ञानाचा पाया": "क्लॉड कंप्यूटिंग: भविष्य की तकनीक की नींव",
 
     // Post Excerpts
     "कृत्रिम बुद्धिमत्ता (AI) आपल्या दैनंदिन जीवनाचा एक महत्त्वाचा भाग बनत चालली आहे. या लेखात आपण त्याचे मानवी जीवनावरील सकारात्मक आणि नकारात्मक परिणाम पाहणार आहोत.": "कृत्रिम बुद्धिमत्ता (AI) हमारे दैनिक जीवन का एक महत्वपूर्ण हिस्सा बनती जा रही है। इस लेख में हम मानव जीवन पर इसके प्रभाव को देखेंगे।",
@@ -302,6 +297,7 @@ export const CONTENT_TRANSLATIONS = {
     "वेब डिझाइन जग सतत बदलत असते. या वर्षात लोकप्रिय ठरणारे ग्लासमॉर्फिझम, 3डी एलिमेंट्स आणि डार्क मोड डिझाइन्स याविषयी सविस्तर माहिती घ्या.": "वेब डिज़ाइन की दुनिया लगातार बदल रही है। इस वर्ष लोकप्रिय होने वाले ग्लासमोर्फिज्म, 3D एलिमेंट्स और डार्क मोड डिज़ाइन के बारे में विस्तार से जानें।",
     "रिएक्ट १९ चे नवीन कॉम्पायलर आणि रिॲक्ट सर्वर कॉम्पोनंट्स (RSC) डिझाइनिंगला आणि परफॉर्मन्सला कशी नवी गती देणार आहेत ते समजून घ्या.": "समझें कि कैसे नया रिएक्ट 19 कंपाइलर और रिएक्ट सर्वर कंपोनेंट्स (RSC) डिज़ाइनिंग और परफॉर्मेंस को नई गति देंगे।",
     "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. या लेखात आपण आपले सोशल मीडिया खाती, बँक खाती आणि वैयक्तिक डेटा सुरक्षित ठेवण्यासाठी काही टिप्स जाणून घेणार आहोत.": "आज के डिजिटल युग में साइबर अपराध तेजी से बढ़ रहा है। इस लेख में हम सोशल मीडिया अकाउंट और पर्सनल डेटा सुरक्षित रखने के टिप्स जानेंगे।",
+    "आजच्या डिजिटल युगात सायबर गुन्हेगारी वेगाने वाढत आहे. आपले बँक खाते आणि सोशल मीडिया अकाउंट हॅकर्सपासून सुरक्षित कसे ठेवाायचे, याच्या काही अत्यंत महत्त्वाच्या टिप्स.": "आज के डिजिटल युग में साइबर अपराध तेजी से बढ़ रहा है। इस लेख में हम बैंक अकाउंट और सोशल मीडिया सुरक्षित रखने के टिप्स जानेंगे।",
     "एक उत्तम युझर इंटरफेस कसा डिझाइन करावा? या लेखात आपण UI डिझाइनचे ५ सोपे पण अत्यंत प्रभावी नियम अभ्यासणार आहोत जे प्रत्येक डिझायनरला माहित असावेत.": "एक बेहतरीन यूजर इंटरफेस कैसे डिजाइन करें? इस लेख में हम UI डिज़ाइन के 5 सरल लेकिन अत्यधिक प्रभावी नियमों का अध्ययन करेंगे।",
     "डेटा सायन्स हे सध्याच्या काळातील सर्वात जास्त मागणी असलेले क्षेत्र आहे. या क्षेत्रात करिअर करण्यासाठी कोणती कौशल्ये आवश्यक आहेत आणि सुरुवात कशी करावी याबद्दल मार्गदर्शन.": "डेटा साइंस वर्तमान समय के सबसे मांग वाले क्षेत्रों में से एक है। जानें कि इस क्षेत्र में करियर बनाने के लिए कौन से कौशल आवश्यक हैं।",
     "AWS, Google Cloud आणि Azure यांसारख्या क्लाउड प्लॅटफॉर्म्सचे महत्त्व आणि ते आजच्या व्यवसायांचे संचालन कसे बदलत आहेत, याबद्दल सविस्तर माहिती.": "AWS, Google Cloud और Azure जैसे क्लाउड प्लेटफॉर्म के महत्व और वे आज के व्यावसायिक संचालन को कैसे बदल रहे हैं, इस पर विस्तृत जानकारी।",
@@ -312,7 +308,7 @@ export const CONTENT_TRANSLATIONS = {
     "कृत्रिम बुद्धिमत्ता": "कृत्रिम बुद्धिमत्ता",
     "सायबर सुरक्षा": "साइबर सुरक्षा",
     "डेटा सायन्स": "डेटा साइंस",
-    "क्लाउड कम्प्युटिंग": "क्लाउड कंप्यूटिंग",
+    "क्लाउड कम्प्युटिंग": "क्लॉड कंप्यूटिंग",
     "मोबाईल ॲप्स": "मोबाइल ऐप्स",
     "डेटाबेस मॅनेजमेंट": "डेटाबेस मैनेजमेंट",
     "यूआय/यूएक्स डिझाईन": "यूआई/यूएक्स डिजाइन",
@@ -323,14 +319,17 @@ export const CONTENT_TRANSLATIONS = {
 const LanguageContext = createContext(undefined);
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState("mr");
+  const [language, setLanguage] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("aether_language");
+      if (saved && TRANSLATIONS[saved]) return saved;
+    }
+    return "mr";
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("aether_language");
-    if (saved && TRANSLATIONS[saved]) {
-      setLanguage(saved);
-    }
-  }, []);
+    localStorage.setItem("aether_language", language);
+  }, [language]);
 
   const changeLanguage = (code) => {
     if (TRANSLATIONS[code]) {
@@ -347,13 +346,18 @@ export const LanguageProvider = ({ children }) => {
   const translateText = (text) => {
     if (!text || language === "mr") return text;
     const langDict = CONTENT_TRANSLATIONS[language];
-    if (langDict && langDict[text]) {
-      return langDict[text];
-    }
-    // Also try fuzzy normalized key lookup
     if (langDict) {
-      const normalizedKey = Object.keys(langDict).find(k => k.trim() === String(text).trim());
+      if (langDict[text]) return langDict[text];
+      
+      const trimmed = String(text).trim();
+      const normalizedKey = Object.keys(langDict).find(k => k.trim() === trimmed);
       if (normalizedKey) return langDict[normalizedKey];
+
+      // Fuzzy / substring match for dynamic text
+      const matchingKey = Object.keys(langDict).find(k => 
+        trimmed.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(trimmed.toLowerCase())
+      );
+      if (matchingKey) return langDict[matchingKey];
     }
     return text;
   };

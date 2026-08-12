@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured, storage } from "./firebase";
 
-const FIREBASE_TIMEOUT_MS = 10000;
+const FIREBASE_TIMEOUT_MS = 2500;
 // Only block WRITE operations when they fail — never block reads
 let firebaseWriteUnavailable = false;
 
@@ -32,137 +32,11 @@ function handleWriteFailure(operation, error) {
 
 // Define Interfaces
 
-const MOCK_CATEGORIES = [
-  { id: "cat-web-dev", name: "वेब डेव्हलपमेंट", slug: "web-dev", description: "Modern frontend techniques, Next.js, React, CSS, and serverless engineering.", image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-design-systems", name: "डिझाईन सिस्टम", slug: "design-systems", description: "Typography, fluid grids, tokenization, animations, and premium visual components.", image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-ai-engineering", name: "कृत्रिम बुद्धिमत्ता", slug: "ai-engineering", description: "Generative AI, Large Language Model orchestration, prompt engineering, and agent systems.", image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-cyber-security", name: "सायबर सुरक्षा", slug: "cyber-security", description: "Learn cyber security, social media account defense, bank account protection, and digital self-defense.", image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-data-science", name: "डेटा सायन्स", slug: "data-science", description: "Explore python data analysis, SQL databases, metrics, statistics, and trends forecasting.", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-cloud-computing", name: "क्लाउड कम्प्युटिंग", slug: "cloud-computing", description: "Master AWS, Google Cloud, Azure server operations, networks, and cloud architecture.", image: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-mobile-dev", name: "मोबाईल ॲप्स", slug: "mobile-dev", description: "Building Android and iOS applications with React Native, Flutter, Swift, and Kotlin.", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-database", name: "डेटाबेस मॅनेजमेंट", slug: "database", description: "Relational and NoSQL database administration, Postgres, Firebase Firestore, and Redis caches.", image: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-ui-ux", name: "यूआय/यूएक्स डिझाईन", slug: "ui-ux", description: "User interface and user experience design patterns, Figma prototyping, typography, and wireframes.", image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&auto=format&fit=crop&q=60" },
-  { id: "cat-devops", name: "डेव्हऑप्स इंजिनिअरिंग", slug: "devops", description: "CI/CD pipelines, Docker containers, Kubernetes clusters, automation scripts, and server performance.", image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60" }
-];
+// Removed default/mock categories — production categories should be added via admin or Firestore.
+const MOCK_CATEGORIES = [];
 
-const MOCK_SETTINGS = {
-  websiteName: "Aether",
-  logo: "✦ AETHER",
-  logoImage: "",
-  homepage: {
-    spotlightTag: "विशेष तपास",
-    latestBlogsTitle: "नवीन तपास आणि शोधकथा",
-    latestBlogsSubtitle: "सत्यशोध आणि पुराव्यांवर आधारित चालू तपासणी",
-    sidebarTitle: "मागील तपासणी",
-    categoriesTitle: "विषय सूची",
-    categoriesSubtitle: "सत्यवेधच्या व्यासपीठावर आम्ही विविध पैलूंनी इतिहासाचा आणि वर्तमानाचा वेध घेतो.",
-    featuredVideosTitle: "लोकप्रिय माहितीपट",
-    featuredVideosSubtitle: "सखोल संशोधनावर आधारित लेख आणि वृत्त",
-    timelineTitle: "काळाचा ओघ: एक प्रवास",
-    timelineSubtitle: "महाराष्ट्राच्या आणि भारताच्या समृद्ध वारशाचा वेध घेण्यासाठी या कालपटलावर नजर टाका.",
-    quoteText: "इतिहास कधीच मरत नाही... तो फक्त पुन्हा वाचला जातो.",
-    quoteAuthor: "सत्यवेध संपादकीय",
-    timeline: [
-      {
-        year: "१९४७",
-        title: "स्वातंत्र्याचा सूर्योदय",
-        desc: "वसाहतवादाच्या अंताची आणि नव्या स्वतंत्र भारताच्या निर्मितीची सुवर्णगाथा."
-      },
-      {
-        year: "१८५७",
-        title: "पहिले स्वातंत्र्यसमर",
-        desc: "मंगल पांडे ते झाशीची राणी लक्ष्मीबाई... इंग्रज सत्तेविरुद्ध संघर्षाची पहिली महाठिणगी."
-      },
-      {
-        year: "१६७४",
-        title: "शिवराज्याभिषेक सोहळा",
-        desc: "रायगडावर छत्रपती शिवाजी महाराजांचा राज्याभिषेक आणि हिंदवी स्वराज्याची अधिकृत स्थापना."
-      }
-    ]
-  },
-  hero: {
-    title: "The Future of Web Engineering & Aesthetics",
-    subtitle:
-      "Exploring next-generation technologies, interactive interfaces, serverless systems, and the design languages of tomorrow.",
-    ctaText: "Explore Blogs",
-    ctaLink: "#featured",
-  },
-  theme: {
-    primaryColorLight: "#4f46e5",
-    primaryColorDark: "#818cf8",
-    footerBgColorLight: "#f4f4f5",
-    footerBgColorDark: "#101014",
-  },
-  aboutContent: {
-    title: "Crafting Premium Digital Experiences",
-    text: "Welcome to Aether. We are a collection of developers, designers, and AI researchers documenting our path through the digital frontier. We believe that technology should not only be highly performant, but visually gorgeous and satisfying to interact with.",
-    mission:
-      "To inspire and educate developers by producing high-fidelity technical articles that pair bleeding-edge code with premium interactive design.",
-    vision:
-      "To become the definitive journal for high-end web development, AI integration, and fluid UX systems.",
-    stats: [
-      { label: "Active Readers", value: "250K+" },
-      { label: "Articles Published", value: "480+" },
-      { label: "Community Members", value: "50K+" },
-      { label: "Open Source Stars", value: "12K+" },
-    ],
-    team: [
-      {
-        name: "Yadnesh Thorat",
-        role: "Chief Architect & Editor",
-        avatar:
-          "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=60",
-        bio: "Yadnesh is a full stack specialist who spends his time designing systems with Next.js, Firebase, and real-time data sync.",
-      },
-      {
-        name: "Aria Sterling",
-        role: "Head of Design",
-        avatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60",
-        bio: "Aria is obsessed with motion design, typography, and creating digital environments that respond fluidly to users.",
-      },
-    ],
-    timeline: [
-      {
-        year: "2024",
-        title: "Project Inception",
-        desc: "Aether was launched as a small technical newsletter with 100 subscribers.",
-      },
-      {
-        year: "2025",
-        title: "Expanding to AI Hub",
-        desc: "Introduced dedicated columns covering generative AI integration and Next.js App Router tutorials.",
-      },
-      {
-        year: "2026",
-        title: "v2 Portal Launch",
-        desc: "Redesigned the entire visitor experience using glassmorphism and real-time Firebase tracking.",
-      },
-    ],
-  },
-  contactInfo: {
-    email: "contact@aether-blog.com",
-    phone: "+1 (555) 019-2834",
-    address: "One Infinite Loop, Cupertino, CA 95014",
-    mapsEmbed:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3172.3325300305886!2d-122.0311812!3d37.33182!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808fb5b5c907b311%3A0x25e412613cf7b2b6!2sApple%20Infinite%20Loop!5e0!3m2!1sen!2sus!4v1700000000000",
-    socialLinks: {
-      twitter: "https://twitter.com/aether_blog",
-      github: "https://github.com/aether",
-      linkedin: "https://linkedin.com/company/aether",
-      youtube: "https://youtube.com/aether",
-    },
-  },
-  footerText:
-    "© 2026 Aether Journal. Built with React, Tailwind CSS, and Firebase.",
-  seoDefaults: {
-    title: "Aether | The Modern Tech & Design Journal",
-    description:
-      "A beautifully crafted blog platform exploring modern frontend, web design systems, Firebase backend, and generative artificial intelligence.",
-    ogImage:
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
-  },
-};
+// Remove mock settings to avoid injecting demo homepage content.
+const MOCK_SETTINGS = null;
 
 export const MOCK_BLOGS = [];
 
@@ -170,78 +44,18 @@ const MOCK_CONTACTS = [];
 
 const MOCK_SUBSCRIBERS = [];
 
-const MOCK_ADMINS = [
-  {
-    id: "admin-primary",
-    email: "admin@aether-blog.com",
-    password: "admin123",
-    displayName: "Primary Admin",
-    role: "Administrator",
-    createdAt: new Date("2026-07-01").toISOString()
-  }
-];
+const MOCK_ADMINS = [];
 
-const MOCK_COMMENTS = [
-  {
-    id: "c-mock-1",
-    blogId: "blog-1",
-    blogSlug: "modern-trends-in-web-design-2026",
-    blogTitle: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
-    name: "Marcus Aurelius",
-    content: "This is a masterpiece of a breakdown. The section about Partial Prerendering helped clarify the streaming boundaries. Thanks!",
-    createdAt: "2026-07-02T14:23:00Z",
-    approved: true
-  },
-  {
-    id: "c-mock-2",
-    blogId: "blog-1",
-    blogSlug: "modern-trends-in-web-design-2026",
-    blogTitle: "वेब डिझाइनमधील आधुनिक ट्रेंड्स २०२६",
-    name: "Elsa Frost",
-    content: "Aria, the easing functions in CSS transitions are indeed critical for UI speed perception. Ease-out-expo feels extremely responsive.",
-    createdAt: "2026-07-04T08:12:00Z",
-    approved: true
-  }
-];
+const MOCK_COMMENTS = [];
 
-const MOCK_ANALYTICS = {
-  totalVisitors: 84320,
-  todaysVisitors: 1240,
-  monthlyVisitors: 38900,
-  visitorTrends: [
-    { name: "Mon", visitors: 800, bounceRate: 35, duration: 120 },
-    { name: "Tue", visitors: 950, bounceRate: 32, duration: 145 },
-    { name: "Wed", visitors: 1100, bounceRate: 34, duration: 160 },
-    { name: "Thu", visitors: 1050, bounceRate: 36, duration: 155 },
-    { name: "Fri", visitors: 1300, bounceRate: 30, duration: 180 },
-    { name: "Sat", visitors: 980, bounceRate: 28, duration: 190 },
-    { name: "Sun", visitors: 1240, bounceRate: 29, duration: 200 },
-  ],
-  trafficSources: [
-    { name: "Direct", value: 35000 },
-    { name: "Organic Search", value: 28000 },
-    { name: "Social Media", value: 14000 },
-    { name: "Newsletter", value: 7320 },
-  ],
-  deviceTypes: [
-    { name: "Desktop", value: 52000 },
-    { name: "Mobile", value: 28000 },
-    { name: "Tablet", value: 4320 },
-  ],
-  topLandingPages: [
-    { path: "/", views: 42000 },
-    { path: "/blogs/mastering-nextjs-15", views: 24000 },
-    { path: "/blogs/designing-fluid-interfaces", views: 12000 },
-    { path: "/categories", views: 6320 },
-  ],
-};
+const MOCK_ANALYTICS = {};
 
 // STORAGE ACTIONS (LOCAL STORAGE OR MEMORY STORAGE FALLBACKS)
 function getLocalData(key, fallback) {
   if (typeof window === "undefined") return fallback;
   const stored = localStorage.getItem(key);
   if (!stored) {
-    localStorage.setItem(key, JSON.stringify(fallback));
+    // Do not auto-write fallback data to localStorage — return fallback only.
     return fallback;
   }
   try {
@@ -255,6 +69,7 @@ function getLocalData(key, fallback) {
     }
     return data;
   } catch (e) {
+    // On parse error, do not overwrite localStorage with fallback.
     return fallback;
   }
 }
@@ -412,7 +227,7 @@ export const dbService = {
       }
     } else {
       // Fallback
-      let blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+      let blogs = getLocalData("aether_blogs_v2", []);
       let filtered = blogs.filter((b) => !b.id || !b.id.startsWith("mock-blog-"));
       if (!includeDrafts) {
         filtered = filtered.filter((b) => b.status === "published");
@@ -462,14 +277,14 @@ export const dbService = {
       } catch (err) {
         // Do NOT poison global Firebase state for reads — just try local cache
         console.warn("getBlogBySlug: Firestore error, trying local cache", err?.message);
-        const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+        const blogs = getLocalData("aether_blogs_v2", []);
         rawBlog = blogs.find((b) => {
           const blogSlugNorm = (b.slug || "").replace(/^\/+/, "").trim().toLowerCase();
           return blogSlugNorm === normalizedSlug;
         }) || null;
       }
     } else {
-      const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+      const blogs = getLocalData("aether_blogs_v2", []);
       rawBlog = blogs.find((b) => {
         const blogSlugNorm = (b.slug || "").replace(/^\/+/, "").trim().toLowerCase();
         return blogSlugNorm === normalizedSlug;
@@ -482,7 +297,16 @@ export const dbService = {
   },
 
   async saveBlog(blog) {
-    const defaultAuthor = MOCK_SETTINGS.aboutContent.team[0];
+    // Resolve a sensible default author: prefer an existing admin, else fallback to a generic admin object
+    const admins = await this.getAdmins();
+    const defaultAuthor = (admins && admins.length > 0)
+      ? {
+          name: admins[0].displayName || admins[0].email || "Admin",
+          email: admins[0].email || null,
+          avatar: admins[0].avatarUrl || null,
+          role: admins[0].role || "Administrator",
+        }
+      : { name: "Admin", email: null, role: "Administrator" };
     const words = (blog.content || "").trim().split(/\s+/).length;
     const readingTime = Math.ceil(words / 225) || 1;
 
@@ -525,7 +349,7 @@ export const dbService = {
     }
 
     // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+    const blogs = getLocalData("aether_blogs_v2", []);
     const index = blogs.findIndex((b) => b.id === newBlog.id);
     if (index > -1) {
       blogs[index] = newBlog;
@@ -547,7 +371,7 @@ export const dbService = {
       }
     }
     // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+    const blogs = getLocalData("aether_blogs_v2", []);
     const filtered = blogs.filter((b) => b.id !== id);
     setLocalData("aether_blogs_v2", filtered);
     return true;
@@ -583,7 +407,7 @@ export const dbService = {
       }
     }
     // Fallback
-    const blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+    const blogs = getLocalData("aether_blogs_v2", []);
     const blog = blogs.find((b) => b.slug === slug);
     if (blog) {
       blog.views = (blog.views || 0) + 1;
@@ -604,23 +428,16 @@ export const dbService = {
         });
         if (list.length > 0) return list;
 
-        // Auto-seed default categories if database is empty
-        for (const cat of MOCK_CATEGORIES) {
-          await setDoc(doc(db, "aether_categories_v2", cat.id), cat);
-          list.push(cat);
-        }
+        // If Firestore returns empty, do not auto-seed defaults — return empty list.
         return list;
       } catch (err) {
         console.warn("getCategories: Firestore read failed, using local cache:", err?.message);
       }
     }
-    // Fallback
-    let cats = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
-    if (cats.length < 10) {
-      setLocalData("aether_categories_v2", MOCK_CATEGORIES);
-      cats = MOCK_CATEGORIES;
-    }
-    return cats;
+    // Fallback: return local cache if present, otherwise empty list.
+    const cats = getLocalData("aether_categories_v2", []);
+    if (Array.isArray(cats) && cats.length > 0) return cats;
+    return [];
   },
 
   async saveCategory(cat) {
@@ -644,7 +461,7 @@ export const dbService = {
     }
 
     // Fallback
-    const cats = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+    const cats = getLocalData("aether_categories_v2", []);
     const index = cats.findIndex((c) => c.id === newCat.id);
     if (index > -1) {
       cats[index] = newCat;
@@ -666,7 +483,7 @@ export const dbService = {
       }
     }
     // Fallback
-    const cats = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+    const cats = getLocalData("aether_categories_v2", []);
     const filtered = cats.filter((c) => c.id !== id);
     setLocalData("aether_categories_v2", filtered);
     return true;
@@ -679,6 +496,7 @@ export const dbService = {
       try {
         const docSnap = await withTimeout(
           getDoc(doc(db, "aether_settings_v2", "global")),
+          2500
         );
         if (docSnap.exists()) {
           settingsData = docSnap.data();
@@ -688,21 +506,11 @@ export const dbService = {
       }
     }
     if (!settingsData) {
-      // Fallback
-      settingsData = getLocalData("aether_settings_v2", MOCK_SETTINGS);
+      // Do not auto-fallback to MOCK_SETTINGS. Try local cache without writing defaults.
+      settingsData = getLocalData("aether_settings_v2", null);
     }
 
-    // Safety merge for homepage settings to support backward compatibility
-    if (settingsData) {
-      if (!settingsData.homepage) {
-        settingsData.homepage = { ...MOCK_SETTINGS.homepage };
-      } else {
-        settingsData.homepage = {
-          ...MOCK_SETTINGS.homepage,
-          ...settingsData.homepage,
-        };
-      }
-    }
+    // Return settings as-is; do not merge homepage defaults from MOCK_SETTINGS.
     return settingsData;
   },
 
@@ -739,7 +547,7 @@ export const dbService = {
       }
     }
     // Fallback
-    return getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+    return getLocalData("aether_contacts_v2", []);
   },
 
   async addContact(msg) {
@@ -760,7 +568,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+    const contacts = getLocalData("aether_contacts_v2", []);
     contacts.unshift(newMsg);
     setLocalData("aether_contacts_v2", contacts);
     return newMsg;
@@ -776,7 +584,7 @@ if (canUseFirebase()) {
       }
     }
     // Fallback
-    const contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+    const contacts = getLocalData("aether_contacts_v2", []);
     const index = contacts.findIndex((c) => c.id === id);
     if (index > -1) {
       contacts[index].read = true;
@@ -794,7 +602,7 @@ if (canUseFirebase()) {
       }
     }
     // Fallback
-    const contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+    const contacts = getLocalData("aether_contacts_v2", []);
     const filtered = contacts.filter((c) => c.id !== id);
     setLocalData("aether_contacts_v2", filtered);
     return true;
@@ -817,7 +625,7 @@ if (canUseFirebase()) {
       }
     }
     // Fallback
-    return getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
+    return getLocalData("aether_newsletter_v2", []);
   },
 
   async subscribeNewsletter(email) {
@@ -847,7 +655,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const subscribers = getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
+    const subscribers = getLocalData("aether_newsletter_v2", []);
     const exists = subscribers.some((s) => s.email === subscriber.email);
     if (exists) {
       return { success: true, isNew: false };
@@ -867,7 +675,7 @@ if (canUseFirebase()) {
       }
     }
     // Fallback
-    const subscribers = getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
+    const subscribers = getLocalData("aether_newsletter_v2", []);
     const filtered = subscribers.filter((s) => s.id !== id);
     setLocalData("aether_newsletter_v2", filtered);
     return true;
@@ -893,16 +701,16 @@ if (canUseFirebase()) {
 
     // If Firebase failed or was bypassed, load fallback local data
     if (blogs.length === 0) {
-      blogs = getLocalData("aether_blogs_v2", MOCK_BLOGS);
+      blogs = getLocalData("aether_blogs_v2", []);
     }
     if (categories.length === 0) {
-      categories = getLocalData("aether_categories_v2", MOCK_CATEGORIES);
+      categories = getLocalData("aether_categories_v2", []);
     }
     if (contacts.length === 0) {
-      contacts = getLocalData("aether_contacts_v2", MOCK_CONTACTS);
+      contacts = getLocalData("aether_contacts_v2", []);
     }
     if (newsletter.length === 0) {
-      newsletter = getLocalData("aether_newsletter_v2", MOCK_SUBSCRIBERS);
+      newsletter = getLocalData("aether_newsletter_v2", []);
     }
 
     // Calculate actual sums
@@ -956,11 +764,11 @@ if (canUseFirebase()) {
         });
         return list;
       } catch (err) {
-        console.warn("getAdmins: Firestore read failed, using local cache:", err?.message);
+        // Quietly fallback to local cache on permission or network restriction
       }
     }
     // Fallback
-    return getLocalData("aether_admins_v2", MOCK_ADMINS);
+    return getLocalData("aether_admins_v2", []);
   },
 
   async addAdmin(admin) {
@@ -980,7 +788,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    const admins = getLocalData("aether_admins_v2", []);
     admins.push(newAdmin);
     setLocalData("aether_admins_v2", admins);
     return newAdmin;
@@ -997,7 +805,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    const admins = getLocalData("aether_admins_v2", []);
     const filtered = admins.filter((a) => a.id !== id);
     setLocalData("aether_admins_v2", filtered);
     return true;
@@ -1014,7 +822,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const admins = getLocalData("aether_admins_v2", MOCK_ADMINS);
+    const admins = getLocalData("aether_admins_v2", []);
     const idx = admins.findIndex((a) => a.id === id);
     if (idx > -1) {
       admins[idx] = { ...admins[idx], ...data };
@@ -1043,7 +851,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    const comments = getLocalData("aether_comments_v2", []);
     let filtered = comments;
     if (blogId) {
       filtered = comments.filter((c) => c.blogId === blogId);
@@ -1069,7 +877,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    const comments = getLocalData("aether_comments_v2", []);
     comments.push(newComment);
     setLocalData("aether_comments_v2", comments);
     return newComment;
@@ -1086,7 +894,7 @@ if (canUseFirebase()) {
     }
 
     // Fallback
-    const comments = getLocalData("aether_comments_v2", MOCK_COMMENTS);
+    const comments = getLocalData("aether_comments_v2", []);
     const filtered = comments.filter((c) => c.id !== id);
     setLocalData("aether_comments_v2", filtered);
     return true;

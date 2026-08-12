@@ -50,7 +50,7 @@ function CategoriesContent() {
   const activeCategoryDetail = categories.find((c) => c.slug === activeFilter);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 pb-12">
       {/* Header section matching homepage */}
       <div className="border-b border-border/40 pb-5 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>

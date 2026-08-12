@@ -50,7 +50,7 @@ export default function AdminLayout() {
     }
   }, [user, loading, pathname, navigate]);
 
-  // Fetch unread count for sidebar badge
+  // Fetch unread count for sidebar badge — runs on every route change
   useEffect(() => {
     if (user) {
       dbService
@@ -60,11 +60,15 @@ export default function AdminLayout() {
           setUnreadContacts(unread);
         })
         .catch(console.error);
-
-      // Auto-migrate legacy base64 images to ImgBB CDN
-      dbService.migrateExistingImagesToImgBB().catch(console.error);
     }
   }, [user, pathname]);
+
+  // Auto-migrate legacy base64 images to ImgBB — runs only ONCE on first login
+  useEffect(() => {
+    if (user) {
+      dbService.migrateExistingImagesToImgBB().catch(console.error);
+    }
+  }, [user]); // <-- No pathname dep: runs only once per session, not on every nav
 
   const handleLogout = async () => {
     await logout();
@@ -128,11 +132,13 @@ export default function AdminLayout() {
           </button>
           <span className="font-geist-sans text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
             {settings?.logoImage ? (
-              <img
-                src={settings.logoImage}
-                alt={settings.websiteName || "Aether"}
-                className="h-6 w-auto object-contain max-h-6"
-              />
+                <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                  <img
+                    src={settings.logoImage}
+                    alt={settings.websiteName || "Aether"}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
             ) : (
               <>
                 <span className="text-primary font-black">✦</span>
@@ -173,11 +179,13 @@ export default function AdminLayout() {
           <div className="flex items-center justify-between border-b border-border/30 pb-4">
             <span className="font-geist-sans text-base font-bold tracking-tight text-foreground flex items-center gap-1.5 w-full">
               {settings?.logoImage ? (
-                <img
-                  src={settings.logoImage}
-                  alt={settings.websiteName || "Aether"}
-                  className="h-8 w-auto object-contain max-h-8"
-                />
+                  <div className="h-8 w-8 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                    <img
+                      src={settings.logoImage}
+                      alt={settings.websiteName || "Aether"}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
               ) : (
                 <>
                   <span className="text-primary font-black">✦</span>
@@ -315,14 +323,16 @@ export default function AdminLayout() {
 
         <div className="space-y-6 relative z-10">
           {/* Sidebar Top Logo */}
-          <div className="flex items-center justify-between border-b border-border/30 pb-4">
-            <span className="font-geist-sans text-base lg:text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5 group w-full">
+          <div className="flex items-center justify-center border-b border-border/30 pb-4">
+            <span className="font-geist-sans text-base lg:text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5 group">
               {settings?.logoImage ? (
-                <img
-                  src={settings.logoImage}
-                  alt={settings.websiteName || "Aether"}
-                  className="h-8 w-auto object-contain max-h-8"
-                />
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                    <img
+                      src={settings.logoImage}
+                      alt={settings.websiteName || "Aether"}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
               ) : (
                 <>
                   <span className="text-primary font-black transition-transform group-hover:rotate-12 duration-300 text-lg sm:text-xl">✦</span>
@@ -418,7 +428,7 @@ export default function AdminLayout() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {lang.flag} {lang.name}
+                {lang.name}
               </button>
             ))}
           </div>

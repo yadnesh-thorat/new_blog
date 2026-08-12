@@ -56,8 +56,8 @@ export default function ContactsManagerPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Messages List (Col 7 / 12) */}
-        <div className="lg:col-span-7 space-y-3.5">
+        {/* Messages List */}
+        <div className={selectedMessage ? "lg:col-span-7 space-y-3.5" : "lg:col-span-12 space-y-3.5"}>
           {messages.length > 0 ? (
             <div className="space-y-2">
               <div className="flex justify-between items-center mb-2 px-1">
@@ -158,9 +158,9 @@ export default function ContactsManagerPage() {
           )}
         </div>
 
-        {/* Message Details (Col 5 / 12) */}
-        <div className="lg:col-span-5">
-          {selectedMessage ? (
+        {/* Message Details (Col 5 / 12 when selected) */}
+        {selectedMessage && (
+          <div className="lg:col-span-5">
             <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4 shadow animate-slide-up sticky top-24">
               <div className="flex justify-between items-start border-b border-border/20 pb-3">
                 <div className="space-y-0.5">
@@ -223,13 +223,8 @@ export default function ContactsManagerPage() {
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-border/40 p-12 text-center text-xs text-muted-foreground sticky top-24">
-              Select an inbox item from the list to preview sender info,
-              subject, and message details.
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ seed_*.mjs
 .DS_Store
 Thumbs.db
 *.pem
+.vscode/
 
 # ── Debug logs ───────────────────────────────────────────────────────────────
 npm-debug.log*

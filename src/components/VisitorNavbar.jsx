@@ -20,13 +20,37 @@ export const VisitorNavbar = () => {
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(() => {
+    try {
+      const cached = localStorage.getItem("aether_settings_v2");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 1024;
+    }
+    return true;
+  });
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress((window.scrollY / totalHeight) * 100);
+      }
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -56,7 +80,11 @@ export const VisitorNavbar = () => {
     async function loadSettings() {
       try {
         const data = await dbService.getSettings();
-        if (data) setSettings(data);
+        if (data) {
+          setSettings(data);
+          // Cache for instant navbar render on next page load
+          try { localStorage.setItem("aether_settings_v2", JSON.stringify(data)); } catch {}
+        }
       } catch (err) {
         console.error("Failed to load navbar settings:", err);
       }
@@ -107,90 +135,114 @@ export const VisitorNavbar = () => {
 
   const siteName = settings?.websiteName || "सत्यवेध";
 
+  // Dynamic Favicon Syncing with Navbar Logo
+  useEffect(() => {
+    if (typeof document !== "undefined" && settings?.logoImage) {
+      let favicon = document.querySelector("link[rel='icon']");
+      if (!favicon) {
+        favicon = document.createElement("link");
+        favicon.rel = "icon";
+        document.head.appendChild(favicon);
+      }
+      favicon.href = settings.logoImage;
+    }
+  }, [settings?.logoImage]);
+
   return (
     <>
-      {/* ─── HEADER ──────────────────────────────────────────────────────── */}
+      {/* Scroll Progress Indicator */}
+      <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
+
+      {/* ─── HEADER ─────────────────────────────────────────────────── */}
+      {/*
+        Layout: position:relative wrapper. Logo on left (shrinks). 
+        Right buttons use ml-auto and shrink-0 so they NEVER get pushed off.
+      */}
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-background/80 backdrop-blur-md border-b border-border/20 ${
-          scrolled ? "py-2.5 shadow-lg border-border/30" : "py-4"
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-shadow duration-300 bg-[#F0E9E0]/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-border/50 py-1 sm:py-1.5 ${
+          scrolled ? "shadow-md shadow-black/5" : ""
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-6">
+        {/* Header container with clean flexbox spacing */}
+        <div className="mx-auto max-w-7xl w-full flex items-center justify-between gap-1.5 sm:gap-3 px-2.5 sm:px-6 lg:px-8" style={{ minHeight: '60px' }}>
 
           {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <Link
+            to="/"
+            className="group flex items-center gap-3 shrink-0 min-w-0 max-w-[180px] sm:max-w-[300px] md:max-w-[420px] lg:max-w-[550px] h-13 sm:h-16 lg:h-20 relative overflow-hidden"
+          >
             {settings?.logoImage ? (
-              <img
-                src={settings.logoImage}
-                alt={siteName}
-                className="h-8 w-auto object-contain"
-              />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-full overflow-hidden bg-white flex items-center justify-center shrink-0">
+                <img
+                  src={settings.logoImage}
+                  alt={siteName}
+                  className="h-full w-full object-cover"
+                />
+              </div>
             ) : (
-              <span className="font-geist-sans text-xl font-bold tracking-tight text-primary select-none font-headline-md">
-                {siteName}
+              <span className="font-outfit text-lg sm:text-3xl lg:text-4xl font-black tracking-wider text-foreground group-hover:text-primary transition-colors flex items-center gap-2 select-none truncate">
+                <span className="h-3 w-3 rounded-full bg-primary inline-block shrink-0" />
+                <span className="truncate">{siteName}</span>
               </span>
             )}
           </Link>
 
-          {/* ── Desktop Nav ── */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* ── Desktop Nav (centered) ── */}
+          <nav className="hidden lg:flex items-center gap-7">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`pb-1 font-semibold text-xs tracking-wider uppercase transition-all duration-200 font-marathi-body ${
-                    isActive
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-on-surface-variant hover:text-primary"
+                  className={`${language === "mr" ? "font-devanagari text-base sm:text-lg" : "font-grotesk text-base sm:text-lg md:text-[18px]"} font-bold tracking-tight transition-colors duration-200 py-1 relative select-none ${
+                    isActive ? "text-primary" : "text-foreground/80 hover:text-primary"
                   }`}
                 >
                   {link.name}
+                  {isActive && (
+                    <span className="absolute -bottom-0.5 left-0 w-full h-[3px] bg-primary rounded-full" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* ── Action Buttons ── */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Language Dropdown */}
-            <div className="relative">
+          {/* ══ RIGHT ACTIONS — compact on mobile, always visible ══ */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 z-10">
+            {/* Search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center justify-center w-7 h-7 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-1.5 rounded-full border border-border/40 bg-card text-on-surface hover:text-primary hover:border-primary/40 transition-all shadow-sm cursor-pointer"
+              aria-label="Search"
+            >
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+              <span className="hidden sm:inline text-xs font-bold font-outfit">Search</span>
+            </button>
+
+            {/* Language Dropdown (sm+) */}
+            <div className="relative hidden sm:block">
               <button
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full border border-border/40 hover:border-primary/40 bg-card text-on-surface hover:text-primary transition-all cursor-pointer shadow-sm"
-                aria-label="Select Language"
-                title="Change language"
+                className="flex items-center gap-1.5 text-xs font-grotesk font-bold px-3 py-1.5 rounded-full border border-border/40 hover:border-primary/40 bg-card text-on-surface hover:text-primary transition-all cursor-pointer shadow-sm"
               >
                 <Globe className="h-3.5 w-3.5 text-primary" />
                 <span className="uppercase tracking-wider">{language}</span>
-                <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${langDropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className={`h-3 w-3 transition-transform ${langDropdownOpen ? "rotate-180" : ""}`} />
               </button>
-
               {langDropdownOpen && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-40"
-                    onClick={() => setLangDropdownOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-36 rounded-xl border border-border/50 bg-card p-1 shadow-xl z-50 animate-scale-in">
+                  <div className="fixed inset-0 z-40" onClick={() => setLangDropdownOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-32 rounded-xl border border-border/50 bg-card p-1 shadow-xl z-50">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
-                        onClick={() => {
-                          changeLanguage(lang.code);
-                          setLangDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                          language === lang.code
-                            ? "bg-primary/10 text-primary font-bold"
-                            : "text-on-surface hover:bg-muted"
+                        onClick={() => { changeLanguage(lang.code); setLangDropdownOpen(false); }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-grotesk font-semibold rounded-lg transition-colors cursor-pointer ${
+                          language === lang.code ? "bg-primary/10 text-primary font-bold" : "text-on-surface hover:bg-muted"
                         }`}
                       >
-                        <span className="flex items-center gap-2">
-                          <span>{lang.flag}</span>
-                          <span>{lang.name}</span>
-                        </span>
+                        <span>{lang.name}</span>
                         {language === lang.code && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                       </button>
                     ))}
@@ -199,84 +251,113 @@ export const VisitorNavbar = () => {
               )}
             </div>
 
-            {/* Search */}
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary/10"
-              aria-label="Search"
-            >
-              <Search className="h-4.5 w-4.5" />
-            </button>
-
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary/10"
+              className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border/40 bg-card hover:bg-primary/10 text-primary hover:scale-105 transition-all shadow-sm cursor-pointer"
               aria-label="Toggle theme"
             >
-              {theme === "light"
-                ? <Moon className="h-4.5 w-4.5" />
-                : <Sun className="h-4.5 w-4.5" />}
+              {theme === "light" ? <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             </button>
 
-            {/* Dashboard CTA */}
+            {/* Dashboard CTA (logged in) */}
             {user && (
               <Link
                 to="/admin/dashboard"
-                className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-sm bg-primary px-4 py-2 text-xs font-bold text-on-primary hover:bg-primary/90 transition-all font-marathi-body"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-outfit font-black text-white hover:bg-primary/90 transition-all shadow-sm"
               >
                 {t("nav_dashboard")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             )}
 
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-primary hover:scale-95 transition-transform flex items-center justify-center w-8 h-8 rounded-full"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            {/* ── Hamburger / Close — only on mobile/tablet ── */}
+            {isMobile && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMobileMenuOpen((prev) => !prev);
+                }}
+                aria-label="Toggle menu"
+                className="flex items-center justify-center gap-1.5 px-3 h-8 sm:h-9 rounded-xl text-xs font-bold uppercase tracking-wider text-white cursor-pointer shrink-0 z-[65]"
+                style={{
+                  backgroundColor: '#b45309',
+                  color: '#ffffff',
+                  border: 'none',
+                  boxShadow: '0 2px 8px rgba(180,83,9,0.4)',
+                  letterSpacing: '0.04em',
+                  minWidth: '64px',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {mobileMenuOpen ? (
+                  <>
+                    <X className="h-4 w-4 shrink-0" style={{ strokeWidth: 2.5 }} />
+                    <span className="font-outfit font-extrabold">Close</span>
+                  </>
+                ) : (
+                  <>
+                    <Menu className="h-4 w-4 shrink-0" style={{ strokeWidth: 2.5 }} />
+                    <span className="font-outfit font-extrabold">Menu</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
+
         </div>
       </header>
 
-      {/* ─── MOBILE DRAWER ───────────────────────────────────────────────── */}
+      {/* ─── NAVIGATION DRAWER ─────────────────────────────────────────────── */}
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden animate-fade-in"
-            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm animate-fade-in"
+            style={{ touchAction: 'none' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileMenuOpen(false);
+            }}
           />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-72 md:hidden bg-background border-l border-border/50 shadow-2xl flex flex-col animate-slide-up">
+          <div
+            className="fixed top-0 right-0 bottom-0 z-[60] w-72 sm:w-80 bg-background border-l border-border/50 shadow-2xl flex flex-col animate-slide-up"
+            style={{ height: '100dvh', maxH: '100dvh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
-              <span className="font-geist-sans text-base font-black text-foreground flex items-center gap-1.5">
+              <span className="font-outfit text-base font-black text-foreground flex items-center gap-1.5">
                 <span className="text-primary">✦</span> {siteName.toUpperCase()}
               </span>
               <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all border border-border/40"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMobileMenuOpen(false);
+                }}
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all border border-border/40 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Nav links */}
-            <nav className="flex-1 px-4 py-5 space-y-1.5 overflow-y-auto">
+            <nav className="flex-1 px-4 py-5 space-y-2 overflow-y-auto">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     to={link.href}
-                    className={`flex items-center justify-between py-3 px-4 rounded-xl text-base font-semibold transition-all ${
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between py-3 px-4 rounded-xl text-base transition-all ${
+                      language === "mr" ? "font-devanagari font-bold" : "font-grotesk font-bold"
+                    } ${
                       isActive
                         ? "text-primary bg-primary/10 border border-primary/20"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        : "text-foreground/80 hover:text-primary hover:bg-muted/50"
                     }`}
                   >
-                    {link.name}
+                    <span>{link.name}</span>
                     {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                   </Link>
                 );
@@ -297,7 +378,7 @@ export const VisitorNavbar = () => {
                         : "border-border/40 text-on-surface hover:bg-muted"
                     }`}
                   >
-                    {lang.flag} {lang.name}
+                    {lang.name}
                   </button>
                 ))}
               </div>

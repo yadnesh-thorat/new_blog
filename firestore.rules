@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- BLOGS ---
+    match /aether_blogs_v2/{blogId} {
+      // Anyone can read published blogs
+      allow read: if true;
+      // Only authenticated admins can create, update, or delete blogs
+      allow write: if request.auth != null;
+    }
+
+    // --- CATEGORIES ---
+    match /aether_categories_v2/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // --- SETTINGS ---
+    match /aether_settings_v2/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // --- COMMENTS ---
+    match /aether_comments_v2/{commentId} {
+      // Anyone can read comments and submit new comments
+      allow read: if true;
+      allow create: if true;
+      // Only admins can modify or delete existing comments
+      allow update, delete: if request.auth != null;
+    }
+
+    // --- CONTACT FORM ---
+    match /aether_contacts_v2/{contactId} {
+      // Visitors can submit contact messages
+      allow create: if true;
+      // Only admins can view, update, or delete contact submissions
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // --- NEWSLETTER SUBSCRIBERS ---
+    match /aether_newsletter_v2/{subscriberId} {
+      // Visitors can subscribe to the newsletter
+      allow create, read: if true;
+      // Only admins can delete subscribers
+      allow delete: if request.auth != null;
+    }
+
+    // --- ADMINS ---
+    match /aether_admins_v2/{adminId} {
+      // Only authenticated users can access admin documents
+      allow read, write: if request.auth != null;
+    }
+  }
+}

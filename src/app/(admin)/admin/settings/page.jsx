@@ -70,7 +70,17 @@ export default function SettingsManagerPage() {
   useEffect(() => {
     async function loadSettings() {
       const data = await dbService.getSettings();
-      setSettings(data);
+      // Ensure contactInfo and socialLinks exist to avoid undefined access in form fields
+      const safe = {
+        ...(data || {}),
+        contactInfo: {
+          ...(data?.contactInfo || {}),
+          socialLinks: {
+            ...(data?.contactInfo?.socialLinks || {}),
+          },
+        },
+      };
+      setSettings(safe);
       setLoading(false);
     }
     loadSettings();
@@ -193,6 +203,48 @@ export default function SettingsManagerPage() {
         [field]: value,
       },
     });
+  };
+
+  // Team members helpers
+  const addTeamMember = () => {
+    const newTeam = [...(settings.aboutContent.team || [])];
+    newTeam.push({ name: "New Member", role: "", bio: "", avatar: "" });
+    updateAboutSetting("team", newTeam);
+  };
+
+  const updateTeamMember = (idx, field, value) => {
+    const newTeam = [...(settings.aboutContent.team || [])];
+    newTeam[idx] = { ...(newTeam[idx] || {}), [field]: value };
+    updateAboutSetting("team", newTeam);
+  };
+
+  const removeTeamMember = (idx) => {
+    const newTeam = [...(settings.aboutContent.team || [])];
+    newTeam.splice(idx, 1);
+    updateAboutSetting("team", newTeam);
+  };
+
+  const moveTeamMember = (idx, dir) => {
+    const newTeam = [...(settings.aboutContent.team || [])];
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= newTeam.length) return;
+    const tmp = newTeam[swapIdx];
+    newTeam[swapIdx] = newTeam[idx];
+    newTeam[idx] = tmp;
+    updateAboutSetting("team", newTeam);
+  };
+
+  const handleMemberAvatarUpload = async (file, idx) => {
+    if (!file) return;
+    try {
+      // store chosen filename for UI feedback
+      updateTeamMember(idx, "avatarFileName", file.name);
+      const url = await dbService.uploadImage(file);
+      updateTeamMember(idx, "avatar", url);
+      // optionally clear filename or keep it
+    } catch (err) {
+      console.error("Failed to upload member avatar:", err);
+    }
   };
 
 
@@ -350,11 +402,11 @@ export default function SettingsManagerPage() {
                 </div>
                 
                 {settings.logoImage && (
-                  <div className="mt-3 relative h-16 w-32 overflow-hidden rounded-xl border border-border bg-muted/20 flex items-center justify-center">
+                  <div className="mt-3 relative h-16 w-16 overflow-hidden rounded-full border border-border bg-muted/20 flex items-center justify-center">
                     <img
                       src={settings.logoImage}
                       alt="Logo Preview"
-                      className="h-full w-full object-contain p-2"
+                      className="h-full w-full object-cover"
                     />
                   </div>
                 )}
@@ -757,6 +809,108 @@ export default function SettingsManagerPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Team Members Editor */}
+              <div className="pt-6 border-t border-border/20">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold">Team Members</h4>
+                  <button
+                    type="button"
+                    onClick={addTeamMember}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+                  >
+                    <Plus className="h-3 w-3" /> Add Member
+                  </button>
+                </div>
+
+                <div className="mt-6 space-y-6">
+                  {(settings.aboutContent.team || []).map((member, idx) => (
+                    <div key={idx} className="p-4 rounded-lg border border-border/30 bg-muted/10">
+                      <div className="flex items-start gap-5">
+                          <div className="w-24">
+                          <div className="h-16 w-16 rounded-md overflow-hidden border border-border bg-white">
+                            {member.avatar ? (
+                              <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">No image</div>
+                            )}
+                          </div>
+                          <label className="mt-2 block text-xs text-muted-foreground">Avatar</label>
+                          <div className="mt-2">
+                            <div className="flex items-center gap-3">
+                              <input
+                                id={`member-file-${idx}`}
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleMemberAvatarUpload(e.target.files?.[0], idx)}
+                                className="hidden"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => document.getElementById(`member-file-${idx}`).click()}
+                                className="rounded-md bg-muted/30 px-3 py-1 text-xs"
+                              >
+                                Choose file
+                              </button>
+                              <span className="text-xs text-muted-foreground truncate max-w-[140px]">{member.avatarFileName || (member.avatar ? 'Uploaded' : 'No file chosen')}</span>
+                            </div>
+
+                            <div className="mt-2">
+                              <input
+                                type="text"
+                                placeholder="Or paste URL"
+                                value={member.avatar || ""}
+                                onChange={(e) => updateTeamMember(idx, "avatar", e.target.value)}
+                                className="w-full rounded-xl border border-border bg-background px-2 py-1 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={member.name}
+                              onChange={(e) => updateTeamMember(idx, "name", e.target.value)}
+                              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                              placeholder="Full name"
+                            />
+                            <input
+                              type="text"
+                              value={member.role}
+                              onChange={(e) => updateTeamMember(idx, "role", e.target.value)}
+                              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                              placeholder="Role / Title"
+                            />
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={member.bio}
+                            onChange={(e) => updateTeamMember(idx, "bio", e.target.value)}
+                            className="w-full mt-2 rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                            placeholder="Short bio"
+                          />
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex flex-col gap-2">
+                            <button type="button" onClick={() => moveTeamMember(idx, -1)} className="rounded-md p-2 bg-muted hover:bg-muted/60">
+                              <ArrowUp className="h-4 w-4" />
+                            </button>
+                            <button type="button" onClick={() => moveTeamMember(idx, 1)} className="rounded-md p-2 bg-muted hover:bg-muted/60">
+                              <ArrowDown className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <button type="button" onClick={() => removeTeamMember(idx)} className="rounded-md p-2 bg-red-50 text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -901,6 +1055,23 @@ export default function SettingsManagerPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label
+                    htmlFor="settings-instagram"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                  >
+                    Instagram URL
+                  </label>
+                  <input
+                    id="settings-instagram"
+                    type="text"
+                    value={settings.contactInfo.socialLinks.instagram || ""}
+                    onChange={(e) =>
+                      updateSocialLinkSetting("instagram", e.target.value)
+                    }
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
                     htmlFor="settings-youtube"
                     className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
                   >
@@ -912,6 +1083,43 @@ export default function SettingsManagerPage() {
                     value={settings.contactInfo.socialLinks.youtube || ""}
                     onChange={(e) =>
                       updateSocialLinkSetting("youtube", e.target.value)
+                    }
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="settings-facebook"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                  >
+                    Facebook URL
+                  </label>
+                  <input
+                    id="settings-facebook"
+                    type="text"
+                    value={settings.contactInfo.socialLinks.facebook || ""}
+                    onChange={(e) =>
+                      updateSocialLinkSetting("facebook", e.target.value)
+                    }
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="settings-whatsapp"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                  >
+                    WhatsApp Channel (wa.me link or number)
+                  </label>
+                  <input
+                    id="settings-whatsapp"
+                    type="text"
+                    value={settings.contactInfo.socialLinks.whatsapp || ""}
+                    onChange={(e) =>
+                      updateSocialLinkSetting("whatsapp", e.target.value)
                     }
                     className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
