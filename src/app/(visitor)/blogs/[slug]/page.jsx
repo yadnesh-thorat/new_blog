@@ -37,7 +37,10 @@ const TwitterIcon = (props) => (
 import confetti from "canvas-confetti";
 
 export default function BlogDetailPage() {
-  const { t, translateText } = useLanguage();
+  const { t, translateText, language } = useLanguage();
+  const getTitle = (b) => language === "en" && b?.titleEn ? b.titleEn : (b?.title || "");
+  const getExcerpt = (b) => language === "en" && b?.excerptEn ? b.excerptEn : (b?.excerpt || "");
+  const getContent = (b) => language === "en" && b?.contentEn ? b.contentEn : (b?.content || "");
   const params = useParams();
   const navigate = useNavigate();
   const slug = params?.slug;
@@ -306,32 +309,26 @@ export default function BlogDetailPage() {
 
           {/* Article Header */}
           <div className="space-y-5 max-w-4xl border-b border-outline-variant/20 pb-8 mb-8 animate-entrance">
-            <div className="flex items-center justify-between gap-3 w-full">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2.5 sm:gap-3 w-full">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => navigate(-1)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-bold text-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shadow-2xs group cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-bold text-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  <ArrowLeft className="h-4 w-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
-                  <span>{t("back_to_articles") || "Back to Articles"}</span>
+                  <ArrowLeft className="h-3.5 w-3.5 text-primary group-hover:-translate-x-0.5 transition-transform shrink-0" />
+                  <span className="whitespace-nowrap">{t("back_to_articles") || "Back"}</span>
                 </button>
 
-                <span className="inline-flex rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
+                <span className="inline-flex rounded-lg bg-primary/10 border border-primary/20 px-2.5 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary whitespace-nowrap shrink-0">
                   {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
                 </span>
               </div>
-
-              {blog.views && (
-                <span className="flex items-center gap-1 text-xs text-on-surface-variant font-medium">
-                  <Eye className="h-3.5 w-3.5" /> {blog.views} {t("views")}
-                </span>
-              )}
             </div>
             <h1 className="text-3xl font-extrabold sm:text-5xl text-foreground font-marathi-heading leading-[1.15] tracking-tight">
-              {translateText(blog.title)}
+              {getTitle(blog)}
             </h1>
             <p className="text-base sm:text-lg text-on-surface-variant font-medium leading-relaxed">
-              {translateText(blog.excerpt)}
+              {getExcerpt(blog)}
             </p>
 
             {/* Author / Date Meta Bar */}
@@ -423,7 +420,7 @@ export default function BlogDetailPage() {
             {/* Content Column (Center - Col 8) */}
             <div className="lg:col-span-8 space-y-8">
               <div className="prose prose-slate dark:prose-invert max-w-none">
-                {renderRichText(blog.content)}
+                {renderRichText(getContent(blog))}
               </div>
 
               {/* Author Card */}
@@ -496,6 +493,16 @@ export default function BlogDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Article View Count Badge */}
+              {blog.views && (
+                <div className="flex items-center gap-2 pt-4 pb-2 border-t border-border/30">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/50 text-xs font-semibold text-foreground shadow-2xs">
+                    <Eye className="h-4 w-4 text-primary" />
+                    <span>{blog.views} {t("views")}</span>
+                  </span>
+                </div>
+              )}
 
               {/* Comments Feed */}
               <div className="space-y-6 pt-2">

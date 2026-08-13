@@ -313,9 +313,12 @@ export const dbService = {
     const newBlog = {
       id: blog.id || "blog-" + Math.random().toString(36).substr(2, 9),
       title: blog.title || "Untitled Blog",
+      titleEn: blog.titleEn || "",
       slug: blog.slug,
       excerpt: blog.excerpt || "",
+      excerptEn: blog.excerptEn || "",
       content: blog.content || "",
+      contentEn: blog.contentEn || "",
       coverImage:
         blog.coverImage ||
         "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
@@ -416,28 +419,59 @@ export const dbService = {
   },
 
   // --- CATEGORIES ---
+  _getDeletedCategoryIds() {
+    return getLocalData("aether_deleted_categories_v2", []);
+  },
+
+  _addDeletedCategoryId(idOrSlug) {
+    if (!idOrSlug) return;
+    const list = this._getDeletedCategoryIds();
+    if (!list.includes(idOrSlug)) {
+      list.push(idOrSlug);
+      setLocalData("aether_deleted_categories_v2", list);
+    }
+  },
+
+  _removeDeletedCategoryId(idOrSlug) {
+    if (!idOrSlug) return;
+    const list = this._getDeletedCategoryIds();
+    const filtered = list.filter((id) => id !== idOrSlug);
+    setLocalData("aether_deleted_categories_v2", filtered);
+  },
+
   async getCategories() {
+    const deletedIds = this._getDeletedCategoryIds();
+    let list = [];
+
     if (canUseFirebase()) {
       try {
         const snapshot = await withTimeout(
           getDocs(collection(db, "aether_categories_v2")),
         );
-        const list = [];
         snapshot.forEach((d) => {
-          list.push({ id: d.id, ...d.data() });
+          const data = d.data() || {};
+          list.push({ id: d.id, ...data });
         });
-        if (list.length > 0) return list;
-
-        // If Firestore returns empty, do not auto-seed defaults — return empty list.
-        return list;
+        setLocalData("aether_categories_v2", list);
       } catch (err) {
         console.warn("getCategories: Firestore read failed, using local cache:", err?.message);
+        list = getLocalData("aether_categories_v2", []);
       }
+    } else {
+      list = getLocalData("aether_categories_v2", []);
     }
-    // Fallback: return local cache if present, otherwise empty list.
-    const cats = getLocalData("aether_categories_v2", []);
-    if (Array.isArray(cats) && cats.length > 0) return cats;
-    return [];
+
+    // Filter out blacklisted deleted categories permanently
+    const validList = (list || []).filter(
+      (c) =>
+        c &&
+        c.id &&
+        !deletedIds.includes(c.id) &&
+        !deletedIds.includes(c.slug) &&
+        !deletedIds.includes(c.name)
+    );
+
+    return validList;
   },
 
   async saveCategory(cat) {
@@ -451,16 +485,19 @@ export const dbService = {
         "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60",
     };
 
+    if (newCat.id) this._removeDeletedCategoryId(newCat.id);
+    if (newCat.slug) this._removeDeletedCategoryId(newCat.slug);
+    if (newCat.name) this._removeDeletedCategoryId(newCat.name);
+
     if (canUseFirebase()) {
       try {
         await withTimeout(setDoc(doc(db, "aether_categories_v2", newCat.id), newCat));
-        return newCat;
       } catch (err) {
         handleWriteFailure("saveCategory", err);
       }
     }
 
-    // Fallback
+    // Always sync local cache
     const cats = getLocalData("aether_categories_v2", []);
     const index = cats.findIndex((c) => c.id === newCat.id);
     if (index > -1) {
@@ -472,20 +509,51 @@ export const dbService = {
     return newCat;
   },
 
-  async deleteCategory(id) {
+  async deleteCategory(idOrSlug) {
+    if (!idOrSlug) return true;
+
+    // 1. Blacklist permanently
+    this._addDeletedCategoryId(idOrSlug);
+
+    // 2. Clear from local cache immediately
+    const cats = getLocalData("aether_categories_v2", []);
+    const filtered = cats.filter(
+      (c) => c.id !== idOrSlug && c.slug !== idOrSlug && c.name !== idOrSlug
+    );
+    setLocalData("aether_categories_v2", filtered);
+
+    // 3. Delete from Firestore asynchronously
     if (canUseFirebase()) {
       try {
-        await withTimeout(deleteDoc(doc(db, "aether_categories_v2", id)));
-        return true;
+        await withTimeout(deleteDoc(doc(db, "aether_categories_v2", idOrSlug))).catch(() => {});
+
+        const snapshot = await withTimeout(getDocs(collection(db, "aether_categories_v2")), 3000).catch(() => null);
+        if (snapshot) {
+          const deletePromises = [];
+          snapshot.forEach((d) => {
+            const data = d.data() || {};
+            if (
+              d.id === idOrSlug ||
+              data.id === idOrSlug ||
+              data.slug === idOrSlug ||
+              data.name === idOrSlug
+            ) {
+              if (d.id) this._addDeletedCategoryId(d.id);
+              if (data.id) this._addDeletedCategoryId(data.id);
+              if (data.slug) this._addDeletedCategoryId(data.slug);
+              if (data.name) this._addDeletedCategoryId(data.name);
+              deletePromises.push(deleteDoc(doc(db, "aether_categories_v2", d.id)).catch(() => {}));
+            }
+          });
+          if (deletePromises.length > 0) {
+            await Promise.allSettled(deletePromises);
+          }
+        }
       } catch (err) {
         handleWriteFailure("deleteCategory", err);
-        return false;
       }
     }
-    // Fallback
-    const cats = getLocalData("aether_categories_v2", []);
-    const filtered = cats.filter((c) => c.id !== id);
-    setLocalData("aether_categories_v2", filtered);
+
     return true;
   },
 
@@ -1105,7 +1173,9 @@ if (canUseFirebase()) {
       console.warn("Media migration check failed:", err);
     }
 
-    console.log(`Migration complete. Migrated ${migratedCount} images to ImgBB.`);
+    if (migratedCount > 0) {
+      console.log(`Migration complete. Migrated ${migratedCount} images to ImgBB.`);
+    }
     return migratedCount;
   },
 };

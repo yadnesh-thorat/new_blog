@@ -148,9 +148,12 @@ function BlogsManagerContent() {
   const [editBlogId, setEditBlogId] = useState(null);
   // Form fields
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [imageCredit, setImageCredit] = useState("");
   const [category, setCategory] = useState("");
@@ -225,9 +228,12 @@ function BlogsManagerContent() {
     setIsEditing(true);
     setEditBlogId(null);
     setTitle("");
+    setTitleEn("");
     setSlug("");
     setExcerpt("");
+    setExcerptEn("");
     setContent("");
+    setContentEn("");
     setCoverImage(
       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
     );
@@ -250,9 +256,12 @@ function BlogsManagerContent() {
     setIsEditing(true);
     setEditBlogId(blog.id);
     setTitle(blog.title);
+    setTitleEn(blog.titleEn || "");
     setSlug(blog.slug);
-    setExcerpt(blog.excerpt);
-    setContent(blog.content);
+    setExcerpt(blog.excerpt || "");
+    setExcerptEn(blog.excerptEn || "");
+    setContent(blog.content || "");
+    setContentEn(blog.contentEn || "");
     setCoverImage(blog.coverImage);
     setImageCredit(blog.coverImageCredit || blog.imageCredit || "");
     
@@ -335,9 +344,12 @@ function BlogsManagerContent() {
 
     const blogData = {
       title,
+      titleEn,
       slug,
       excerpt,
+      excerptEn,
       content,
+      contentEn,
       coverImage,
       coverImageCredit: imageCredit,
       category: finalCategory,
@@ -578,27 +590,51 @@ function BlogsManagerContent() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Form columns */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="blog-title"
-                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Article Title
-                  </label>
-                  <input
-                    id="blog-title"
-                    type="text"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Scaling Next.js 15 Applications"
-                    className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  />
+              <div className="space-y-6 max-w-4xl mx-auto">
+                {/* Article Titles (Bilingual) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label
+                        htmlFor="blog-title"
+                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        Article Title — मराठी
+                      </label>
+                      <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi</span>
+                    </div>
+                    <input
+                      id="blog-title"
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="उदा. नवनिर्मितीची नवी दिशा..."
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label
+                        htmlFor="blog-title-en"
+                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        Article Title — English
+                      </label>
+                      <span className="text-[9px] font-bold text-blue-500/80 uppercase">English</span>
+                    </div>
+                    <input
+                      id="blog-title-en"
+                      type="text"
+                      value={titleEn}
+                      onChange={(e) => setTitleEn(e.target.value)}
+                      placeholder="e.g. Scaling Web Applications..."
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    />
+                  </div>
                 </div>
 
+                {/* Slug, Category, Author */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label
@@ -675,68 +711,181 @@ function BlogsManagerContent() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center">
+                {/* Cover Image & Photo Credit */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label
+                        htmlFor="blog-cover"
+                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        Cover Image
+                      </label>
+                      <span className="text-[10px] text-muted-foreground font-semibold">
+                        Upload file or paste URL
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        id="blog-cover"
+                        type="text"
+                        required
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        placeholder="Paste cover URL or upload..."
+                        className="flex-1 rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                      <label className="rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-bold px-4 py-2.5 cursor-pointer shrink-0 flex items-center justify-center transition-all active:scale-95 text-foreground">
+                        <span>{uploadingImage ? "Uploading..." : "Upload"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingImage}
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    {coverImage && (
+                      <div className="mt-2 relative h-36 w-full overflow-hidden rounded-xl border border-border bg-muted/20 flex items-center justify-center shadow-sm">
+                        <img
+                          src={coverImage}
+                          alt="Cover Preview"
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80";
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
                     <label
-                      htmlFor="blog-excerpt"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      htmlFor="blog-cover-credit"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
                     >
-                      Excerpt (Summary)
+                      <span>Photo Credit / Source</span>
+                      <span className="text-[10px] text-muted-foreground/60 font-normal lowercase">(optional)</span>
                     </label>
-                    <span className="text-[9px] font-bold text-primary/80 uppercase">Rich Text enabled</span>
+                    <input
+                      id="blog-cover-credit"
+                      type="text"
+                      value={imageCredit}
+                      onChange={(e) => setImageCredit(e.target.value)}
+                      placeholder="e.g. Photo by Unsplash / Photographer Name"
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    />
                   </div>
-
-                  {/* Formatting Toolbar */}
-                  <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-excerpt", "bold", setExcerpt)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Bold"
-                    >
-                      <Bold className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-excerpt", "italic", setExcerpt)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Italic"
-                    >
-                      <Italic className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-excerpt", "code", setExcerpt)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Code"
-                    >
-                      <Code className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  <textarea
-                    id="blog-excerpt"
-                    required
-                    rows={2}
-                    value={excerpt}
-                    onChange={(e) => setExcerpt(e.target.value)}
-                    placeholder="Brief 1-2 sentence preview shown on lists..."
-                    className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  ></textarea>
                 </div>
 
+                {/* Description — मराठी & Description — English */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label
+                        htmlFor="blog-excerpt"
+                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        Description — मराठी
+                      </label>
+                      <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt", "bold", setExcerpt)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Bold"
+                      >
+                        <Bold className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt", "italic", setExcerpt)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Italic"
+                      >
+                        <Italic className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt", "code", setExcerpt)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Code"
+                      >
+                        <Code className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <textarea
+                      id="blog-excerpt"
+                      required
+                      rows={3}
+                      value={excerpt}
+                      onChange={(e) => setExcerpt(e.target.value)}
+                      placeholder="मराठी संक्षिप्त वर्णन..."
+                      className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    ></textarea>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label
+                        htmlFor="blog-excerpt-en"
+                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        Description — English
+                      </label>
+                      <span className="text-[9px] font-bold text-blue-500/80 uppercase">English</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt-en", "bold", setExcerptEn)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Bold"
+                      >
+                        <Bold className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt-en", "italic", setExcerptEn)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Italic"
+                      >
+                        <Italic className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInsertFormat("blog-excerpt-en", "code", setExcerptEn)}
+                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                        title="Code"
+                      >
+                        <Code className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <textarea
+                      id="blog-excerpt-en"
+                      rows={3}
+                      value={excerptEn}
+                      onChange={(e) => setExcerptEn(e.target.value)}
+                      placeholder="Brief English description shown when language is English..."
+                      className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    ></textarea>
+                  </div>
+                </div>
+
+                {/* Markdown Content — मराठी */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <label
                       htmlFor="blog-content"
                       className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
                     >
-                      Markdown Content
+                      Markdown Content — मराठी
                     </label>
-                    <span className="text-[9px] font-bold text-primary/80 uppercase">Rich Text enabled</span>
+                    <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi Content</span>
                   </div>
-
-                  {/* Formatting Toolbar */}
                   <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0 overflow-x-auto">
                     <button
                       type="button"
@@ -758,11 +907,10 @@ function BlogsManagerContent() {
                       type="button"
                       onClick={() => handleInsertFormat("blog-content", "code", setContent)}
                       className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Code Inline"
+                      title="Code"
                     >
                       <Code className="h-3.5 w-3.5" />
                     </button>
-                    <div className="h-4 w-px bg-border/60 mx-1" />
                     <button
                       type="button"
                       onClick={() => handleInsertFormat("blog-content", "h2", setContent)}
@@ -812,106 +960,130 @@ function BlogsManagerContent() {
                       <ImageIcon className="h-3.5 w-3.5" />
                     </button>
                   </div>
-
                   <textarea
                     id="blog-content"
                     required
-                    rows={12}
+                    rows={8}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="Write detailed article here... Support standard Markdown and ## headers"
+                    placeholder="मराठीत सविस्तर लेख लिहा..."
                     className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                   ></textarea>
                 </div>
-              </div>
 
-              {/* Sidebar controls */}
-              <div className="space-y-4">
+                {/* Markdown Content — English */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <label
-                      htmlFor="blog-cover"
+                      htmlFor="blog-content-en"
                       className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
                     >
-                      Cover Image
+                      Markdown Content — English
                     </label>
-                    <span className="text-[10px] text-muted-foreground font-semibold">
-                      Upload file or paste URL
-                    </span>
+                    <span className="text-[9px] font-bold text-blue-500/80 uppercase">English Content</span>
                   </div>
-                  <div className="flex gap-2">
-                    <input
-                      id="blog-cover"
-                      type="text"
-                      required
-                      value={coverImage}
-                      onChange={(e) => setCoverImage(e.target.value)}
-                      placeholder="Paste cover URL or upload..."
-                      className="flex-1 rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                    <label className="rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-bold px-4 py-2.5 cursor-pointer shrink-0 flex items-center justify-center transition-all active:scale-95 text-foreground">
-                      <span>{uploadingImage ? "Uploading..." : "Upload"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        disabled={uploadingImage}
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  {coverImage && (
-                    <div className="mt-2 relative h-48 w-full overflow-hidden rounded-xl border border-border bg-muted/20 flex items-center justify-center shadow-sm">
-                      <img
-                        src={coverImage}
-                        alt="Cover Preview"
-                        className="h-full w-full object-contain"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80";
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  <div className="pt-2">
-                    <label
-                      htmlFor="blog-cover-credit"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
+                  <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0 overflow-x-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "bold", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Bold"
                     >
-                      <span>Photo Credit / Source</span>
-                      <span className="text-[10px] text-muted-foreground/60 font-normal lowercase">(optional)</span>
+                      <Bold className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "italic", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Italic"
+                    >
+                      <Italic className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "code", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Code"
+                    >
+                      <Code className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "h2", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Heading 2"
+                    >
+                      <Heading2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "h3", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Heading 3"
+                    >
+                      <Heading3 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "list", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Bullet List"
+                    >
+                      <List className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "quote", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Blockquote"
+                    >
+                      <Quote className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "link", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Insert Link"
+                    >
+                      <LinkIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertFormat("blog-content-en", "image", setContentEn)}
+                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
+                      title="Insert Image"
+                    >
+                      <ImageIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <textarea
+                    id="blog-content-en"
+                    rows={8}
+                    value={contentEn}
+                    onChange={(e) => setContentEn(e.target.value)}
+                    placeholder="Write detailed English article here..."
+                    className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                  ></textarea>
+                </div>
+
+                {/* Tags, Status & Schedule */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="blog-tags"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    >
+                      Tags (Comma-separated)
                     </label>
                     <input
-                      id="blog-cover-credit"
+                      id="blog-tags"
                       type="text"
-                      value={imageCredit}
-                      onChange={(e) => setImageCredit(e.target.value)}
-                      placeholder="e.g. Photo by Unsplash / Photographer Name"
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50 mt-1.5"
+                      value={tagsInput}
+                      onChange={(e) => setTagsInput(e.target.value)}
+                      placeholder="React, NextJS, ServerActions"
+                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                     />
                   </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="blog-tags"
-                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Tags (Comma-separated)
-                  </label>
-                  <input
-                    id="blog-tags"
-                    type="text"
-                    value={tagsInput}
-                    onChange={(e) => setTagsInput(e.target.value)}
-                    placeholder="React, NextJS, ServerActions"
-                    className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label
                       htmlFor="blog-status"
@@ -946,11 +1118,12 @@ function BlogsManagerContent() {
                   </div>
                 </div>
 
+                {/* SEO Overrides */}
                 <div className="rounded-xl border border-border/40 p-4 space-y-3 bg-muted/10">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">
-                    SEO overrides
+                    SEO Overrides
                   </h4>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label
                         htmlFor="blog-seo-title"
@@ -979,15 +1152,12 @@ function BlogsManagerContent() {
                         rows={2}
                         value={seoDesc}
                         onChange={(e) => setSeoDesc(e.target.value)}
-                        placeholder="defaults to excerpt"
-                        className="w-full rounded-lg border border-border bg-background/50 px-2.5 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                       ></textarea>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
 
             <div className="flex gap-3 justify-end pt-4 border-t border-border/20">
               <button

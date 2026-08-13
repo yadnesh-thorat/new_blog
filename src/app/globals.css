@@ -51,6 +51,7 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-in: fade-in 0.5s ease-out;
   --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-slide-horizontal: slide-horizontal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes accordion-down {
     from { height: 0 }
@@ -67,6 +68,10 @@
   @keyframes slide-up {
     from { transform: translateY(10px); opacity: 0 }
     to { transform: translateY(0); opacity: 1 }
+  }
+  @keyframes slide-horizontal {
+    from { transform: translateX(30px); opacity: 0.3; }
+    to { transform: translateX(0); opacity: 1; }
   }
 }
 

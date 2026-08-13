@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Plus, Trash2, Mail, User, ShieldAlert, Key, HelpCircle } from "lucide-react";
+import { ShieldCheck, Plus, Trash2, Edit2, Mail, User, ShieldAlert, Key, HelpCircle } from "lucide-react";
 import { dbService } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 
@@ -12,8 +12,9 @@ export default function AdminsManagerPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Create Form State
+  // Form State
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editAdminId, setEditAdminId] = useState(null);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +38,26 @@ export default function AdminsManagerPage() {
     loadAdmins();
   }, []);
 
-  const handleCreate = async (e) => {
+  const handleOpenCreate = () => {
+    setEditAdminId(null);
+    setEmail("");
+    setDisplayName("");
+    setPassword("");
+    setRole("Administrator");
+    setShowCreateForm(true);
+  };
+
+  const handleOpenEdit = (admin) => {
+    setEditAdminId(admin.id);
+    setEmail(admin.email || "");
+    setDisplayName(admin.displayName || "");
+    setPassword("");
+    setRole(admin.role || "Administrator");
+    setShowCreateForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
     if (submitting) return;
 
@@ -45,31 +65,46 @@ export default function AdminsManagerPage() {
     setSuccess("");
     setSubmitting(true);
 
-    // Validate email duplication
-    const duplicate = admins.some((a) => a.email.toLowerCase() === email.trim().toLowerCase());
-    if (duplicate) {
-      setError("This email address is already registered as an administrator.");
-      setSubmitting(false);
-      return;
+    if (!editAdminId) {
+      const duplicate = admins.some((a) => a.email.toLowerCase() === email.trim().toLowerCase());
+      if (duplicate) {
+        setError("This email address is already registered as an administrator.");
+        setSubmitting(false);
+        return;
+      }
     }
 
     try {
-      await dbService.addAdmin({
-        email: email.trim().toLowerCase(),
-        password,
-        displayName: displayName.trim(),
-        role,
-      });
+      if (editAdminId) {
+        const updateData = {
+          email: email.trim().toLowerCase(),
+          displayName: displayName.trim(),
+          role,
+        };
+        if (password.trim()) {
+          updateData.password = password;
+        }
+        await dbService.updateAdminProfile(editAdminId, updateData);
+        setSuccess(`Admin member "${displayName}" updated successfully.`);
+      } else {
+        await dbService.addAdmin({
+          email: email.trim().toLowerCase(),
+          password,
+          displayName: displayName.trim(),
+          role,
+        });
+        setSuccess(`Admin member "${displayName}" created successfully.`);
+      }
 
-      setSuccess(`Admin member "${displayName}" created successfully.`);
       setEmail("");
       setDisplayName("");
       setPassword("");
       setRole("Administrator");
+      setEditAdminId(null);
       setShowCreateForm(false);
       await loadAdmins();
     } catch (err) {
-      setError(err?.message || "Failed to create administrator.");
+      setError(err?.message || "Failed to save administrator.");
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +143,14 @@ export default function AdminsManagerPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
+          onClick={() => {
+            if (showCreateForm) {
+              setShowCreateForm(false);
+              setEditAdminId(null);
+            } else {
+              handleOpenCreate();
+            }
+          }}
           className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground hover:opacity-90 shadow-md transition-opacity self-start sm:self-auto cursor-pointer"
         >
           <Plus className="h-4.5 w-4.5" />
@@ -131,18 +173,33 @@ export default function AdminsManagerPage() {
       )}
 
       {showCreateForm ? (
-        /* Create Admin Form */
+        /* Create / Edit Admin Form */
         <div className="rounded-2xl border border-border/40 bg-card p-6 max-w-xl mx-auto shadow space-y-5 animate-slide-up">
-          <div className="border-b border-border/20 pb-3">
-            <h3 className="text-base font-bold text-foreground font-geist-sans">
-              Add New Administrator
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Enter user profile credentials. This user will have full access to modify blogs and configurations.
-            </p>
+          <div className="flex items-center justify-between border-b border-border/20 pb-3">
+            <div>
+              <h3 className="text-base font-bold text-foreground font-geist-sans">
+                {editAdminId ? "Edit Administrator Profile" : "Add New Administrator"}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {editAdminId
+                  ? "Update admin display name, email, role or password."
+                  : "Enter user profile credentials. This user will have access to modify blogs and configurations."}
+              </p>
+            </div>
+            {editAdminId && (
+              <button
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setEditAdminId(null);
+                }}
+                className="text-xs font-bold text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg border border-border/40"
+              >
+                Cancel
+              </button>
+            )}
           </div>
 
-          <form onSubmit={handleCreate} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Display Name
@@ -179,16 +236,16 @@ export default function AdminsManagerPage() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Password
+                Password {editAdminId && <span className="text-muted-foreground/60 font-normal lowercase">(leave blank to keep current)</span>}
               </label>
               <div className="relative flex items-center">
                 <Key className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
                 <input
                   type="password"
-                  required
+                  required={!editAdminId}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={editAdminId ? "•••••••• (Unchanged)" : "••••••••"}
                   className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
@@ -216,13 +273,27 @@ export default function AdminsManagerPage() {
               </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full flex items-center justify-center rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:opacity-95 shadow-md active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {submitting ? "Creating admin account..." : "Save Admin Member"}
-            </button>
+            <div className="flex gap-2">
+              {editAdminId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setEditAdminId(null);
+                  }}
+                  className="flex-1 flex items-center justify-center rounded-xl border border-border py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 flex items-center justify-center rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:opacity-95 shadow-md active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? "Saving..." : editAdminId ? "Update Admin Member" : "Save Admin Member"}
+              </button>
+            </div>
           </form>
         </div>
       ) : (
@@ -272,22 +343,31 @@ export default function AdminsManagerPage() {
                               : "N/A"}
                           </td>
                           <td className="p-4 pr-6 text-right">
-                            <button
-                              onClick={() => handleDelete(admin.id, admin.email)}
-                              disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
-                              className={`p-1.5 rounded-lg border transition-all ${
-                                user?.email?.toLowerCase() === admin.email.toLowerCase()
-                                  ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
-                                  : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
-                              }`}
-                              title={
-                                user?.email?.toLowerCase() === admin.email.toLowerCase()
-                                  ? "You are logged in with this account"
-                                  : "Delete admin member"
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenEdit(admin)}
+                                className="p-1.5 rounded-lg border border-border/40 hover:bg-muted text-foreground transition-all cursor-pointer"
+                                title="Edit administrator details"
+                              >
+                                <Edit2 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(admin.id, admin.email)}
+                                disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
+                                className={`p-1.5 rounded-lg border transition-all ${
+                                  user?.email?.toLowerCase() === admin.email.toLowerCase()
+                                    ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
+                                    : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
+                                }`}
+                                title={
+                                  user?.email?.toLowerCase() === admin.email.toLowerCase()
+                                    ? "You are logged in with this account"
+                                    : "Delete admin member"
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -318,22 +398,31 @@ export default function AdminsManagerPage() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => handleDelete(admin.id, admin.email)}
-                        disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
-                        className={`p-2 rounded-xl border transition-all shrink-0 ${
-                          user?.email?.toLowerCase() === admin.email.toLowerCase()
-                            ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
-                            : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
-                        }`}
-                        title={
-                          user?.email?.toLowerCase() === admin.email.toLowerCase()
-                            ? "You are logged in with this account"
-                            : "Delete admin member"
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => handleOpenEdit(admin)}
+                          className="p-2 rounded-xl border border-border/40 hover:bg-muted text-foreground transition-all cursor-pointer"
+                          title="Edit administrator details"
+                        >
+                          <Edit2 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(admin.id, admin.email)}
+                          disabled={user?.email?.toLowerCase() === admin.email.toLowerCase()}
+                          className={`p-2 rounded-xl border transition-all shrink-0 ${
+                            user?.email?.toLowerCase() === admin.email.toLowerCase()
+                              ? "opacity-35 cursor-not-allowed border-border/30 text-muted-foreground"
+                              : "border-red-500/10 text-red-600 hover:bg-red-500/10 cursor-pointer"
+                          }`}
+                          title={
+                            user?.email?.toLowerCase() === admin.email.toLowerCase()
+                              ? "You are logged in with this account"
+                              : "Delete admin member"
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="pt-2.5 border-t border-border/10 flex flex-col gap-1 text-[10px] text-muted-foreground font-semibold">

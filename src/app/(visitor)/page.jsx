@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -14,6 +14,7 @@ import {
   Mail,
   CheckCircle2,
   Flame,
+  Calendar,
 } from "lucide-react";
 import { VisitorNavbar } from "@/components/VisitorNavbar";
 import { VisitorFooter } from "@/components/VisitorFooter";
@@ -33,6 +34,18 @@ const toMarathiNumerals = (num) => {
 
 export default function HomePage() {
   const { language, t, translateText } = useLanguage();
+  const getTitle = (blog) => language === "en" && blog?.titleEn ? blog.titleEn : (blog?.title || "");
+  const getExcerpt = (blog) => language === "en" && blog?.excerptEn ? blog.excerptEn : (blog?.excerpt || "");
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleDateString(language === "mr" ? "mr-IN" : language === "hi" ? "hi-IN" : "en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch {
+      return "";
+    }
+  };
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
   const [settings, setSettings] = useState(() => {
@@ -53,9 +66,15 @@ export default function HomePage() {
   const postsPerPage = 6;
   const [sidebarPage, setSidebarPage] = useState(1);
   const sidebarPostsPerPage = 4;
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+  const lastScrollTime = useRef(0);
+  const heroCardRef = useRef(null);
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
 
   useEffect(() => {
     setCurrentPage(1);
+    setHeroSlideIndex(0);
   }, [selectedCategory, searchQuery]);
 
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -133,8 +152,67 @@ export default function HomePage() {
 
   const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
   const paginatedBlogs = filteredBlogs.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
-  const mainArticle = currentPage === 1 && paginatedBlogs.length > 0 ? paginatedBlogs[0] : null;
-  const leftColumnBlogs = mainArticle ? paginatedBlogs.slice(1) : paginatedBlogs;
+  
+  // Hero Carousel Articles (Top 5)
+  const featuredArticles = filteredBlogs.length > 0 ? filteredBlogs.slice(0, 5) : [];
+  const safeHeroIndex = heroSlideIndex < featuredArticles.length ? heroSlideIndex : 0;
+  const activeHeroArticle = featuredArticles[safeHeroIndex] || featuredArticles[0];
+
+
+
+  // Non-passive wheel event listener attached directly to Hero Card DOM element
+  useEffect(() => {
+    const el = heroCardRef.current;
+    if (!el || featuredArticles.length <= 1) return;
+
+    const handleNativeWheel = (e) => {
+      // ALWAYS prevent window/page scrolling while mouse is inside the card container
+      e.preventDefault();
+
+      const now = Date.now();
+      if (now - lastScrollTime.current < 320) return;
+
+      if (e.deltaY > 10) {
+        lastScrollTime.current = now;
+        setHeroSlideIndex((prev) => (prev + 1) % featuredArticles.length);
+      } else if (e.deltaY < -10) {
+        lastScrollTime.current = now;
+        setHeroSlideIndex((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
+      }
+    };
+
+    el.addEventListener("wheel", handleNativeWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleNativeWheel);
+    };
+  }, [featuredArticles.length]);
+
+  // Touch swipe handling for mobile devices
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+    if (Math.abs(distance) > 40) {
+      if (distance > 0) {
+        // Swiped left -> next slide
+        setHeroSlideIndex((prev) => (prev + 1) % featuredArticles.length);
+      } else {
+        // Swiped right -> prev slide
+        setHeroSlideIndex((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
+      }
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  const leftColumnBlogs = activeHeroArticle ? paginatedBlogs.filter((b) => b.id !== activeHeroArticle.id) : paginatedBlogs;
   const totalSidebarPages = Math.ceil(blogs.length / sidebarPostsPerPage);
   const paginatedSidebarBlogs = blogs.slice((sidebarPage - 1) * sidebarPostsPerPage, sidebarPage * sidebarPostsPerPage);
 
@@ -187,54 +265,100 @@ export default function HomePage() {
         </section>
       ) : (
         <>
-          {/* Editorial Featured Spotlight */}
-          {mainArticle ? (
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-4 sm:pb-8">
-              <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card to-primary/5 p-4 sm:p-8 lg:p-12 shadow-xl hover:shadow-2xl transition-all duration-300 group">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
-                  <div className="lg:col-span-7 space-y-3.5 sm:space-y-5">
-                    <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                        {t("spotlight_tag")}
-                      </span>
-                      {mainArticle.readingTime && (
-                        <>
-                          <span className="text-xs text-muted-foreground font-medium">•</span>
-                          <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            {mainArticle.readingTime} {t("min_read")}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <Link to={`/blogs/${mainArticle.slug}`} className="block transition-colors">
-                      <h1 className="font-outfit text-xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors leading-[1.25]">
-                        {translateText(mainArticle.title)}
+          {/* Editorial Featured Carousel Spotlight */}
+          {activeHeroArticle ? (
+            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-3 sm:pb-8">
+              <div
+                ref={heroCardRef}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-border/60 bg-gradient-to-br from-card via-card/95 to-primary/5 p-4 sm:p-10 lg:p-14 shadow-xl sm:shadow-2xl hover:border-primary/40 transition-all duration-500 group select-none touch-pan-y"
+              >
+                
+                {/* Subtle Ambient Glows */}
+                <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-primary/12 rounded-full blur-3xl pointer-events-none" />
+
+                {/* Responsive Animated Dots Indicators */}
+                {featuredArticles.length > 1 && (
+                  <div className="absolute top-3.5 right-3.5 sm:top-1/2 sm:right-5 sm:-translate-y-1/2 flex flex-row sm:flex-col items-center gap-1.5 sm:gap-2 z-30 bg-background/85 backdrop-blur-md p-1.5 sm:p-2 rounded-full border border-border/50 shadow-md">
+                    {featuredArticles.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setHeroSlideIndex(idx)}
+                        className={`rounded-full transition-all duration-300 cursor-pointer ${
+                          heroSlideIndex === idx
+                            ? "w-6 h-1.5 sm:w-2 sm:h-7 bg-primary shadow-xs animate-pulse"
+                            : "w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground/30 hover:bg-primary/60"
+                        }`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div key={activeHeroArticle.id} className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-12 items-center relative z-10 animate-slide-horizontal pr-0 sm:pr-8">
+                  <div className="lg:col-span-7 space-y-3 sm:space-y-6">
+                    
+                    {/* Date Row */}
+                    {formatDate(activeHeroArticle.createdAt) && (
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground/80 flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary/70" />
+                          {formatDate(activeHeroArticle.createdAt)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Headline Title */}
+                    <Link to={`/blogs/${activeHeroArticle.slug}`} className="block group/title">
+                      <h1 className="font-outfit text-lg sm:text-4xl lg:text-[40px] font-black tracking-tight text-foreground group-hover/title:text-primary transition-colors leading-[1.25] sm:leading-[1.2] line-clamp-2 sm:line-clamp-none">
+                        {getTitle(activeHeroArticle)}
                       </h1>
                     </Link>
-                    <p className="text-xs sm:text-base text-muted-foreground leading-relaxed line-clamp-3 font-normal">
-                      {translateText(mainArticle.excerpt)}
+
+                    {/* Excerpt */}
+                    <p className="text-xs sm:text-base lg:text-lg text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3 font-normal">
+                      {getExcerpt(activeHeroArticle)}
                     </p>
-                    <div className="pt-2 flex items-center gap-3 sm:gap-4 flex-wrap">
+
+                    {/* Action Bar */}
+                    <div className="pt-1 sm:pt-2 flex items-center gap-2.5 sm:gap-3 flex-wrap">
                       <Link
-                        to={`/blogs/${mainArticle.slug}`}
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold text-on-primary shadow-md hover:bg-primary/90 hover:scale-[1.02] transition-all font-outfit"
+                        to={`/blogs/${activeHeroArticle.slug}`}
+                        className="inline-flex items-center justify-center gap-2 sm:gap-2.5 rounded-full bg-primary px-4.5 py-2.5 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-extrabold text-on-primary shadow-md sm:shadow-lg shadow-primary/25 hover:bg-primary/90 hover:scale-[1.03] transition-all font-outfit cursor-pointer"
                       >
                         <span>{t("read_full_story")}</span>
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Link>
-                      <span className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-wider bg-primary/5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-primary/10">
-                        {mainArticle.category}
-                      </span>
+
+                      {activeHeroArticle.readingTime && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[11px] sm:text-xs text-muted-foreground font-semibold bg-muted/50 border border-border/50">
+                          <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
+                          {activeHeroArticle.readingTime} {t("min_read")}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  {mainArticle.coverImage && (
+
+                  {/* Right: Featured Cover Image */}
+                  {activeHeroArticle.coverImage && (
                     <Link
-                      to={`/blogs/${mainArticle.slug}`}
-                      className="lg:col-span-5 block overflow-hidden rounded-xl sm:rounded-2xl border border-border/40 shadow-lg aspect-[16/9] lg:aspect-[4/3] relative group/img"
+                      to={`/blogs/${activeHeroArticle.slug}`}
+                      className="lg:col-span-5 block overflow-hidden rounded-xl sm:rounded-3xl border border-border/60 shadow-lg sm:shadow-2xl aspect-[21/9] sm:aspect-[16/10] lg:aspect-[4/3] relative group/img cursor-pointer"
                     >
-                      <img src={mainArticle.coverImage} alt={mainArticle.title} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                      <img
+                        src={activeHeroArticle.coverImage}
+                        alt={activeHeroArticle.title}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/img:scale-108"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover/img:opacity-90 transition-opacity" />
+
+                      {/* Floating category badge on image */}
+                      <span className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-background/90 backdrop-blur-md text-foreground px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-[11px] font-black tracking-wider rounded-full uppercase border border-border/60 shadow-md">
+                        {translateText(categories.find((c) => c.slug === activeHeroArticle.category)?.name || activeHeroArticle.category)}
+                      </span>
                     </Link>
                   )}
                 </div>
@@ -245,7 +369,7 @@ export default function HomePage() {
           )}
 
           {/* Main Content: Asymmetric 70/30 Layout */}
-          <div className="w-full bg-[#F0E9E0]/40 dark:bg-card/40 py-10 sm:py-14 my-6 border-y border-border/40">
+          <div className="w-full bg-muted/30 py-10 sm:py-14 my-6 border-y border-border/40">
             <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             {/* Latest Articles (70%) */}
             <div className="lg:col-span-8 space-y-12">
@@ -276,14 +400,14 @@ export default function HomePage() {
                         )}
                         <div className="md:col-span-7 flex flex-col justify-between space-y-3.5">
                           <Link to={`/blogs/${blog.slug}`} className="block transition-colors group">
-                            <h3 className="font-outfit text-xl sm:text-2xl font-black leading-snug text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
-                              {translateText(blog.title)}
+                            <h3 className="font-outfit text-xl sm:text-2xl font-black leading-snug text-foreground group-hover:text-primary transition-colors">
+                              {getTitle(blog)}
                             </h3>
                           </Link>
-                          <p className="text-sm sm:text-base text-foreground/80 line-clamp-3 leading-relaxed font-normal">{translateText(blog.excerpt)}</p>
+                          <p className="text-sm sm:text-base text-foreground/80 line-clamp-3 leading-relaxed font-normal">{getExcerpt(blog)}</p>
                           <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground font-semibold pt-2">
                             <div className="flex items-center gap-3">
-                              <span>{new Date(blog.createdAt).toLocaleDateString(language === "mr" ? "mr-IN" : language === "hi" ? "hi-IN" : "en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                              {formatDate(blog.createdAt) && <span>{formatDate(blog.createdAt)}</span>}
                               <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40"></span>
                               <span>{blog.readingTime} {t("minutes_read")}</span>
                             </div>
@@ -349,8 +473,8 @@ export default function HomePage() {
                             #{language === "mr" ? toMarathiNumerals(itemNum) : itemNum}
                           </span>
                           <div className="space-y-1 min-w-0 flex-1">
-                            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors leading-snug line-clamp-2">{translateText(blog.title)}</h4>
-                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">{translateText(blog.excerpt)}</p>
+                            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">{getTitle(blog)}</h4>
+                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">{getExcerpt(blog)}</p>
                           </div>
                           {blog.coverImage && (
                             <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-border/30 shadow-2xs">

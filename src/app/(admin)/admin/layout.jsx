@@ -130,20 +130,13 @@ export default function AdminLayout() {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-geist-sans text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
-            {settings?.logoImage ? (
-                <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center">
-                  <img
-                    src={settings.logoImage}
-                    alt={settings.websiteName || "Aether"}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-            ) : (
-              <>
-                <span className="text-primary font-black">✦</span>
-                <span>{(settings?.logo || "AETHER") + " ADMIN"}</span>
-              </>
+          <span className="font-geist-sans text-sm font-bold tracking-tight text-foreground flex items-center gap-2">
+            {settings?.logoImage && (
+              <img
+                src={settings.logoImage}
+                alt={settings.websiteName || "सत्यवेध"}
+                className="h-6 w-auto object-contain max-w-[130px]"
+              />
             )}
           </span>
         </div>
@@ -171,26 +164,19 @@ export default function AdminLayout() {
 
       {/* Mobile Drawer Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-border/40 bg-card p-5 justify-between shadow-2xl transition-transform duration-300 lg:hidden ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-border/40 bg-card p-5 justify-between shadow-2xl transition-transform duration-300 lg:hidden overflow-y-auto ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="space-y-6 relative">
           <div className="flex items-center justify-between border-b border-border/30 pb-4">
-            <span className="font-geist-sans text-base font-bold tracking-tight text-foreground flex items-center gap-1.5 w-full">
-              {settings?.logoImage ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-white flex items-center justify-center">
-                    <img
-                      src={settings.logoImage}
-                      alt={settings.websiteName || "Aether"}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-              ) : (
-                <>
-                  <span className="text-primary font-black">✦</span>
-                  <span>{(settings?.logo || "AETHER") + " ADMIN"}</span>
-                </>
+            <span className="font-geist-sans text-base font-bold tracking-tight text-foreground flex items-center gap-2 w-full">
+              {settings?.logoImage && (
+                <img
+                  src={settings.logoImage}
+                  alt={settings.websiteName || "सत्यवेध"}
+                  className="h-7 w-auto object-contain max-w-[150px]"
+                />
               )}
             </span>
             <button
@@ -277,21 +263,18 @@ export default function AdminLayout() {
             </button>
           </div>
 
-          {/* Language selection in mobile drawer */}
-          <div className="flex gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
-            {languages.map((lang) => (
-              <button
-                key={`mob-${lang.code}`}
-                onClick={() => changeLanguage(lang.code)}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                  language === lang.code
-                    ? "bg-primary text-on-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {lang.flag} {lang.name}
-              </button>
-            ))}
+          {/* Language dropdown - mobile */}
+          <div className="flex items-center gap-2 px-1">
+            <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <select
+              value={language}
+              onChange={(e) => changeLanguage(e.target.value)}
+              className="flex-1 bg-muted/40 border border-border/40 text-xs font-bold text-foreground rounded-lg px-2 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/30"
+            >
+              {languages.map((lang) => (
+                <option key={lang.code} value={lang.code}>{lang.name}</option>
+              ))}
+            </select>
           </div>
 
           <Link
@@ -324,20 +307,13 @@ export default function AdminLayout() {
         <div className="space-y-6 relative z-10">
           {/* Sidebar Top Logo */}
           <div className="flex items-center justify-center border-b border-border/30 pb-4">
-            <span className="font-geist-sans text-base lg:text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5 group">
-              {settings?.logoImage ? (
-                  <div className="h-10 w-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
-                    <img
-                      src={settings.logoImage}
-                      alt={settings.websiteName || "Aether"}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-              ) : (
-                <>
-                  <span className="text-primary font-black transition-transform group-hover:rotate-12 duration-300 text-lg sm:text-xl">✦</span>
-                  <span>{(settings?.logo || "AETHER") + " ADMIN"}</span>
-                </>
+            <span className="font-geist-sans text-base lg:text-lg font-bold tracking-tight text-foreground flex items-center gap-2 group">
+              {settings?.logoImage && (
+                <img
+                  src={settings.logoImage}
+                  alt={settings.websiteName || "सत्यवेध"}
+                  className="h-8 lg:h-10 w-auto object-contain max-w-[180px]"
+                />
               )}
             </span>
           </div>
@@ -416,21 +392,18 @@ export default function AdminLayout() {
               )}
             </button>
           </div>
-          {/* Language selection in sidebar */}
-          <div className="flex gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
-            {languages.map((lang) => (
-              <button
-                key={`desk-${lang.code}`}
-                onClick={() => changeLanguage(lang.code)}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                  language === lang.code
-                    ? "bg-primary text-on-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {lang.name}
-              </button>
-            ))}
+          {/* Language dropdown - desktop sidebar */}
+          <div className="flex items-center gap-2 px-1">
+            <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <select
+              value={language}
+              onChange={(e) => changeLanguage(e.target.value)}
+              className="flex-1 bg-muted/40 border border-border/40 text-xs font-bold text-foreground rounded-lg px-2 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/30"
+            >
+              {languages.map((lang) => (
+                <option key={lang.code} value={lang.code}>{lang.name}</option>
+              ))}
+            </select>
           </div>
 
           <Link

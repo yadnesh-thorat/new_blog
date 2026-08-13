@@ -402,11 +402,11 @@ export default function SettingsManagerPage() {
                 </div>
                 
                 {settings.logoImage && (
-                  <div className="mt-3 relative h-16 w-16 overflow-hidden rounded-full border border-border bg-muted/20 flex items-center justify-center">
+                  <div className="mt-3">
                     <img
                       src={settings.logoImage}
                       alt="Logo Preview"
-                      className="h-full w-full object-cover"
+                      className="h-16 w-auto object-contain"
                     />
                   </div>
                 )}

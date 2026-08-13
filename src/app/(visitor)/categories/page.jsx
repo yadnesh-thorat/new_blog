@@ -10,6 +10,9 @@ import { Search, Clock, ArrowRight, Layers, ChevronLeft } from "lucide-react";
 
 function CategoriesContent() {
   const { t, translateText } = useLanguage();
+  const { language } = useLanguage();
+  const getTitle = (blog) => language === "en" && blog?.titleEn ? blog.titleEn : (blog?.title || "");
+  const getExcerpt = (blog) => language === "en" && blog?.excerptEn ? blog.excerptEn : (blog?.excerpt || "");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeFilter = searchParams.get("filter") || "all";
@@ -207,11 +210,11 @@ function CategoriesContent() {
                             className="block hover:text-primary transition-colors duration-200"
                           >
                             <h4 className="text-base font-bold leading-snug line-clamp-2 text-foreground font-geist-sans">
-                              {translateText(blog.title)}
+                              {getTitle(blog)}
                             </h4>
                           </Link>
                           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                            {translateText(blog.excerpt)}
+                            {getExcerpt(blog)}
                           </p>
                         </div>
                         <div className="pt-3 border-t border-border/20 flex items-center justify-between">

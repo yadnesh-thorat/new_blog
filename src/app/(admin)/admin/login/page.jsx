@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
+import { dbService } from "@/lib/db";
 import { Lock, Mail, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -13,6 +14,24 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [logoImage, setLogoImage] = useState(() => {
+    try {
+      const cached = localStorage.getItem("aether_settings_v2");
+      return cached ? JSON.parse(cached)?.logoImage : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => {
+    dbService.getSettings().then(s => { if (s?.logoImage) setLogoImage(s.logoImage); }).catch(() => {});
+  }, []);
+
+  const LogoDisplay = () => logoImage ? (
+    <div className="flex justify-center">
+      <div className="h-20 w-20 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md border border-border/20">
+        <img src={logoImage} alt="Logo" className="h-full w-full object-contain" />
+      </div>
+    </div>
+  ) : null;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -73,9 +92,7 @@ export default function AdminLoginPage() {
 
       <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-border/40 bg-card/75 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-6 animate-entrance">
         <div className="text-center space-y-2.5">
-          <span className="font-geist-sans text-xl font-bold tracking-tight text-foreground flex items-center justify-center gap-1.5 select-none">
-            <span className="text-primary font-black animate-spin-slow">✦</span> AETHER CONSOLE
-          </span>
+          <LogoDisplay />
           <p className="text-xs text-muted-foreground font-medium">
             Enter administrative credentials to access console.
           </p>
@@ -102,9 +119,10 @@ export default function AdminLoginPage() {
                 id="admin-email-input"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@aether-blog.com"
+                placeholder="admin@example.com"
                 className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
               />
             </div>
@@ -123,6 +141,7 @@ export default function AdminLoginPage() {
                 id="admin-password-input"
                 type={showPassword ? "text" : "password"}
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"

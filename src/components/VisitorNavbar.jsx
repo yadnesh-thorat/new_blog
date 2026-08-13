@@ -159,7 +159,7 @@ export const VisitorNavbar = () => {
         Right buttons use ml-auto and shrink-0 so they NEVER get pushed off.
       */}
       <header
-        className={`fixed top-0 left-0 right-0 w-full z-50 transition-shadow duration-300 bg-[#F0E9E0]/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-border/50 py-1 sm:py-1.5 ${
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-shadow duration-300 bg-background/95 backdrop-blur-xl border-b border-border/50 py-1 sm:py-1.5 ${
           scrolled ? "shadow-md shadow-black/5" : ""
         }`}
       >
@@ -171,19 +171,14 @@ export const VisitorNavbar = () => {
             to="/"
             className="group flex items-center gap-3 shrink-0 min-w-0 max-w-[180px] sm:max-w-[300px] md:max-w-[420px] lg:max-w-[550px] h-13 sm:h-16 lg:h-20 relative overflow-hidden"
           >
-            {settings?.logoImage ? (
-              <div className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-full overflow-hidden bg-white flex items-center justify-center shrink-0">
+            {settings?.logoImage && (
+              <div className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-full overflow-hidden bg-white flex items-center justify-center shrink-0 shadow-sm">
                 <img
                   src={settings.logoImage}
                   alt={siteName}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               </div>
-            ) : (
-              <span className="font-outfit text-lg sm:text-3xl lg:text-4xl font-black tracking-wider text-foreground group-hover:text-primary transition-colors flex items-center gap-2 select-none truncate">
-                <span className="h-3 w-3 rounded-full bg-primary inline-block shrink-0" />
-                <span className="truncate">{siteName}</span>
-              </span>
             )}
           </Link>
 
@@ -326,9 +321,15 @@ export const VisitorNavbar = () => {
           >
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
-              <span className="font-outfit text-base font-black text-foreground flex items-center gap-1.5">
-                <span className="text-primary">✦</span> {siteName.toUpperCase()}
-              </span>
+              {settings?.logoImage ? (
+                <div className="h-8 w-8 rounded-full overflow-hidden bg-white flex items-center justify-center shrink-0 shadow-sm">
+                  <img
+                    src={settings.logoImage}
+                    alt={settings?.websiteName || "सत्यवेध"}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              ) : null}
               <button
                 onClick={(e) => {
                   e.stopPropagation();

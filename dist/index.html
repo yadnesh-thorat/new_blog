@@ -1,30 +1,71 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full antialiased">
+<html lang="mr" class="h-full antialiased">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/assets/favicon-J9tXNL8A.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Meta details -->
-    <title>Aether | Premium Tech & Design Journal</title>
-    <meta name="description" content="Exploring next-generation technologies, interactive interfaces, serverless systems, and the design languages of tomorrow." />
+    <meta name="google" content="notranslate" />
+    <meta http-equiv="Content-Language" content="mr" />
+    <link rel="icon" id="app-favicon" type="image/x-icon" href="/assets/favicon-J9tXNL8A.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- Primary Meta Tags -->
+    <title>सत्यवेध | सत्याचा वेध घेणारे मराठी व्यासपीठ</title>
+    <meta name="title" content="सत्यवेध | सत्याचा वेध घेणारे मराठी व्यासपीठ" />
+    <meta name="description" content="सत्यवेध हे एक मराठी डिजिटल व्यासपीठ आहे जे इतिहास, राजकारण, समाज, सायबर सुरक्षा आणि तंत्रज्ञानावर सखोल संशोधनावर आधारित लेख प्रकाशित करते. सत्याचा शोध, पुराव्यांवर आधारित पत्रकारिता." />
+    <meta name="keywords" content="सत्यवेध, मराठी, इतिहास, राजकारण, तपास, सायबर सुरक्षा, महाराष्ट्र, भारत, ब्लॉग, लेख, Satyavedh, Marathi, History, Investigation" />
+    <meta name="author" content="सत्यवेध संपादकीय" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="Marathi" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="theme-color" content="#7c2d12" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://satyavedh.in/" />
+    <meta property="og:title" content="सत्यवेध | सत्याचा वेध घेणारे मराठी व्यासपीठ" />
+    <meta property="og:description" content="सत्यवेध हे एक मराठी डिजिटल व्यासपीठ आहे जे इतिहास, राजकारण, समाज, सायबर सुरक्षा आणि तंत्रज्ञानावर सखोल संशोधनावर आधारित लेख प्रकाशित करते." />
+    <meta property="og:locale" content="mr_IN" />
+    <meta property="og:site_name" content="सत्यवेध" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="सत्यवेध | सत्याचा वेध घेणारे मराठी व्यासपीठ" />
+    <meta name="twitter:description" content="सत्यवेध हे एक मराठी डिजिटल व्यासपीठ आहे जे इतिहास, राजकारण, समाज, सायबर सुरक्षा आणि तंत्रज्ञानावर सखोल संशोधनावर आधारित लेख प्रकाशित करते." />
     
     <!-- Font Preconnect & Stylesheets -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Cinzel:wght@600;700;800&family=Montserrat:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+Devanagari:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
     
     <style>
       :root {
-        --font-geist-sans: 'Geist', 'Outfit', 'Noto Sans Devanagari', sans-serif;
+        --font-inter: 'Inter', sans-serif;
+        --font-syne: 'Syne', sans-serif;
+        --font-playfair: 'Playfair Display', serif;
+        --font-cinzel: 'Cinzel', serif;
+        --font-montserrat: 'Montserrat', sans-serif;
+        --font-outfit: 'Outfit', sans-serif;
+        --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+        --font-geist-sans: 'Inter', 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
         --font-geist-mono: 'Geist Mono', monospace;
       }
       body {
         font-family: var(--font-geist-sans);
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-Dx68ZJvW.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Be3DXc_P.css">
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('aether_theme');
+          if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-COp2n_ne.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CasV8o0a.css">
   </head>
   <body class="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
     <div id="root" class="flex-1 flex flex-col"></div>
