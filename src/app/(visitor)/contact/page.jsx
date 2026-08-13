@@ -78,17 +78,15 @@ export default function ContactPage() {
       <main className="flex-grow transition-colors duration-300">
 
         {/* Header section matching homepage */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28 pb-8 animate-entrance">
-          <div className="border-b border-border/40 pb-5 mb-8">
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-16 animate-entrance">
+          <div className="border-b border-border/40 pb-4 mb-4">
             <h3 className="font-geist-sans text-2xl font-bold">Contact</h3>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               Have questions, editorial pitches, or sponsorship proposals? Fill out the form or reach us via email.
             </p>
           </div>
-        </section>
 
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
 
             {/* Left: Contact Info */}
             <div className="lg:col-span-4 space-y-5 animate-entrance" style={{ animationDelay: "0.1s" }}>
