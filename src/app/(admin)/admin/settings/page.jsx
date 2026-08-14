@@ -684,131 +684,92 @@ export default function SettingsManagerPage() {
           )}
 
           {activeTab === "about" && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <h3 className="text-base font-bold font-geist-sans text-foreground border-b border-border/20 pb-2">
                 About Section Details
               </h3>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="settings-abouttitle"
-                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Page Title
-                </label>
-                <input
-                  id="settings-abouttitle"
-                  type="text"
-                  required
-                  value={settings.aboutContent.title}
-                  onChange={(e) => updateAboutSetting("title", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="settings-abouttext"
-                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Introduction Copy
-                </label>
-                <textarea
-                  id="settings-abouttext"
-                  required
-                  rows={4}
-                  value={settings.aboutContent.text}
-                  onChange={(e) => updateAboutSetting("text", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
-                ></textarea>
-              </div>
-
+              {/* Page Title: Marathi & English */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label
-                    htmlFor="settings-mission"
-                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    htmlFor="settings-abouttitle-mr"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
                   >
-                    Mission Statement
+                    <span>Page Title (मराठी)</span>
+                    <span className="text-[10px] text-primary font-bold">Marathi</span>
+                  </label>
+                  <input
+                    id="settings-abouttitle-mr"
+                    type="text"
+                    required
+                    value={settings.aboutContent.title || ""}
+                    onChange={(e) => updateAboutSetting("title", e.target.value)}
+                    placeholder="उदा. सत्याचा वेध घेणारे व्यासपीठ..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="settings-abouttitle-en"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
+                  >
+                    <span>Page Title (English)</span>
+                    <span className="text-[10px] text-muted-foreground font-bold">English</span>
+                  </label>
+                  <input
+                    id="settings-abouttitle-en"
+                    type="text"
+                    value={settings.aboutContent.titleEn || ""}
+                    onChange={(e) => updateAboutSetting("titleEn", e.target.value)}
+                    placeholder="e.g. Crafting Premium Digital Experiences..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Introduction Copy: Marathi & English */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="settings-abouttext-mr"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
+                  >
+                    <span>Introduction Copy (मराठी)</span>
+                    <span className="text-[10px] text-primary font-bold">Marathi</span>
                   </label>
                   <textarea
-                    id="settings-mission"
+                    id="settings-abouttext-mr"
                     required
-                    rows={3}
-                    value={settings.aboutContent.mission}
-                    onChange={(e) =>
-                      updateAboutSetting("mission", e.target.value)
-                    }
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    rows={4}
+                    value={settings.aboutContent.text || ""}
+                    onChange={(e) => updateAboutSetting("text", e.target.value)}
+                    placeholder="मराठीतील सविस्तर माहिती..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
                   ></textarea>
                 </div>
                 <div className="space-y-1.5">
                   <label
-                    htmlFor="settings-vision"
-                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    htmlFor="settings-abouttext-en"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
                   >
-                    Vision Statement
+                    <span>Introduction Copy (English)</span>
+                    <span className="text-[10px] text-muted-foreground font-bold">English</span>
                   </label>
                   <textarea
-                    id="settings-vision"
-                    required
-                    rows={3}
-                    value={settings.aboutContent.vision}
-                    onChange={(e) =>
-                      updateAboutSetting("vision", e.target.value)
-                    }
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    id="settings-abouttext-en"
+                    rows={4}
+                    value={settings.aboutContent.textEn || ""}
+                    onChange={(e) => updateAboutSetting("textEn", e.target.value)}
+                    placeholder="Detailed about text in English..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
                   ></textarea>
                 </div>
               </div>
 
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pt-4">
-                Statistical Highlights
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {settings.aboutContent.stats.map((st, idx) => (
-                  <div
-                    key={idx}
-                    className="space-y-1 rounded-lg border border-border/40 p-3 bg-muted/10"
-                  >
-                    <label
-                      htmlFor={`stat-label-${idx}`}
-                      className="text-[10px] uppercase font-bold text-muted-foreground"
-                    >
-                      Label
-                    </label>
-                    <input
-                      id={`stat-label-${idx}`}
-                      type="text"
-                      value={st.label}
-                      onChange={(e) => {
-                        const newStats = [...settings.aboutContent.stats];
-                        newStats[idx].label = e.target.value;
-                        updateAboutSetting("stats", newStats);
-                      }}
-                      className="w-full rounded bg-background border border-border px-2 py-0.5 text-xs"
-                    />
 
-                    <label
-                      htmlFor={`stat-value-${idx}`}
-                      className="text-[10px] uppercase font-bold text-muted-foreground block mt-1"
-                    >
-                      Value
-                    </label>
-                    <input
-                      id={`stat-value-${idx}`}
-                      type="text"
-                      value={st.value}
-                      onChange={(e) => {
-                        const newStats = [...settings.aboutContent.stats];
-                        newStats[idx].value = e.target.value;
-                        updateAboutSetting("stats", newStats);
-                      }}
-                      className="w-full rounded bg-background border border-border px-2 py-0.5 text-xs font-bold"
-                    />
-                  </div>
-                ))}
-              </div>
+
+
 
               {/* Team Members Editor */}
               <div className="pt-6 border-t border-border/20">
