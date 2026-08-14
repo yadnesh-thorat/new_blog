@@ -21,17 +21,15 @@ import { VisitorFooter } from "@/components/VisitorFooter";
 import { useLanguage } from "@/components/LanguageContext";
 import { dbService } from "@/lib/db";
 
-const LinkedinIcon = (props) => (
-  <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect x="2" y="9" width="4" height="12" />
-    <circle cx="4" cy="4" r="2" />
+const FacebookIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M22 12a10 10 0 10-11.5 9.9v-7H8.9v-2.9h1.6V9.4c0-1.6 1-2.5 2.4-2.5.7 0 1.4.1 1.4.1v1.6h-.8c-.8 0-1 0-1 1v1.2h1.8l-.3 2.9h-1.5v7A10 10 0 0022 12z" />
   </svg>
 );
 
-const TwitterIcon = (props) => (
-  <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+const LinkedinIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
   </svg>
 );
 import confetti from "canvas-confetti";
@@ -381,10 +379,10 @@ export default function BlogDetailPage() {
             {/* Share Column (Left - Col 1) */}
             <div className="lg:col-span-1 flex lg:flex-col lg:sticky lg:top-24 gap-3 py-2 items-center justify-center lg:justify-start">
               {/* Share label */}
-              <span className="hidden lg:block text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{t("share")}</span>
+              <span className="hidden lg:block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{t("share")}</span>
               <button
                 onClick={handleCopyLink}
-                className="group relative p-2.5 rounded-xl border border-border/50 hover:border-primary/40 hover:bg-primary/8 text-muted-foreground hover:text-primary bg-card transition-all duration-200"
+                className="group relative p-2.5 rounded-xl border border-border/60 bg-card text-foreground transition-all duration-200 shadow-2xs cursor-pointer"
                 aria-label="Copy link"
                 title="Copy link"
               >
@@ -396,20 +394,20 @@ export default function BlogDetailPage() {
                 )}
               </button>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(blog.title)}&url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2.5 rounded-xl border border-border/50 hover:border-sky-500/40 hover:bg-sky-500/8 text-muted-foreground hover:text-sky-500 bg-card transition-all duration-200"
-                aria-label="Share on Twitter"
-                title="Share on Twitter"
+                className="p-2.5 rounded-xl border border-[#1877F2]/30 bg-[#1877F2]/10 text-[#1877F2] transition-all duration-200 shadow-2xs"
+                aria-label="Share on Facebook"
+                title="Share on Facebook"
               >
-                <TwitterIcon className="h-4 w-4" />
+                <FacebookIcon className="h-4 w-4" />
               </a>
               <a
                 href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}&title=${encodeURIComponent(blog.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2.5 rounded-xl border border-border/50 hover:border-blue-600/40 hover:bg-blue-600/8 text-muted-foreground hover:text-blue-600 bg-card transition-all duration-200"
+                className="p-2.5 rounded-xl border border-[#0A66C2]/30 bg-[#0A66C2]/10 text-[#0A66C2] transition-all duration-200 shadow-2xs"
                 aria-label="Share on LinkedIn"
                 title="Share on LinkedIn"
               >
