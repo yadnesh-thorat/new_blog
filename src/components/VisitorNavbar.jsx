@@ -190,7 +190,7 @@ export const VisitorNavbar = () => {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`${language === "mr" ? "font-devanagari text-base sm:text-lg" : "font-grotesk text-base sm:text-lg md:text-[18px]"} font-bold tracking-tight transition-colors duration-200 py-1 relative select-none ${
+                  className={`${(language === "mr" || language === "hi") ? "font-devanagari text-base sm:text-lg" : "font-grotesk text-base sm:text-lg md:text-[18px] tracking-tight"} font-bold transition-colors duration-200 py-1 relative select-none ${
                     isActive ? "text-primary" : "text-foreground/80 hover:text-primary"
                   }`}
                 >
@@ -351,7 +351,7 @@ export const VisitorNavbar = () => {
                     to={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center justify-between py-3 px-4 rounded-xl text-base transition-all ${
-                      language === "mr" ? "font-devanagari font-bold" : "font-grotesk font-bold"
+                      (language === "mr" || language === "hi") ? "font-devanagari font-bold" : "font-grotesk font-bold"
                     } ${
                       isActive
                         ? "text-primary bg-primary/10 border border-primary/20"

@@ -134,24 +134,24 @@ export default function App() {
 
   const FONT_FAMILIES = {
     "Noto Serif Devanagari": "'Noto Serif Devanagari', 'Noto Serif', serif",
-    "IBM Plex Sans Devanagari": "'IBM Plex Sans Devanagari', 'IBM Plex Sans', sans-serif",
-    "Hanken Grotesk": "'Hanken Grotesk', sans-serif",
-    "Noto Sans Devanagari": "'Noto Sans Devanagari', sans-serif",
-    "Poppins": "'Poppins', sans-serif",
-    "Mukta": "'Mukta', sans-serif",
-    "Yatra One": "'Yatra One', sans-serif",
-    "Rozha One": "'Rozha One', sans-serif",
-    "Martel": "'Martel', serif",
-    "Rajdhani": "'Rajdhani', sans-serif",
-    "Khand": "'Khand', sans-serif",
-    "Teko": "'Teko', sans-serif",
-    "Baloo 2": "'Baloo 2', sans-serif",
-    "Rasa": "'Rasa', serif",
-    "Anek Devanagari": "'Anek Devanagari', sans-serif",
+    "IBM Plex Sans Devanagari": "'Noto Sans Devanagari', 'Mukta', sans-serif",
+    "Hanken Grotesk": "'Hanken Grotesk', 'Noto Sans Devanagari', sans-serif",
+    "Noto Sans Devanagari": "'Noto Sans Devanagari', 'Mukta', sans-serif",
+    "Poppins": "'Poppins', 'Noto Sans Devanagari', sans-serif",
+    "Mukta": "'Mukta', 'Noto Sans Devanagari', sans-serif",
+    "Yatra One": "'Yatra One', 'Noto Sans Devanagari', sans-serif",
+    "Rozha One": "'Rozha One', 'Noto Serif Devanagari', serif",
+    "Martel": "'Martel', 'Noto Serif Devanagari', serif",
+    "Rajdhani": "'Rajdhani', 'Noto Sans Devanagari', sans-serif",
+    "Khand": "'Khand', 'Noto Sans Devanagari', sans-serif",
+    "Teko": "'Teko', 'Noto Sans Devanagari', sans-serif",
+    "Baloo 2": "'Baloo 2', 'Noto Sans Devanagari', sans-serif",
+    "Rasa": "'Rasa', 'Noto Serif Devanagari', serif",
+    "Anek Devanagari": "'Anek Devanagari', 'Noto Sans Devanagari', sans-serif",
   };
 
-  const headingFontVal = FONT_FAMILIES[themeConfig?.headingFont] || "'Noto Serif Devanagari', 'Noto Serif', serif";
-  const bodyFontVal = FONT_FAMILIES[themeConfig?.bodyFont] || "'IBM Plex Sans Devanagari', 'IBM Plex Sans', sans-serif";
+  const headingFontVal = "'Noto Serif Devanagari', 'Noto Serif', serif";
+  const bodyFontVal = "'Noto Sans Devanagari', 'Mukta', sans-serif";
 
   return (
     <BrowserRouter>

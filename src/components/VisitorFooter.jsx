@@ -161,10 +161,10 @@ export const VisitorFooter = () => {
           <div className="md:col-span-2 space-y-4">
             <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">{t("links")}</h5>
             <nav className="flex flex-col gap-2.5">
-              <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_home")}</Link>
-              <Link to="/categories" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_categories")}</Link>
-              <Link to="/about" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_about")}</Link>
-              <Link to="/contact" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_contact")}</Link>
+              <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("nav_home")}</Link>
+              <Link to="/categories" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("nav_categories")}</Link>
+              <Link to="/about" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("nav_about")}</Link>
+              <Link to="/contact" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("nav_contact")}</Link>
             </nav>
           </div>
 
@@ -172,8 +172,8 @@ export const VisitorFooter = () => {
           <div className="md:col-span-2 space-y-4">
             <h5 className="font-label-caps text-label-caps text-on-surface mb-4 uppercase tracking-wider text-xs">{t("information")}</h5>
             <nav className="flex flex-col gap-2.5">
-              <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("nav_dashboard")}</Link>
-              <a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm">{t("editorial_policy")}</a>
+              <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("nav_dashboard")}</Link>
+              <a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-devanagari">{t("editorial_policy")}</a>
             </nav>
           </div>
 
