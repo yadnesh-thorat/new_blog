@@ -99,19 +99,30 @@ export default function BlogDetailPage() {
   }, [blog]);
 
   const getAuthorDetails = () => {
-    if (!blog) return { name: "Author", avatar: "", role: "Writer", bio: "" };
+    if (!blog) return { name: "Admin", avatar: "", role: "Administrator", bio: "" };
     
-    // If blog.author is already a structured object (old mock posts or resolved by dbService)
+    // Explicit "no author", empty author, or "Admin"
+    const authorRaw = typeof blog.author === "string" ? blog.author.trim() : (blog.author?.name || "");
+    if (!authorRaw || authorRaw.toLowerCase() === "admin" || authorRaw.toLowerCase() === "none" || authorRaw.toLowerCase() === "aether writer") {
+      return {
+        name: "Admin",
+        avatar: "",
+        role: "Administrator",
+        bio: ""
+      };
+    }
+    
+    // If blog.author is already a structured object
     if (blog.author && typeof blog.author === "object") {
       return {
-        name: blog.author.name || "Aether Writer",
-        avatar: blog.author.avatar || "",
-        role: blog.author.role || "Writer",
+        name: blog.author.name || "Admin",
+        avatar: blog.author.avatarUrl || blog.author.avatar || "",
+        role: blog.author.role || "Administrator",
         bio: blog.author.bio || ""
       };
     }
 
-    // If blog.author is a string (new dynamically created posts, which contain name or email)
+    // If blog.author is a string (admin name or email)
     if (blog.author && typeof blog.author === "string") {
       const matched = adminUsers.find(
         (a) =>
@@ -135,9 +146,9 @@ export default function BlogDetailPage() {
     }
 
     return {
-      name: "Aether Writer",
+      name: "Admin",
       avatar: "",
-      role: "Writer",
+      role: "Administrator",
       bio: ""
     };
   };
@@ -317,9 +328,11 @@ export default function BlogDetailPage() {
                   <span className="whitespace-nowrap">{t("back_to_articles") || "Back"}</span>
                 </button>
 
-                <span className="inline-flex rounded-lg bg-primary/10 border border-primary/20 px-2.5 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary whitespace-nowrap shrink-0">
-                  {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
-                </span>
+                {blog.category && (
+                  <span className="inline-flex rounded-lg bg-primary/10 border border-primary/20 px-2.5 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-primary whitespace-nowrap shrink-0">
+                    {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
+                  </span>
+                )}
               </div>
             </div>
             <h1 className="text-3xl font-extrabold sm:text-5xl text-foreground font-marathi-heading leading-[1.15] tracking-tight">

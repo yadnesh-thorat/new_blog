@@ -23,6 +23,10 @@ import {
   Image as ImageIcon,
   ChevronDown,
   Check,
+  ArrowLeft,
+  Save,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { dbService } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -238,10 +242,10 @@ function BlogsManagerContent() {
       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
     );
     setImageCredit("");
-    setCategory(categories[0]?.slug || "__custom__");
+    setCategory("");
     setCustomCategory("");
     setTagsInput("");
-    setAuthor(user?.displayName || user?.email || "");
+    setAuthor("");
     setStatus("draft");
     setScheduledAt("");
     setSeoTitle("");
@@ -266,19 +270,24 @@ function BlogsManagerContent() {
     setImageCredit(blog.coverImageCredit || blog.imageCredit || "");
     
     // Check if the blog's category exists in standard categories
-    const categoryExists = categories.some((c) => c.slug === blog.category);
-    if (categoryExists) {
-      setCategory(blog.category);
+    if (!blog.category) {
+      setCategory("");
       setCustomCategory("");
     } else {
-      setCategory("__custom__");
-      setCustomCategory(blog.category);
+      const categoryExists = categories.some((c) => c.slug === blog.category);
+      if (categoryExists) {
+        setCategory(blog.category);
+        setCustomCategory("");
+      } else {
+        setCategory("__custom__");
+        setCustomCategory(blog.category);
+      }
     }
     
-    setTagsInput(blog.tags.join(", "));
+    setTagsInput((blog.tags || []).join(", "));
     // Extract string author name (blog.author may already be a resolved object from getBlogs)
     const rawAuthor = typeof blog.author === "object" ? (blog.author?.name || blog.author?.email || "") : (blog.author || "");
-    setAuthor(rawAuthor);
+    setAuthor(rawAuthor.toLowerCase() === "admin" ? "" : rawAuthor);
     setStatus(blog.status);
     setScheduledAt(blog.scheduledAt || "");
     setSeoTitle(blog.seo?.title || "");
@@ -298,7 +307,21 @@ function BlogsManagerContent() {
   // Handle Save
   const handleSaveBlog = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !slug.trim() || submitting) return;
+    if (submitting) return;
+
+    // Only title, cover photo, and image credit are required
+    if (!title.trim()) {
+      setErrorMsg("Title is required.");
+      return;
+    }
+    if (!coverImage.trim()) {
+      setErrorMsg("Cover photo is required.");
+      return;
+    }
+    if (!imageCredit.trim()) {
+      setErrorMsg("Image credit / source is required.");
+      return;
+    }
 
     setSubmitting(true);
     setErrorMsg("");
@@ -312,33 +335,32 @@ function BlogsManagerContent() {
     let finalCategory = category;
     if (category === "__custom__") {
       const customName = customCategory.trim();
-      if (!customName) {
-        setErrorMsg("Please enter a custom category name.");
-        setSubmitting(false);
-        return;
-      }
-      
-      // Generate slug from the custom name
-      const customSlug = customName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+      if (customName) {
+        // Generate slug from the custom name
+        const customSlug = customName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
 
-      finalCategory = customSlug;
+        finalCategory = customSlug;
 
-      // If the category doesn't exist, auto-create it
-      const categoryExists = categories.some((c) => c.slug === customSlug);
-      if (!categoryExists) {
-        try {
-          await dbService.saveCategory({
-            name: customName,
-            slug: customSlug,
-            description: `Auto-generated category for ${customName}`,
-            image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60",
-          });
-        } catch (err) {
-          console.error("Failed to auto-create category:", err);
+        // If the category doesn't exist, auto-create it
+        const categoryExists = categories.some((c) => c.slug === customSlug);
+        if (!categoryExists) {
+          try {
+            await dbService.saveCategory({
+              name: customName,
+              slug: customSlug,
+              description: `Auto-generated category for ${customName}`,
+              image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=60",
+            });
+          } catch (err) {
+            console.error("Failed to auto-create category:", err);
+          }
         }
+      } else {
+        // No custom category entered — leave blank
+        finalCategory = "";
       }
     }
 
@@ -354,7 +376,7 @@ function BlogsManagerContent() {
       coverImageCredit: imageCredit,
       category: finalCategory,
       tags,
-      author: typeof author === "object" ? (author?.name || author?.email || "") : author,
+      author: (typeof author === "string" ? author.trim() : (author?.name || author?.email || "")) || "Admin",
       status,
       scheduledAt: scheduledAt || null,
       seo: {
@@ -406,6 +428,44 @@ function BlogsManagerContent() {
       await loadData();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // Quick Toggle Visibility (Published / Live vs Draft / Hidden) without deleting
+  const handleToggleVisibility = async (blog) => {
+    const isCurrentlyPublished = blog.status === "published";
+    const newStatus = isCurrentlyPublished ? "draft" : "published";
+
+    // Optimistic UI update
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b.id === blog.id
+          ? {
+              ...b,
+              status: newStatus,
+              publishedAt:
+                newStatus === "published"
+                  ? b.publishedAt || new Date().toISOString()
+                  : b.publishedAt,
+            }
+          : b
+      )
+    );
+
+    try {
+      const updatedBlog = {
+        ...blog,
+        status: newStatus,
+        publishedAt:
+          newStatus === "published"
+            ? blog.publishedAt || new Date().toISOString()
+            : blog.publishedAt || "",
+      };
+      await dbService.saveBlog(updatedBlog);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to toggle blog visibility:", err);
+      await loadData();
     }
   };
 
@@ -505,675 +565,826 @@ function BlogsManagerContent() {
       </div>
 
       {isEditing ? (
-        /* Blog Edit / Create Screen */
-        <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-6">
-          <div className="flex items-center justify-between border-b border-border/20 pb-4">
-            <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold font-geist-sans">
-                {editBlogId ? "Modify Blog Article" : "Compose New Article"}
-              </h3>
-              
+        /* Blog Edit / Create Screen — Full Page Editorial Layout */
+        <div className="space-y-6 animate-fade-in pb-16">
+          {/* Top Sticky/Header Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border/40 p-4 sm:p-5 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleCloseForm}
+                className="inline-flex items-center justify-center h-9 w-9 rounded-xl border border-border/50 bg-background hover:bg-muted text-foreground transition-all cursor-pointer shrink-0 shadow-sm"
+                title="Back to Articles"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Article Editor
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                    status === "published" 
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" 
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                  }`}>
+                    {status === "published" ? "Ready to Publish" : "Draft Mode"}
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black font-geist-sans tracking-tight text-foreground mt-0.5">
+                  {editBlogId ? "Modify Blog Article" : "Compose New Article"}
+                </h2>
+              </div>
+            </div>
+
+            {/* Top Action Buttons & Mode Switcher */}
+            <div className="flex items-center gap-2.5 self-end md:self-auto">
               {/* Edit vs Preview Toggle */}
-              <div className="flex items-center gap-1 bg-muted/65 p-1 rounded-xl border border-border/40 text-[10px] font-bold uppercase tracking-wider">
+              <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/40 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setShowPreview(false)}
-                  className={`px-3 py-1 rounded-lg transition-all active:scale-95 ${!showPreview ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    !showPreview
+                      ? "bg-background text-foreground shadow-sm font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  Edit Mode
+                  Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreview(true)}
-                  className={`px-3 py-1 rounded-lg transition-all active:scale-95 ${showPreview ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    showPreview
+                      ? "bg-background text-foreground shadow-sm font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  Live Preview
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Preview</span>
                 </button>
               </div>
+
+              <button
+                type="button"
+                onClick={handleCloseForm}
+                className="px-4 py-2 text-xs font-bold rounded-xl border border-border hover:bg-muted transition-all active:scale-95 cursor-pointer text-muted-foreground hover:text-foreground"
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveBlog}
+                disabled={submitting}
+                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-md"
+              >
+                <Save className="h-3.5 w-3.5" />
+                <span>{submitting ? "Saving..." : (editBlogId ? "Update Article" : "Save & Publish")}</span>
+              </button>
             </div>
-            <button
-              onClick={handleCloseForm}
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
 
+          {/* Feedback Messages */}
           {successMsg && (
-            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 p-4 rounded-xl text-sm font-semibold">
+            <div className="flex items-center gap-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 p-4 rounded-2xl text-sm font-semibold shadow-sm animate-fade-in">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
-              {successMsg}
+              <span>{successMsg}</span>
             </div>
           )}
 
           {errorMsg && (
-            <div className="flex items-center gap-2 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 p-4 rounded-xl text-sm font-semibold">
+            <div className="flex items-center gap-2.5 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 p-4 rounded-2xl text-sm font-semibold shadow-sm animate-fade-in">
               <AlertCircle className="h-5 w-5 shrink-0" />
-              {errorMsg}
+              <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveBlog} className="space-y-6">
+          <form onSubmit={handleSaveBlog} className="space-y-8">
             {showPreview ? (
               /* Live Preview Component */
-              <div className="space-y-8 animate-entrance py-4 border border-border/40 rounded-3xl p-6 bg-background/50">
-                {/* Header preview */}
-                <div className="space-y-3">
+              <div className="space-y-8 animate-fade-in bg-card border border-border/40 rounded-3xl p-6 sm:p-10 shadow-sm">
+                <div className="space-y-4 max-w-3xl mx-auto">
                   <div className="flex items-center gap-2">
-                    <span className="bg-primary/10 text-primary font-bold px-2 py-0.5 rounded uppercase text-[10px] tracking-wider">
-                      {categories.find(c => c.slug === category)?.name || category}
+                    <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full uppercase text-[11px] tracking-wider">
+                      {categories.find((c) => c.slug === category)?.name || category || "Uncategorized"}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <span className="text-xs text-muted-foreground font-semibold">
                       {status === "published" ? "Published Post" : "Draft Preview"}
                     </span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-foreground font-geist-sans tracking-tight leading-tight">
+                  <h1 className="text-3xl sm:text-4xl font-black text-foreground font-geist-sans tracking-tight leading-tight">
                     {title || "Untitled Article Preview"}
                   </h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground italic font-medium leading-relaxed max-w-2xl">
-                    {excerpt || "No summary provided yet. Write an excerpt to see it spotlighted here."}
-                  </p>
-                </div>
-
-                {/* Cover Image */}
-                {coverImage && (
-                  <div className="h-48 sm:h-80 w-full rounded-2xl overflow-hidden border border-border/30 shadow-sm">
-                    <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-
-                {/* Content Body Preview */}
-                <div className="border-t border-border/20 pt-6 max-w-none">
-                  {content ? renderRichText(content) : (
-                    <p className="text-xs text-muted-foreground italic">Write content in Edit Mode to see rendering details here.</p>
+                  {titleEn && (
+                    <p className="text-lg text-muted-foreground font-medium">
+                      {titleEn}
+                    </p>
                   )}
+                  <p className="text-sm sm:text-base text-muted-foreground italic font-medium leading-relaxed border-l-4 border-primary/40 pl-4 py-1">
+                    {excerpt || "No summary provided yet. Write an excerpt in Edit mode."}
+                  </p>
+
+                  {coverImage && (
+                    <div className="my-6 rounded-2xl overflow-hidden border border-border/40 shadow-md">
+                      <img src={coverImage} alt="Cover Preview" className="w-full max-h-[420px] object-cover" />
+                      {imageCredit && (
+                        <p className="text-[11px] text-muted-foreground text-center py-2 bg-muted/20">
+                          Source: {imageCredit}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="border-t border-border/20 pt-8 mt-8 prose dark:prose-invert max-w-none">
+                    {content ? renderRichText(content) : (
+                      <p className="text-sm text-muted-foreground italic">Write content in Edit Mode to see full formatted preview here.</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="space-y-6 max-w-4xl mx-auto">
-                {/* Article Titles (Bilingual) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label
-                        htmlFor="blog-title"
-                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Article Title — मराठी
-                      </label>
-                      <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi</span>
+              /* Two-Column Editorial Grid Layout */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* ══ LEFT MAIN COLUMN (8 cols) — Titles, Excerpts, Content ══ */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* Card 1: Titles & Excerpts */}
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+                    <div className="border-b border-border/20 pb-4">
+                      <h3 className="text-base font-bold font-geist-sans text-foreground">
+                        Article Information
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Provide headlines and summaries in Marathi and English.
+                      </p>
                     </div>
-                    <input
-                      id="blog-title"
-                      type="text"
-                      required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="उदा. नवनिर्मितीची नवी दिशा..."
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label
-                        htmlFor="blog-title-en"
-                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Article Title — English
-                      </label>
-                      <span className="text-[9px] font-bold text-blue-500/80 uppercase">English</span>
-                    </div>
-                    <input
-                      id="blog-title-en"
-                      type="text"
-                      value={titleEn}
-                      onChange={(e) => setTitleEn(e.target.value)}
-                      placeholder="e.g. Scaling Web Applications..."
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                </div>
 
-                {/* Slug, Category, Author */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-slug"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      URL Slug
-                    </label>
-                    <input
-                      id="blog-slug"
-                      type="text"
-                      required
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                      placeholder="auto-generated-slug"
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-category"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Category Column
-                    </label>
-                    <select
-                      id="blog-category"
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 cursor-pointer"
-                    >
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.slug} className="bg-card text-foreground">
-                          {c.name}
-                        </option>
-                      ))}
-                      <option value="__custom__" className="bg-card text-primary font-bold">
-                        -- Create Custom Category (Type manually) --
-                      </option>
-                    </select>
-                    {category === "__custom__" && (
-                      <input
-                        type="text"
-                        required
-                        value={customCategory}
-                        onChange={(e) => setCustomCategory(e.target.value)}
-                        placeholder="Enter custom category name (e.g. AI Tools)"
-                        className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50 mt-2 animate-entrance"
-                      />
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-author"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Author / Writer
-                    </label>
-                    <select
-                      id="blog-author"
-                      value={author}
-                      onChange={(e) => setAuthor(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 cursor-pointer"
-                    >
-                      <option value="" className="bg-card text-muted-foreground">
-                        -- Select Author --
-                      </option>
-                      {adminUsers.map((admin) => (
-                        <option key={admin.id} value={admin.displayName || admin.email} className="bg-card text-foreground">
-                          {admin.displayName ? `${admin.displayName} (${admin.email})` : admin.email}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Cover Image & Photo Credit */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label
-                        htmlFor="blog-cover"
-                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Cover Image
-                      </label>
-                      <span className="text-[10px] text-muted-foreground font-semibold">
-                        Upload file or paste URL
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        id="blog-cover"
-                        type="text"
-                        required
-                        value={coverImage}
-                        onChange={(e) => setCoverImage(e.target.value)}
-                        placeholder="Paste cover URL or upload..."
-                        className="flex-1 rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                      />
-                      <label className="rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-bold px-4 py-2.5 cursor-pointer shrink-0 flex items-center justify-center transition-all active:scale-95 text-foreground">
-                        <span>{uploadingImage ? "Uploading..." : "Upload"}</span>
+                    {/* Article Titles (Bilingual) */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label
+                            htmlFor="blog-title"
+                            className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+                          >
+                            <span>Article Title — मराठी</span>
+                            <span style={{ color: '#ef4444', fontSize: '14px', lineHeight: 1 }}>*</span>
+                          </label>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary uppercase">
+                            मराठी
+                          </span>
+                        </div>
                         <input
-                          type="file"
-                          accept="image/*"
-                          disabled={uploadingImage}
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                    {coverImage && (
-                      <div className="mt-2 relative h-36 w-full overflow-hidden rounded-xl border border-border bg-muted/20 flex items-center justify-center shadow-sm">
-                        <img
-                          src={coverImage}
-                          alt="Cover Preview"
-                          className="h-full w-full object-contain"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80";
-                          }}
+                          id="blog-title"
+                          type="text"
+                          required
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="उदा. नवनिर्मितीची नवी दिशा..."
+                          className="w-full h-11 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 font-medium"
                         />
                       </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-cover-credit"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
-                    >
-                      <span>Photo Credit / Source</span>
-                      <span className="text-[10px] text-muted-foreground/60 font-normal lowercase">(optional)</span>
-                    </label>
-                    <input
-                      id="blog-cover-credit"
-                      type="text"
-                      value={imageCredit}
-                      onChange={(e) => setImageCredit(e.target.value)}
-                      placeholder="e.g. Photo by Unsplash / Photographer Name"
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                </div>
 
-                {/* Description — मराठी & Description — English */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label
-                        htmlFor="blog-excerpt"
-                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Description — मराठी
-                      </label>
-                      <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi</span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label
+                            htmlFor="blog-title-en"
+                            className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                          >
+                            Article Title — English
+                          </label>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-500 uppercase">
+                            English
+                          </span>
+                        </div>
+                        <input
+                          id="blog-title-en"
+                          type="text"
+                          value={titleEn}
+                          onChange={(e) => setTitleEn(e.target.value)}
+                          placeholder="e.g. Scaling Modern Web Applications..."
+                          className="w-full h-11 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 font-medium"
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0">
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt", "bold", setExcerpt)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Bold"
-                      >
-                        <Bold className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt", "italic", setExcerpt)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Italic"
-                      >
-                        <Italic className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt", "code", setExcerpt)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Code"
-                      >
-                        <Code className="h-3.5 w-3.5" />
-                      </button>
+
+                    {/* Excerpt / Short Summary (Bilingual) */}
+                    <div className="space-y-5 pt-4 border-t border-border/20">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label
+                            htmlFor="blog-excerpt"
+                            className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                          >
+                            Description / Summary — मराठी
+                          </label>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            मराठी
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2.5 py-1.5 border-b-0">
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt", "bold", setExcerpt)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Bold"
+                          >
+                            <Bold className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt", "italic", setExcerpt)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Italic"
+                          >
+                            <Italic className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt", "code", setExcerpt)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Code"
+                          >
+                            <Code className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        <textarea
+                          id="blog-excerpt"
+                          rows={3}
+                          value={excerpt}
+                          onChange={(e) => setExcerpt(e.target.value)}
+                          placeholder="मराठी संक्षिप्त वर्णन लिहा..."
+                          className="w-full rounded-b-xl rounded-t-none border border-border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label
+                            htmlFor="blog-excerpt-en"
+                            className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                          >
+                            Description / Summary — English
+                          </label>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            English
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2.5 py-1.5 border-b-0">
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt-en", "bold", setExcerptEn)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Bold"
+                          >
+                            <Bold className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt-en", "italic", setExcerptEn)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Italic"
+                          >
+                            <Italic className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInsertFormat("blog-excerpt-en", "code", setExcerptEn)}
+                            className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                            title="Code"
+                          >
+                            <Code className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        <textarea
+                          id="blog-excerpt-en"
+                          rows={3}
+                          value={excerptEn}
+                          onChange={(e) => setExcerptEn(e.target.value)}
+                          placeholder="Brief English summary or excerpt..."
+                          className="w-full rounded-b-xl rounded-t-none border border-border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 leading-relaxed"
+                        />
+                      </div>
                     </div>
-                    <textarea
-                      id="blog-excerpt"
-                      required
-                      rows={3}
-                      value={excerpt}
-                      onChange={(e) => setExcerpt(e.target.value)}
-                      placeholder="मराठी संक्षिप्त वर्णन..."
-                      className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    ></textarea>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label
-                        htmlFor="blog-excerpt-en"
-                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Description — English
-                      </label>
-                      <span className="text-[9px] font-bold text-blue-500/80 uppercase">English</span>
+                  {/* Card 2: Main Body Markdown Content */}
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+                    <div className="border-b border-border/20 pb-4">
+                      <h3 className="text-base font-bold font-geist-sans text-foreground">
+                        Article Content (Markdown)
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Write in-depth content with headings, lists, quotes, images, and code.
+                      </p>
                     </div>
-                    <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0">
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt-en", "bold", setExcerptEn)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Bold"
-                      >
-                        <Bold className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt-en", "italic", setExcerptEn)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Italic"
-                      >
-                        <Italic className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleInsertFormat("blog-excerpt-en", "code", setExcerptEn)}
-                        className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                        title="Code"
-                      >
-                        <Code className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                    <textarea
-                      id="blog-excerpt-en"
-                      rows={3}
-                      value={excerptEn}
-                      onChange={(e) => setExcerptEn(e.target.value)}
-                      placeholder="Brief English description shown when language is English..."
-                      className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    ></textarea>
-                  </div>
-                </div>
 
-                {/* Markdown Content — मराठी */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <label
-                      htmlFor="blog-content"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Markdown Content — मराठी
-                    </label>
-                    <span className="text-[9px] font-bold text-primary/80 uppercase">Marathi Content</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0 overflow-x-auto">
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "bold", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Bold"
-                    >
-                      <Bold className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "italic", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Italic"
-                    >
-                      <Italic className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "code", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Code"
-                    >
-                      <Code className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "h2", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Heading 2"
-                    >
-                      <Heading2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "h3", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Heading 3"
-                    >
-                      <Heading3 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "list", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Bullet List"
-                    >
-                      <List className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "quote", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Blockquote"
-                    >
-                      <Quote className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "link", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Insert Link"
-                    >
-                      <LinkIcon className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content", "image", setContent)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Insert Image"
-                    >
-                      <ImageIcon className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <textarea
-                    id="blog-content"
-                    required
-                    rows={8}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="मराठीत सविस्तर लेख लिहा..."
-                    className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  ></textarea>
-                </div>
-
-                {/* Markdown Content — English */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <label
-                      htmlFor="blog-content-en"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Markdown Content — English
-                    </label>
-                    <span className="text-[9px] font-bold text-blue-500/80 uppercase">English Content</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2 py-1.5 border-b-0 overflow-x-auto">
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "bold", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Bold"
-                    >
-                      <Bold className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "italic", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Italic"
-                    >
-                      <Italic className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "code", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Code"
-                    >
-                      <Code className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "h2", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Heading 2"
-                    >
-                      <Heading2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "h3", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Heading 3"
-                    >
-                      <Heading3 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "list", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Bullet List"
-                    >
-                      <List className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "quote", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Blockquote"
-                    >
-                      <Quote className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "link", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Insert Link"
-                    >
-                      <LinkIcon className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInsertFormat("blog-content-en", "image", setContentEn)}
-                      className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 border border-transparent hover:border-border/40 flex items-center justify-center cursor-pointer"
-                      title="Insert Image"
-                    >
-                      <ImageIcon className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <textarea
-                    id="blog-content-en"
-                    rows={8}
-                    value={contentEn}
-                    onChange={(e) => setContentEn(e.target.value)}
-                    placeholder="Write detailed English article here..."
-                    className="w-full rounded-b-xl rounded-t-none border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  ></textarea>
-                </div>
-
-                {/* Tags, Status & Schedule */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-tags"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Tags (Comma-separated)
-                    </label>
-                    <input
-                      id="blog-tags"
-                      type="text"
-                      value={tagsInput}
-                      onChange={(e) => setTagsInput(e.target.value)}
-                      placeholder="React, NextJS, ServerActions"
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-status"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Status
-                    </label>
-                    <select
-                      id="blog-status"
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 cursor-pointer"
-                    >
-                      <option value="draft" className="bg-card text-foreground">Draft</option>
-                      <option value="published" className="bg-card text-foreground">Published</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="blog-schedule"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Schedule Publish
-                    </label>
-                    <input
-                      id="blog-schedule"
-                      type="datetime-local"
-                      value={scheduledAt}
-                      onChange={(e) => setScheduledAt(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background/50 px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                </div>
-
-                {/* SEO Overrides */}
-                <div className="rounded-xl border border-border/40 p-4 space-y-3 bg-muted/10">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/20 pb-1">
-                    SEO Overrides
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="blog-seo-title"
-                        className="text-[10px] uppercase font-bold text-muted-foreground"
-                      >
-                        Meta Title
-                      </label>
-                      <input
-                        id="blog-seo-title"
-                        type="text"
-                        value={seoTitle}
-                        onChange={(e) => setSeoTitle(e.target.value)}
-                        placeholder="defaults to blog title"
-                        className="w-full rounded-lg border border-border bg-background/50 px-2.5 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                    {/* Markdown Content — मराठी */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <label
+                          htmlFor="blog-content"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Markdown Body — मराठी
+                        </label>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary uppercase">
+                          मराठी मजकूर
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2.5 py-1.5 border-b-0 overflow-x-auto">
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "bold", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Bold"
+                        >
+                          <Bold className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "italic", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Italic"
+                        >
+                          <Italic className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "code", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Code"
+                        >
+                          <Code className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "h2", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Heading 2"
+                        >
+                          <Heading2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "h3", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Heading 3"
+                        >
+                          <Heading3 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "list", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Bullet List"
+                        >
+                          <List className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "quote", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Blockquote"
+                        >
+                          <Quote className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "link", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Insert Link"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content", "image", setContent)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Insert Image"
+                        >
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <textarea
+                        id="blog-content"
+                        rows={12}
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="मराठीत सविस्तर लेख लिहा..."
+                        className="w-full rounded-b-xl rounded-t-none border border-border bg-background px-4 py-3 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 leading-relaxed"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="blog-seo-desc"
-                        className="text-[10px] uppercase font-bold text-muted-foreground"
-                      >
-                        Meta Description
-                      </label>
+
+                    {/* Markdown Content — English */}
+                    <div className="space-y-2 pt-4 border-t border-border/20">
+                      <div className="flex justify-between items-center">
+                        <label
+                          htmlFor="blog-content-en"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Markdown Body — English
+                        </label>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-500 uppercase">
+                          English Content
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 bg-muted/40 border border-border/40 rounded-t-xl px-2.5 py-1.5 border-b-0 overflow-x-auto">
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "bold", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Bold"
+                        >
+                          <Bold className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "italic", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Italic"
+                        >
+                          <Italic className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "code", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Code"
+                        >
+                          <Code className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "h2", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Heading 2"
+                        >
+                          <Heading2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "h3", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Heading 3"
+                        >
+                          <Heading3 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "list", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Bullet List"
+                        >
+                          <List className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "quote", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Blockquote"
+                        >
+                          <Quote className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "link", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Insert Link"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInsertFormat("blog-content-en", "image", setContentEn)}
+                          className="p-1.5 rounded-lg hover:bg-muted/80 text-foreground transition-all active:scale-95 cursor-pointer"
+                          title="Insert Image"
+                        >
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                       <textarea
-                        id="blog-seo-desc"
-                        rows={2}
-                        value={seoDesc}
-                        onChange={(e) => setSeoDesc(e.target.value)}
-                      ></textarea>
+                        id="blog-content-en"
+                        rows={10}
+                        value={contentEn}
+                        onChange={(e) => setContentEn(e.target.value)}
+                        placeholder="Write detailed English article here..."
+                        className="w-full rounded-b-xl rounded-t-none border border-border bg-background px-4 py-3 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 leading-relaxed"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ══ RIGHT SIDEBAR COLUMN (4 cols) — Media, Publishing, SEO ══ */}
+                <div className="lg:col-span-4 space-y-6">
+                  {/* Card 3: Featured Cover & Media */}
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 space-y-5 shadow-sm">
+                    <div className="border-b border-border/20 pb-3">
+                      <h3 className="text-sm font-bold font-geist-sans text-foreground">
+                        Featured Cover Media
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Primary thumbnail & header image.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Cover Image Input + Upload */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-cover"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+                        >
+                          <span>Cover Image URL</span>
+                          <span style={{ color: '#ef4444', fontSize: '14px', lineHeight: 1 }}>*</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            id="blog-cover"
+                            type="text"
+                            required
+                            value={coverImage}
+                            onChange={(e) => setCoverImage(e.target.value)}
+                            placeholder="Paste image URL..."
+                            className="flex-1 h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                          />
+                          <label className="rounded-xl border border-border bg-muted/60 hover:bg-muted text-xs font-bold px-3.5 h-10 cursor-pointer shrink-0 flex items-center justify-center transition-all active:scale-95 text-foreground shadow-sm">
+                            <span>{uploadingImage ? "..." : "Upload"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={uploadingImage}
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Cover Image Preview */}
+                      {coverImage && (
+                        <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-border bg-muted/30 flex items-center justify-center shadow-inner group">
+                          <img
+                            src={coverImage}
+                            alt="Cover Preview"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80";
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Photo Credit */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-cover-credit"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+                        >
+                          <span>Photo Credit / Source</span>
+                          <span style={{ color: '#ef4444', fontSize: '14px', lineHeight: 1 }}>*</span>
+                        </label>
+                        <input
+                          id="blog-cover-credit"
+                          type="text"
+                          required
+                          value={imageCredit}
+                          onChange={(e) => setImageCredit(e.target.value)}
+                          placeholder="e.g. Unsplash / Photographer Name"
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Publishing & Organization */}
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 space-y-5 shadow-sm">
+                    <div className="border-b border-border/20 pb-3">
+                      <h3 className="text-sm font-bold font-geist-sans text-foreground">
+                        Publishing & Settings
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Visibility, tags, category and author settings.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Status */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-status"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Publication Status
+                        </label>
+                        <select
+                          id="blog-status"
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                        >
+                          <option value="draft" className="bg-card text-foreground">Draft (Unpublished)</option>
+                          <option value="published" className="bg-card text-foreground">Published (Public)</option>
+                        </select>
+                      </div>
+
+                      {/* Category */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-category"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Category
+                        </label>
+                        <select
+                          id="blog-category"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                        >
+                          <option value="" className="bg-card text-muted-foreground font-semibold">
+                            -- No Category --
+                          </option>
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.slug} className="bg-card text-foreground">
+                              {c.name}
+                            </option>
+                          ))}
+                          <option value="__custom__" className="bg-card text-primary font-bold">
+                            + Create Custom Category
+                          </option>
+                        </select>
+                        {category === "__custom__" && (
+                          <input
+                            type="text"
+                            value={customCategory}
+                            onChange={(e) => setCustomCategory(e.target.value)}
+                            placeholder="Type new category name..."
+                            className="w-full h-10 rounded-xl border border-primary/40 bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mt-1.5 shadow-sm"
+                          />
+                        )}
+                      </div>
+
+                      {/* URL Slug */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-slug"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          URL Slug
+                        </label>
+                        <input
+                          id="blog-slug"
+                          type="text"
+                          value={slug}
+                          onChange={(e) => setSlug(e.target.value)}
+                          placeholder="auto-generated-slug"
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+
+                      {/* Author */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-author"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Author / Writer
+                        </label>
+                        <select
+                          id="blog-author"
+                          value={author}
+                          onChange={(e) => setAuthor(e.target.value)}
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                        >
+                          <option value="" className="bg-card text-foreground font-semibold">
+                            -- No Author (Display as Admin) --
+                          </option>
+                          {adminUsers.map((admin) => (
+                            <option key={admin.id} value={admin.displayName || admin.email} className="bg-card text-foreground">
+                              {admin.displayName ? `${admin.displayName} (${admin.email})` : admin.email}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-tags"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Tags (comma separated)
+                        </label>
+                        <input
+                          id="blog-tags"
+                          type="text"
+                          value={tagsInput}
+                          onChange={(e) => setTagsInput(e.target.value)}
+                          placeholder="Tech, Politics, News"
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+
+                      {/* Schedule */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="blog-schedule"
+                          className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Schedule Publish Date
+                        </label>
+                        <input
+                          id="blog-schedule"
+                          type="datetime-local"
+                          value={scheduledAt}
+                          onChange={(e) => setScheduledAt(e.target.value)}
+                          className="w-full h-10 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 5: SEO Overrides */}
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 space-y-4 shadow-sm">
+                    <div className="border-b border-border/20 pb-3">
+                      <h3 className="text-sm font-bold font-geist-sans text-foreground">
+                        SEO & Metadata
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Customize how search engines display this article.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor="blog-seo-title"
+                          className="text-[11px] uppercase font-bold text-muted-foreground"
+                        >
+                          Meta Title
+                        </label>
+                        <input
+                          id="blog-seo-title"
+                          type="text"
+                          value={seoTitle}
+                          onChange={(e) => setSeoTitle(e.target.value)}
+                          placeholder="Defaults to article title..."
+                          className="w-full h-9 rounded-xl border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor="blog-seo-desc"
+                          className="text-[11px] uppercase font-bold text-muted-foreground"
+                        >
+                          Meta Description
+                        </label>
+                        <textarea
+                          id="blog-seo-desc"
+                          rows={2}
+                          value={seoDesc}
+                          onChange={(e) => setSeoDesc(e.target.value)}
+                          placeholder="Defaults to excerpt..."
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-muted-foreground/50 leading-relaxed"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex gap-3 justify-end pt-4 border-t border-border/20">
+            {/* Bottom Floating/Sticky Action Bar */}
+            <div className="flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-card border border-border/40 shadow-lg">
               <button
                 type="button"
                 onClick={handleCloseForm}
-                className="px-4 py-2.5 text-xs font-bold rounded-xl border border-border hover:bg-muted transition-all active:scale-95 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold rounded-xl border border-border hover:bg-muted transition-all active:scale-95 cursor-pointer text-muted-foreground hover:text-foreground"
               >
-                Discard
+                Discard & Return
               </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-5 py-2.5 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-[0_4px_12px_rgba(99,102,241,0.25)]"
-              >
-                {submitting ? "Saving..." : "Save Changes"}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl border border-border/60 bg-muted/30 hover:bg-muted text-foreground transition-all cursor-pointer"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>{showPreview ? "Back to Edit" : "Live Preview"}</span>
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-md"
+                >
+                  <Save className="h-4 w-4" />
+                  <span>{submitting ? "Saving..." : (editBlogId ? "Update Article" : "Save & Publish Article")}</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1221,7 +1432,7 @@ function BlogsManagerContent() {
                       <tr className="border-b border-border/20 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         <th className="p-4">Cover / Title</th>
                         <th className="p-4">Category</th>
-                        <th className="p-4">Status</th>
+                        <th className="p-4">Visitor Visibility</th>
                         <th className="p-4">Created Date</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
@@ -1251,25 +1462,60 @@ function BlogsManagerContent() {
                             </div>
                           </td>
                           <td className="p-4">
-                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-muted text-foreground font-semibold">
-                              {categories.find((c) => c.slug === b.category)
-                                ?.name || b.category}
-                            </span>
+                            {b.category ? (
+                              <span className="text-xs px-2.5 py-0.5 rounded-lg bg-muted text-foreground font-semibold">
+                                {categories.find((c) => c.slug === b.category)
+                                  ?.name || b.category}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/60 italic">—</span>
+                            )}
                           </td>
                           <td className="p-4">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                            {/* Interactive Visibility Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleVisibility(b)}
+                              title={
                                 b.status === "published"
-                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                  ? "Click to Hide from visitor website (Switch to Draft)"
+                                  : "Click to Publish & make Live on visitor website"
+                              }
+                              className={`group inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 ${
+                                b.status === "published"
+                                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                  : "bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
                               }`}
                             >
-                              {b.status}
-                            </span>
+                              {/* Animated Switch Pill */}
+                              <span
+                                className={`inline-flex h-4 w-7 rounded-full transition-colors duration-200 ease-in-out p-0.5 ${
+                                  b.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/30"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-3 w-3 rounded-full bg-white shadow-sm transform transition-transform duration-200 ease-in-out ${
+                                    b.status === "published" ? "translate-x-3" : "translate-x-0"
+                                  }`}
+                                />
+                              </span>
+                              <span className="flex items-center gap-1">
+                                {b.status === "published" ? (
+                                  <>
+                                    <Eye className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                                    <span>Live on Site</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    <span>Hidden</span>
+                                  </>
+                                )}
+                              </span>
+                            </button>
                             {b.scheduledAt && (
-                              <p className="text-[9px] text-muted-foreground mt-0.5">
-                                Sched:{" "}
-                                {new Date(b.scheduledAt).toLocaleDateString()}
+                              <p className="text-[9px] text-muted-foreground mt-1">
+                                Sched: {new Date(b.scheduledAt).toLocaleDateString()}
                               </p>
                             )}
                           </td>
@@ -1293,6 +1539,17 @@ function BlogsManagerContent() {
                                   <ExternalLink className="h-4 w-4" />
                                 </a>
                               )}
+                              <button
+                                onClick={() => handleToggleVisibility(b)}
+                                className={`p-1.5 rounded-lg transition-all ${
+                                  b.status === "published"
+                                    ? "text-emerald-600 hover:bg-emerald-500/10"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                                }`}
+                                title={b.status === "published" ? "Hide from visitors" : "Make Live on website"}
+                              >
+                                {b.status === "published" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                              </button>
                               <button
                                 onClick={() => handleOpenEdit(b)}
                                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -1340,42 +1597,51 @@ function BlogsManagerContent() {
                       </div>
                     </div>
 
-                    {/* Middle details: Category, Status, Engagement, Date */}
+                    {/* Middle details: Category, Visibility Toggle, Date */}
                     <div className="flex flex-wrap gap-2 items-center justify-between text-xs pt-1 border-t border-border/10">
-                      <div className="flex flex-wrap gap-1.5 items-center">
+                      {b.category ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-foreground font-semibold">
                           {categories.find((c) => c.slug === b.category)?.name || b.category}
                         </span>
+                      ) : (
+                        <div />
+                      )}
+
+                      {/* Mobile Visibility Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleVisibility(b)}
+                        title={b.status === "published" ? "Click to Hide" : "Click to Publish"}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-all cursor-pointer active:scale-95 ${
+                          b.status === "published"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                            : "bg-muted/70 text-muted-foreground border-border/50"
+                        }`}
+                      >
                         <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
-                            b.status === "published"
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          className={`inline-flex h-3.5 w-6 rounded-full transition-colors duration-200 p-0.5 ${
+                            b.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/30"
                           }`}
                         >
-                          {b.status}
+                          <span
+                            className={`inline-block h-2.5 w-2.5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${
+                              b.status === "published" ? "translate-x-2.5" : "translate-x-0"
+                            }`}
+                          />
                         </span>
-                      </div>
-
-                      <div className="flex gap-2.5 items-center text-[10px] text-muted-foreground font-semibold">
-                        <span>
-                          {new Date(b.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
+                        <span>{b.status === "published" ? "Live on Site" : "Hidden"}</span>
+                      </button>
                     </div>
 
                     {/* Bottom actions row */}
                     <div className="flex items-center justify-between pt-2 border-t border-border/15">
-                      {b.scheduledAt ? (
-                        <p className="text-[9px] text-muted-foreground font-semibold">
-                          Sched: {new Date(b.scheduledAt).toLocaleDateString()}
-                        </p>
-                      ) : (
-                        <div />
-                      )}
+                      <div className="text-[10px] text-muted-foreground font-medium">
+                        {new Date(b.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </div>
                       
                       <div className="flex items-center gap-2">
                         {b.status === "published" && (

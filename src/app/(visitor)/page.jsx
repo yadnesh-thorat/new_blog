@@ -356,9 +356,11 @@ export default function HomePage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover/img:opacity-90 transition-opacity" />
 
                       {/* Floating category badge on image */}
-                      <span className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-background/90 backdrop-blur-md text-foreground px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-[11px] font-black tracking-wider rounded-full uppercase border border-border/60 shadow-md">
-                        {translateText(categories.find((c) => c.slug === activeHeroArticle.category)?.name || activeHeroArticle.category)}
-                      </span>
+                      {activeHeroArticle.category && (
+                        <span className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-background/90 backdrop-blur-md text-foreground px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-[11px] font-black tracking-wider rounded-full uppercase border border-border/60 shadow-md">
+                          {translateText(categories.find((c) => c.slug === activeHeroArticle.category)?.name || activeHeroArticle.category)}
+                        </span>
+                      )}
                     </Link>
                   )}
                 </div>
@@ -393,9 +395,11 @@ export default function HomePage() {
                         {blog.coverImage && (
                           <Link to={`/blogs/${blog.slug}`} className="block md:col-span-5 aspect-[16/10] w-full overflow-hidden rounded-xl relative border border-border/30 shadow-sm group">
                             <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                            <span className="absolute top-3 left-3 bg-primary text-on-primary px-3 py-1 text-[10px] font-extrabold tracking-wider rounded-full uppercase shadow-sm">
-                              {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
-                            </span>
+                            {blog.category && (
+                              <span className="absolute top-3 left-3 bg-primary text-on-primary px-3 py-1 text-[10px] font-extrabold tracking-wider rounded-full uppercase shadow-sm">
+                                {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
+                              </span>
+                            )}
                           </Link>
                         )}
                         <div className="md:col-span-7 flex flex-col justify-between space-y-3.5">

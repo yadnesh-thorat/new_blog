@@ -268,12 +268,13 @@ export const VisitorNavbar = () => {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   height: '36px', padding: '0 12px', borderRadius: '999px',
                   border: '1px solid rgba(0,0,0,0.12)', background: 'var(--card)',
+                  color: 'var(--foreground)',
                   cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.06)', flexShrink: 0,
                   gap: '6px',
                 }}
               >
-                <span style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap' }}>Change Language</span>
-                <ChevronDown style={{ width: '12px', height: '12px', display: 'block', lineHeight: 0, flexShrink: 0, transition: 'transform 0.2s', transform: langDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                <span style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', color: 'inherit' }}>Change Language</span>
+                <ChevronDown style={{ width: '12px', height: '12px', display: 'block', lineHeight: 0, flexShrink: 0, transition: 'transform 0.2s', transform: langDropdownOpen ? 'rotate(180deg)' : 'none', color: 'inherit' }} />
               </button>
               {langDropdownOpen && (
                 <>
@@ -322,14 +323,14 @@ export const VisitorNavbar = () => {
                 style={{
                   alignItems: 'center', justifyContent: 'center',
                   height: '36px', padding: '0 16px', borderRadius: '999px',
-                  background: 'var(--primary)', color: '#fff',
+                  backgroundColor: '#b45309', color: '#ffffff',
                   fontSize: '13px', fontWeight: 700, gap: '6px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)', cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(180,83,9,0.35)', cursor: 'pointer',
                   textDecoration: 'none', fontFamily: 'var(--font-outfit, sans-serif)',
                 }}
               >
-                <span style={{ lineHeight: 1 }}>{t("nav_dashboard")}</span>
-                <ArrowRight style={{ width: '14px', height: '14px', flexShrink: 0, display: 'block', lineHeight: 0 }} />
+                <span style={{ lineHeight: 1, color: '#ffffff', fontWeight: 700 }}>{t("nav_dashboard") || "Dashboard"}</span>
+                <ArrowRight style={{ width: '14px', height: '14px', flexShrink: 0, display: 'block', lineHeight: 0, color: '#ffffff' }} />
               </Link>
             )}
 
@@ -499,8 +500,12 @@ export const VisitorNavbar = () => {
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <p className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">{blog.title}</p>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      <span className="bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded uppercase text-[9px]">{blog.category}</span>
-                      <span>•</span>
+                      {blog.category && (
+                        <>
+                          <span className="bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded uppercase text-[9px]">{blog.category}</span>
+                          <span>•</span>
+                        </>
+                      )}
                       <span>{blog.readingTime} min read</span>
                     </div>
                   </div>

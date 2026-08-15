@@ -119,6 +119,20 @@ export const dbService = {
       lookupName = blog.author.name?.toLowerCase();
     }
 
+    // If author is explicitly empty, 'none', 'Admin', or generic, return Admin without matching personal profile
+    const lookupLower = (lookupName || lookupEmail || "").toLowerCase();
+    if (!blog.author || lookupLower === "" || lookupLower === "none" || lookupLower === "admin" || lookupLower === "aether writer") {
+      return {
+        ...blog,
+        author: {
+          name: "Admin",
+          avatar: null,
+          role: "Administrator",
+          bio: null
+        }
+      };
+    }
+
     // Always try to find a real admin profile match first
     if (admins && admins.length > 0 && (lookupName || lookupEmail)) {
       const matched = admins.find((a) => {
@@ -143,45 +157,14 @@ export const dbService = {
       }
     }
 
-    // If author is a structured object with data, use it as-is (or try to upgrade with first admin)
-    const GENERIC_NAMES = ["admin user", "primary admin", "aether writer", "writer", "administrator"];
-    const isGeneric = GENERIC_NAMES.includes((lookupName || "").toLowerCase());
-
     if (blog.author && typeof blog.author === "object") {
-      // If the stored name is generic and we have admins, use the first/primary admin
-      if (isGeneric && admins && admins.length > 0) {
-        const primaryAdmin = admins[0];
-        return {
-          ...blog,
-          author: {
-            name: primaryAdmin.displayName || primaryAdmin.email,
-            avatar: primaryAdmin.avatarUrl || null,
-            role: primaryAdmin.role || "Administrator",
-            bio: primaryAdmin.bio || "Aether blog administrator and tech enthusiast."
-          }
-        };
-      }
       return {
         ...blog,
         author: {
-          name: blog.author.name || "Aether Writer",
-          avatar: null,  // Don't use hardcoded mock avatars — only real uploaded profile photos
-          role: blog.author.role || "Writer",
+          name: blog.author.name || "Admin",
+          avatar: blog.author.avatarUrl || blog.author.avatar || null,
+          role: blog.author.role || "Administrator",
           bio: blog.author.bio || null
-        }
-      };
-    }
-
-    // Default fallback — use primary admin if available
-    if (admins && admins.length > 0) {
-      const primaryAdmin = admins[0];
-      return {
-        ...blog,
-        author: {
-          name: primaryAdmin.displayName || primaryAdmin.email || "Aether Writer",
-          avatar: primaryAdmin.avatarUrl || null,
-          role: primaryAdmin.role || "Administrator",
-          bio: primaryAdmin.bio || "Aether blog administrator and tech enthusiast."
         }
       };
     }
@@ -189,10 +172,10 @@ export const dbService = {
     return {
       ...blog,
       author: {
-        name: (typeof blog.author === "string" ? blog.author : null) || "Aether Writer",
+        name: (typeof blog.author === "string" && blog.author.trim()) ? blog.author : "Admin",
         avatar: null,
-        role: "Writer",
-        bio: "Aether blog administrator and tech enthusiast."
+        role: "Administrator",
+        bio: null
       }
     };
   },
@@ -297,16 +280,13 @@ export const dbService = {
   },
 
   async saveBlog(blog) {
-    // Resolve a sensible default author: prefer an existing admin, else fallback to a generic admin object
-    const admins = await this.getAdmins();
-    const defaultAuthor = (admins && admins.length > 0)
-      ? {
-          name: admins[0].displayName || admins[0].email || "Admin",
-          email: admins[0].email || null,
-          avatar: admins[0].avatarUrl || null,
-          role: admins[0].role || "Administrator",
-        }
-      : { name: "Admin", email: null, role: "Administrator" };
+    // Resolve author: if no author or empty string, default to "Admin"
+    const defaultAuthor = { name: "Admin", email: null, avatar: null, role: "Administrator" };
+    const savedAuthor = (blog.author && typeof blog.author === "string" && blog.author.trim() !== "" && blog.author !== "Admin" && blog.author !== "none")
+      ? blog.author
+      : (blog.author && typeof blog.author === "object" && blog.author.name && blog.author.name !== "Admin")
+      ? blog.author
+      : defaultAuthor;
     const words = (blog.content || "").trim().split(/\s+/).length;
     const readingTime = Math.ceil(words / 225) || 1;
 
@@ -323,9 +303,9 @@ export const dbService = {
         blog.coverImage ||
         "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
       coverImageCredit: blog.coverImageCredit || blog.imageCredit || "",
-      category: blog.category || "web-dev",
+      category: blog.category || "",
       tags: blog.tags || [],
-      author: blog.author || defaultAuthor,
+      author: savedAuthor,
       status: blog.status || "draft",
       publishedAt:
         blog.status === "published"

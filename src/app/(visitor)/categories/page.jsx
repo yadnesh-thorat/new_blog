@@ -199,9 +199,11 @@ function CategoriesContent() {
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.07]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                        <span className="absolute top-3 left-3 rounded-lg bg-background/85 backdrop-blur-sm px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
-                          {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
-                        </span>
+                        {blog.category && (
+                          <span className="absolute top-3 left-3 rounded-lg bg-background/85 backdrop-blur-sm px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-foreground border border-white/10 shadow-sm">
+                            {translateText(categories.find((c) => c.slug === blog.category)?.name || blog.category)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1 flex flex-col p-5 space-y-3 justify-between">
                         <div className="space-y-2">
